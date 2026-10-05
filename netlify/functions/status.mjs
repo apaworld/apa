@@ -7,6 +7,7 @@ export default async () => json({
   sources: {
     "jobs-adzuna":        { needsKey: true,  configured: !!(env("ADZUNA_APP_ID") && env("ADZUNA_APP_KEY")) },
     "jobs-francetravail": { needsKey: true,  configured: !!(env("FT_CLIENT_ID") && env("FT_CLIENT_SECRET")) },
+    "agencies-ft":        { needsKey: true,  configured: !!(env("FT_CLIENT_ID") && env("FT_CLIENT_SECRET")) },
     "search-claude":      { needsKey: true,  configured: !!env("ANTHROPIC_API_KEY") },
     "benefits-openfisca": { needsKey: false, configured: true },
     "places-osm":         { needsKey: false, configured: true },
