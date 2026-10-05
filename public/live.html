@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root{--paper:#fff;--ink:#15171c;--muted:#5d6472;--line:#e3e5ea;--soft:#f5f6f8;--accent:#2a3fe0;--accent-ink:#fff;--accent-soft:#eef0fd;--ok:#0f7d55;--err:#c0322b;--warn:#a26a00;
   --font:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;box-sizing:border-box}
@@ -57,6 +59,26 @@ ul.items li:first-child{border-top:0}
 details{margin-top:10px}
 summary{cursor:pointer;font-size:.86rem;color:var(--muted)}
 pre{background:var(--soft);border-radius:10px;padding:12px;overflow:auto;max-height:340px;font-size:.78rem}
+
+/* map demo */
+#nearMap{height:440px;border-radius:14px;border:1px solid var(--line);margin:14px 0;z-index:0}
+.near-wrap{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.near-wrap{grid-template-columns:1fr}}
+.near-list{list-style:none;padding:0;margin:14px 0 0;max-height:440px;overflow:auto}
+.near-list li{display:grid;grid-template-columns:30px 1fr;gap:2px 10px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer}
+.near-list li:first-child{border-top:0}
+.near-list li.far{opacity:.6}
+.near-list li:hover,.near-list li.sel{background:var(--accent-soft);border-radius:8px}
+.num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:.78rem;font-weight:700}
+.far .num{background:var(--muted)}
+.near-list .nm{font-weight:600}
+.near-list .dist{color:var(--muted);font-size:.86rem}
+.near-list .acts{grid-column:2;display:flex;gap:12px;font-size:.86rem;margin-top:2px}
+.pin{width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#2a3fe0;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);display:grid;place-items:center}
+.pin span{transform:rotate(45deg);color:#fff;font:700 11px/1 Figtree,system-ui,sans-serif}
+.pin.far{background:#8a90a0}
+.me{width:18px;height:18px;border-radius:50%;background:#e2342b;border:3px solid #fff;box-shadow:0 0 0 6px rgba(226,52,43,.25)}
+.link-btn{background:none;border:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;padding:0}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -135,8 +157,8 @@ pre{background:var(--soft);border-radius:10px;padding:12px;overflow:auto;max-hei
     <p class="what">Libraries, community centres, social services, job agencies, language schools, health centres. France-wide needs a city name.</p>
     <form>
       <label>Category<select name="category">
-        <option value="library">Libraries</option><option value="community_centre">Community centres</option>
-        <option value="social_services">Social services and associations</option><option value="employment_agency">Employment agencies</option>
+        <option value="food_shelter">Food and shelter</option><option value="social_services">Social services and social centres</option>
+        <option value="associations">All associations</option><option value="library">Libraries</option><option value="community_centre">Community centres</option><option value="employment_agency">Employment agencies</option>
         <option value="language_school">Language schools</option><option value="training">Training centres</option>
         <option value="coworking">Coworking spaces</option><option value="sports">Sports centres</option>
         <option value="health">Health centres and doctors</option><option value="townhall">Town halls</option>
@@ -145,6 +167,33 @@ pre{background:var(--soft);border-radius:10px;padding:12px;overflow:auto;max-hei
       <button class="btn">Run</button>
     </form>
     <div class="out"></div>
+  </section>
+
+
+  <section class="src" id="near">
+    <h2>Places near the user (map)</h2>
+    <p class="what">Type the user's postal code or address, or use your location. Places in the radius are sorted by distance: the 10 nearest are numbered in blue, the others in grey. "Directions" opens the route in Google Maps.</p>
+    <form id="nearForm">
+      <label class="grow">Postal code or address<input name="q" value="69002 Lyon" autocomplete="off"></label>
+      <label>Category<select name="category">
+        <option value="food_shelter">Food and shelter</option><option value="social_services">Social services and social centres</option>
+        <option value="associations">All associations</option><option value="employment_agency">Employment agencies</option>
+        <option value="library">Libraries</option><option value="community_centre">Community centres</option>
+        <option value="language_school">Language schools</option><option value="health">Health centres and doctors</option>
+        <option value="townhall">Town halls</option><option value="training">Training centres</option>
+      </select></label>
+      <label>Radius<select name="radius"><option value="1000">1 km</option><option value="2000" selected>2 km</option><option value="5000">5 km</option></select></label>
+      <button class="btn">Show places</button>
+      <button class="btn" type="button" id="nearGps" style="background:var(--paper);color:var(--accent);border:1px solid var(--accent)">Use my location</button>
+    </form>
+    <div class="out" id="nearOut"></div>
+    <div class="near-wrap" id="nearWrap" hidden>
+      <div id="nearMap" role="region" aria-label="Map of places near the user"></div>
+      <div>
+        <ul class="near-list" id="nearList"></ul>
+        <button type="button" class="link-btn" id="nearAll" hidden style="margin-top:10px"></button>
+      </div>
+    </div>
   </section>
 
   <section class="src" data-src="stats-worldbank">
@@ -215,6 +264,7 @@ function render(out, j, httpStatus){
       const sub = [it.subtitle, it.location, fmtDate(it.date)].filter(Boolean).join("  |  ");
       if(sub) li.appendChild(el("div","it-sub",sub));
       const ex = it.extra || {}; const chips = el("div","chips");
+      if(ex.distance_m!=null) chips.appendChild(el("span",null, ex.distance_m<1000? ex.distance_m+" m" : (ex.distance_m/1000).toFixed(1)+" km"));
       ["salary","contract","experience","category","opening_hours","phone"].forEach(k => { if(ex[k]) chips.appendChild(el("span",null,ex[k])); });
       if(chips.children.length) li.appendChild(chips);
       if(ex.summary) li.appendChild(el("p","it-sum",ex.summary));
@@ -287,6 +337,96 @@ const FTX = {
     }catch(err){ out.appendChild(el("p","error",err.message)); }
     finally{ btn.disabled=false; btn.textContent="Run"; }
   });
+})();
+
+// ---- Places near the user (map) ----
+(function(){
+  const form=document.getElementById("nearForm"), out=document.getElementById("nearOut"), wrap=document.getElementById("nearWrap");
+  const listEl=document.getElementById("nearList"), allBtn=document.getElementById("nearAll");
+  const TOP=10; let map=null, layer=null, places=[], me=null, showAll=false, markers=[];
+  const fmtDist = m => m==null ? "" : (m < 1000 ? `${m} m` : `${(m/1000).toFixed(1).replace(".0","")} km`);
+  const gmaps = (p) => `https://www.google.com/maps/dir/?api=1&origin=${me.lat},${me.lon}&destination=${p.extra.lat},${p.extra.lon}&travelmode=walking`;
+  function ensureMap(){
+    if(map || !window.L) return;
+    map=L.map("nearMap",{scrollWheelZoom:false});
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+    layer=L.layerGroup().addTo(map);
+  }
+  function select(i){
+    listEl.querySelectorAll("li").forEach((li,k)=>li.classList.toggle("sel",k===i));
+    const m=markers[i]; if(m && map){ map.setView(m.getLatLng(), Math.max(map.getZoom(),16)); m.openPopup(); }
+    const li=listEl.children[i]; if(li) li.scrollIntoView({block:"nearest"});
+  }
+  function draw(){
+    const shown = showAll ? places : places.slice(0,TOP);
+    listEl.textContent=""; markers=[];
+    if(layer) layer.clearLayers();
+    if(map){
+      L.marker([me.lat,me.lon],{icon:L.divIcon({className:"",html:'<div class="me"></div>',iconSize:[18,18],iconAnchor:[9,9]}),zIndexOffset:1000})
+        .bindPopup(`<b>${escapeHtml(me.label)}</b>`).addTo(layer);
+    }
+    shown.forEach((p,i)=>{
+      const far = i>=TOP;
+      const li=el("li",far?"far":""); li.appendChild(el("span","num",String(i+1)));
+      const box=el("div"); box.appendChild(el("div","nm",p.title));
+      box.appendChild(el("div","dist",[fmtDist(p.extra.distance_m), p.location].filter(Boolean).join("  |  ")));
+      li.appendChild(box);
+      const acts=el("div","acts");
+      const dir=el("a",null,"Directions"); dir.href=gmaps(p); dir.target="_blank"; dir.rel="noopener"; acts.appendChild(dir);
+      if(p.extra.phone){ const ph=el("a",null,p.extra.phone); ph.href="tel:"+p.extra.phone.replace(/\s/g,""); acts.appendChild(ph); }
+      if(p.url && !/openstreetmap\.org/.test(p.url)){ const w=el("a",null,"Website"); w.href=p.url; w.target="_blank"; w.rel="noopener"; acts.appendChild(w); }
+      li.appendChild(acts);
+      li.onclick=(e)=>{ if(e.target.closest("a")) return; select(i); };
+      listEl.appendChild(li);
+      if(map && p.extra.lat!=null){
+        const m=L.marker([p.extra.lat,p.extra.lon],{icon:L.divIcon({className:"",html:`<div class="pin${far?" far":""}"><span>${i+1}</span></div>`,iconSize:[28,28],iconAnchor:[14,28],popupAnchor:[0,-26]})})
+          .bindPopup(`<b>${escapeHtml(p.title)}</b><br>${escapeHtml(fmtDist(p.extra.distance_m))}${p.extra.opening_hours?"<br>"+escapeHtml(p.extra.opening_hours):""}<br><a href="${gmaps(p)}" target="_blank" rel="noopener">Directions</a>`)
+          .on("click",()=>select(i)).addTo(layer);
+        markers.push(m);
+      } else markers.push(null);
+    });
+    if(map){
+      const pts=[[me.lat,me.lon], ...shown.slice(0,TOP).filter(p=>p.extra.lat!=null).map(p=>[p.extra.lat,p.extra.lon])];
+      map.fitBounds(pts,{padding:[30,30],maxZoom:16});
+      setTimeout(()=>map.invalidateSize(),50);
+    }
+    allBtn.hidden = places.length<=TOP;
+    allBtn.textContent = showAll ? `Show only the ${TOP} nearest` : `Show all ${places.length} places`;
+  }
+  allBtn.onclick=()=>{ showAll=!showAll; draw(); };
+  const escapeHtml = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  async function run(point){
+    const btn=form.querySelector("button.btn"); btn.disabled=true; out.textContent="";
+    try{
+      if(!point){
+        const g=await (await fetch(FN+"geocode-fr?"+new URLSearchParams({q:form.q.value}))).json();
+        if(!g.ok){ out.appendChild(el("p","error",g.error)); if(g.hint) out.appendChild(el("p","hint",g.hint)); wrap.hidden=true; return; }
+        point={lat:g.lat, lon:g.lon, label:g.label};
+      }
+      me=point;
+      const p=new URLSearchParams({category:form.category.value, lat:me.lat, lon:me.lon, radius:form.radius.value});
+      const r=await fetch(FN+"places-osm?"+p); const j=await r.json();
+      if(!j.ok){ out.appendChild(el("p","error",j.error)); if(j.hint) out.appendChild(el("p","hint",j.hint)); wrap.hidden=true; return; }
+      places=j.items.filter(x=>x.extra && x.extra.lat!=null); showAll=false;
+      const meta=el("div","meta");
+      const add=(l,v)=>{ const s=el("span"); s.append(l+" "); s.appendChild(el("b",null,String(v))); meta.appendChild(s); };
+      add("User:", me.label); add("Area applied:", j.scope_applied); add("Places:", places.length); add("Time:", j.ms+" ms");
+      out.appendChild(meta);
+      if(!places.length){ out.appendChild(el("p","note","No place of this kind in this radius. Try a larger radius or another category.")); wrap.hidden=true; return; }
+      if(!window.L) out.appendChild(el("p","hint","The map library didn't load, so only the list is shown."));
+      wrap.hidden=false; ensureMap(); draw();
+    }catch(err){ out.appendChild(el("p","error",err.message)); }
+    finally{ btn.disabled=false; }
+  }
+  form.addEventListener("submit",e=>{ e.preventDefault(); run(null); });
+  document.getElementById("nearGps").onclick=()=>{
+    if(!navigator.geolocation){ out.textContent=""; out.appendChild(el("p","error","This browser can't share its location.")); return; }
+    out.textContent=""; out.appendChild(el("p","note","Waiting for your permission to use your location…"));
+    navigator.geolocation.getCurrentPosition(
+      pos=>run({lat:+pos.coords.latitude.toFixed(5), lon:+pos.coords.longitude.toFixed(5), label:"Your location"}),
+      err=>{ out.textContent=""; out.appendChild(el("p","error", err.code===1 ? "Location permission was refused. Type a postal code instead." : "Your location couldn't be found. Type a postal code instead.")); },
+      {enableHighAccuracy:true, timeout:10000});
+  };
 })();
 
 loadStatus();
