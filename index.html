@@ -151,6 +151,21 @@ legend{font-size:.88rem;font-weight:600;margin-bottom:8px;padding:0}
 .agents .rh{grid-column:2;font-size:.8rem;color:var(--muted);margin-top:8px;font-weight:600}
 .status{font-size:.86rem;color:var(--muted);margin:0 0 18px}
 footer{max-width:560px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:.8rem}
+.agree{display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:.93rem}
+.agree input{width:18px;height:18px;margin:2px 0 0;flex:none;accent-color:var(--accent);cursor:pointer}
+.agree input[aria-invalid="true"]{outline:2px solid var(--err);outline-offset:2px}
+.agree a,.legal-links a{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.legal-links{display:flex;flex-wrap:wrap;gap:6px 20px;margin-bottom:8px}
+.legal-links a{font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:18px}
+.doc{max-width:66ch}
+.doc .doc-title{font-size:clamp(1.7rem,4.5vw,2.3rem);letter-spacing:-.03em;line-height:1.15;margin:16px 0 6px}
+html[lang="ar"] .doc .doc-title,html[lang="zh"] .doc .doc-title{letter-spacing:0;line-height:1.4}
+.doc-meta{color:var(--muted);font-size:.88rem;margin:0 0 18px}
+.doc-intro{font-size:1.04rem;margin:0 0 8px}
+.doc h2{font-size:1.06rem;margin:26px 0 6px;letter-spacing:0}
+.doc p{margin:0 0 6px;max-width:66ch}
+#docBack{margin-top:30px}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -166,7 +181,7 @@ footer{max-width:560px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font
   </div>
 </header>
 
-<main>
+<main id="app">
   <h1 id="heroTitle"></h1>
   <p class="lead" id="heroSub"></p>
 
@@ -213,6 +228,10 @@ footer{max-width:560px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font
         </div>
         <div class="hint" id="cbHint"></div>
         <div class="err" id="cbErr"></div>
+      </div>
+      <div class="field">
+        <label class="agree"><input type="checkbox" id="agree"><span id="agreeTxt"></span></label>
+        <div class="err" id="agreeErr"></div>
       </div>
       <button class="btn full" id="createBtn" type="submit" data-t="createAccount"></button>
     </form>
@@ -284,6 +303,10 @@ footer{max-width:560px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font
     </div>
     <p class="err" id="planErr" style="margin-top:12px"></p>
   </section>
+</main>
+<main id="docView" hidden>
+  <article id="docBody" class="doc"></article>
+  <button class="btn ghost" id="docBack" type="button"></button>
 </main>
 <footer id="footer"></footer>
 
@@ -543,7 +566,7 @@ function applyText(){
   $("heroTitle").innerHTML = ""; const hs = document.createElement("span"); hs.className="hours"; hs.textContent = t("heroHours");
   $("heroTitle").append(hs, document.createTextNode(t("heroTitle")));
   $("heroSub").textContent = t("heroSub");
-  $("footer").textContent = t("footer");
+  renderFooter(); renderAgree(); if(currentDoc) renderDoc();
   $("cbSearch").placeholder = t("countrySearch");
   $("pwToggle").textContent = $("pw").type==="password" ? t("show") : t("hide");
   renderSteps(); renderCountryValue(); updateMeter(); renderCountryList();
@@ -653,13 +676,14 @@ $("f1").addEventListener("submit", async e=>{
   if(!em) bad("em","emErr","errRequired"); else if(!EMAIL_RE.test(em)) bad("em","emErr","errEmail");
   if(pw.length<8 || !/[a-z]/i.test(pw) || !/\d/.test(pw)) bad("pw","pwErr","errPw");
   if(!st.country) bad("cbBtn","cbErr","errCountry");
+  if(!$("agree").checked) bad("agree","agreeErr","errAgree");
   if(firstBad){ firstBad.focus(); return; }
   const btn=$("createBtn"); btn.disabled=true; btn.textContent=t("checking");
   try{
     const h = await sha256(em);
     if(await Store.emailTaken(h)){ bad("em","emErr","errTaken"); firstBad.focus(); return; }
     // never keep the password: a real backend hashes it (bcrypt/argon2) server-side
-    st.user = {first:fn, last:ln, email:em, hash:h, country:st.country};
+    st.user = {first:fn, last:ln, email:em, hash:h, country:st.country, consent:{termsAndConditions:true, version:LEGAL_VERSION, acceptedAt:new Date().toISOString()}};
     $("pw").value=""; updateMeter();
     sendCode(); $("verifySent").textContent = t("verifySent",{email:em}); $("code").value=""; setErr("codeErr");
     go(2);
@@ -732,7 +756,7 @@ $("f4").addEventListener("submit", async e=>{
   if(!st.goals.length){ setErr("goalErr","errGoal"); $("goalGroups").querySelector("input").focus(); return; }
   const profile = {
     firstName:st.user.first, lastName:st.user.last, email:st.user.email, country:st.user.country, uiLanguage:lang,
-    emailVerifiedAt:st.user.verifiedAt, situation:st.sit, challenge:st.challenge, goals:st.goals, dream:st.dream, horizon:st.horizon,
+    emailVerifiedAt:st.user.verifiedAt, consent:st.user.consent, situation:st.sit, challenge:st.challenge, goals:st.goals, dream:st.dream, horizon:st.horizon,
     updatedAt:new Date().toISOString()
   };
   try{ await Store.saveProfile(st.user.hash, profile); }catch(err){ Store.mode="memory"; Store.mem.prof[st.user.hash]=profile; }
@@ -790,10 +814,197 @@ Create one agent per goal (max 6). Be practical and kind; never give individual 
 };
 $("restart").onclick = ()=>{
   Object.assign(st,{user:null, verify:null, sit:{}, goals:[], horizon:null, dream:"", challenge:""}); plan=null;
-  ["fn","ln","em","pw","challenge","dream","code"].forEach(id=>$(id).value="");
+  ["fn","ln","em","pw","challenge","dream","code"].forEach(id=>$(id).value=""); $("agree").checked=false;
   st.country = st.detected ? st.detected.code : null; renderChoiceGroups(); renderCountryValue(); updateMeter();
   if(sampleNs) $("planBtn").hidden=false; go(1); $("fn").focus();
 };
+
+/* ============ legal pages: Terms, Conditions, Privacy (GDPR / RGPD) ============ */
+const LEGAL_VERSION = "2026-10-05";
+const LUI = {
+en:{agree:"I agree to the {terms} and {conditions}.",linkTerms:"Terms",linkConditions:"Conditions",linkPrivacy:"Privacy & GDPR",errAgree:"Accept the Terms and Conditions to create your account.",updated:"Last updated {date}",draft:"Template for this demo. Have it reviewed by a lawyer before launch.",backReg:"Back to registration"},
+fr:{agree:"J’accepte les {terms} et les {conditions}.",linkTerms:"Conditions générales d’utilisation",linkConditions:"Conditions de service",linkPrivacy:"Confidentialité et RGPD",errAgree:"Acceptez les conditions pour créer votre compte.",updated:"Dernière mise à jour : {date}",draft:"Modèle pour cette démo. Faites-le relire par un avocat avant le lancement.",backReg:"Retour à l’inscription"},
+zh:{agree:"我已阅读并同意{terms}和{conditions}。",linkTerms:"使用条款",linkConditions:"服务条件",linkPrivacy:"隐私与 GDPR",errAgree:"请同意条款和条件以创建账户。",updated:"最后更新：{date}",draft:"本文为演示模板，正式上线前请交由律师审核。",backReg:"返回注册"},
+ar:{agree:"أوافق على {terms} و{conditions}.",linkTerms:"الشروط",linkConditions:"الأحكام",linkPrivacy:"الخصوصية وGDPR",errAgree:"وافق على الشروط والأحكام لإنشاء حسابك.",updated:"آخر تحديث: {date}",draft:"نموذج لهذا العرض التجريبي. اعرضه على محامٍ قبل الإطلاق.",backReg:"العودة إلى التسجيل"}
+};
+for(const l in LUI) Object.assign(T[l], LUI[l]);
+
+const LEGAL = {
+terms:{
+ en:{title:"Terms of Use",intro:"These terms explain how you may use Apacom, a personal AI agent that learns about your social and economic situation and looks for ways to help you. By creating an account, you accept them.",s:[
+  ["The service","Apacom builds a profile from what you tell it, searches for resources around the world and starts small helper agents for specific tasks. It is a demonstration prototype, and some features are simulated."],
+  ["Your account","You must give accurate information and keep your password secret. One email address can hold only one account. You are responsible for activity on your account."],
+  ["Acceptable use","Do not use the service to break the law, harm others, send spam, or try to access other people's data or the system's code."],
+  ["AI suggestions are not professional advice","Suggestions are generated automatically and can be wrong or out of date. They are not financial, legal, medical or immigration advice. Check important decisions with a qualified professional."],
+  ["Helper agents act only with your approval","Helper agents can search and prepare actions, but they never apply, pay, sign or contact anyone on your behalf without your explicit confirmation."],
+  ["Intellectual property","The software and the brand belong to Apacom. What you write stays yours; you allow us to use it only to provide the service to you."],
+  ["Liability","The service is provided as is. To the extent the law allows, Apacom is not liable for indirect losses resulting from decisions you make based on suggestions."],
+  ["Changes and termination","We may update these terms and will tell you about significant changes by email. You can close your account at any time. We may suspend accounts that break these terms."],
+  ["Governing law","These terms are governed by the law of [country to be completed]. Mandatory consumer protections of your country of residence still apply."]]},
+ fr:{title:"Conditions générales d’utilisation",intro:"Ces conditions expliquent comment utiliser Apacom, un agent IA personnel qui apprend votre situation sociale et économique et cherche des moyens de vous aider. En créant un compte, vous les acceptez.",s:[
+  ["Le service","Apacom construit un profil à partir de ce que vous lui dites, recherche des ressources dans le monde entier et lance de petits agents pour des tâches précises. C’est un prototype de démonstration ; certaines fonctions sont simulées."],
+  ["Votre compte","Vous devez fournir des informations exactes et garder votre mot de passe secret. Une adresse e-mail correspond à un seul compte. Vous êtes responsable de l’activité de votre compte."],
+  ["Usage acceptable","N’utilisez pas le service pour enfreindre la loi, nuire à autrui, envoyer du spam ou tenter d’accéder aux données d’autres personnes ou au code du système."],
+  ["Les suggestions de l’IA ne sont pas des conseils professionnels","Les suggestions sont générées automatiquement et peuvent être erronées ou dépassées. Elles ne constituent pas un conseil financier, juridique, médical ou en immigration. Vérifiez les décisions importantes auprès d’un professionnel qualifié."],
+  ["Les agents n’agissent qu’avec votre accord","Les agents peuvent rechercher et préparer des actions, mais ils ne postulent, ne paient, ne signent et ne contactent jamais personne en votre nom sans votre confirmation explicite."],
+  ["Propriété intellectuelle","Le logiciel et la marque appartiennent à Apacom. Ce que vous écrivez reste à vous ; vous nous autorisez à l’utiliser uniquement pour vous fournir le service."],
+  ["Responsabilité","Le service est fourni en l’état. Dans les limites permises par la loi, Apacom n’est pas responsable des pertes indirectes liées aux décisions que vous prenez sur la base des suggestions."],
+  ["Modifications et résiliation","Nous pouvons mettre à jour ces conditions et vous informerons par e-mail des changements importants. Vous pouvez fermer votre compte à tout moment. Nous pouvons suspendre les comptes qui ne respectent pas ces conditions."],
+  ["Droit applicable","Ces conditions sont régies par le droit de [pays à compléter]. Les protections impératives des consommateurs de votre pays de résidence continuent de s’appliquer."]]},
+ zh:{title:"使用条款",intro:"本条款说明您如何使用 Apacom。Apacom 是一款个人 AI 智能体，会了解您的社会和经济状况，并寻找帮助您的方法。创建账户即表示您接受本条款。",s:[
+  ["服务内容","Apacom 根据您提供的信息建立个人资料，在全球范围内搜索资源，并为具体任务启动小型助手智能体。本服务为演示原型，部分功能为模拟。"],
+  ["您的账户","您必须提供真实信息并妥善保管密码。每个电子邮箱只能对应一个账户。您需对账户中的活动负责。"],
+  ["合理使用","不得利用本服务违反法律、伤害他人、发送垃圾信息，或试图获取他人数据或系统代码。"],
+  ["AI 建议不构成专业意见","建议由系统自动生成，可能有误或已过时，不构成财务、法律、医疗或移民方面的专业意见。重要决定请咨询合格的专业人士。"],
+  ["助手智能体仅在您同意后行动","助手智能体可以搜索并准备操作，但未经您明确确认，绝不会代表您提交申请、付款、签署或联系任何人。"],
+  ["知识产权","软件和品牌归 Apacom 所有。您撰写的内容仍归您所有，您仅授权我们为向您提供服务而使用。"],
+  ["责任","本服务按“现状”提供。在法律允许的范围内，对于您依据建议作出决定所导致的间接损失，Apacom 不承担责任。"],
+  ["变更与终止","我们可能更新本条款，重大变更将通过电子邮件通知您。您可随时注销账户；对违反本条款的账户，我们可暂停其使用。"],
+  ["适用法律","本条款受[待填写国家]法律管辖。您居住国的强制性消费者保护规定仍然适用。"]]},
+ ar:{title:"شروط الاستخدام",intro:"توضّح هذه الشروط كيفية استخدامك لـ Apacom، وهو وكيل ذكاء اصطناعي شخصي يتعرّف على وضعك الاجتماعي والاقتصادي ويبحث عن سبل لمساعدتك. بإنشائك حسابًا فإنك توافق عليها.",s:[
+  ["الخدمة","يبني Apacom ملفًا شخصيًا مما تخبره به، ويبحث عن موارد حول العالم، ويُطلق وكلاء مساعدين صغارًا لمهام محددة. إنه نموذج تجريبي، وبعض ميزاته محاكاة."],
+  ["حسابك","يجب أن تقدّم معلومات صحيحة وأن تحافظ على سرية كلمة مرورك. لكل بريد إلكتروني حساب واحد فقط. وأنت مسؤول عن النشاط الذي يجري في حسابك."],
+  ["الاستخدام المقبول","لا تستخدم الخدمة لمخالفة القانون أو إيذاء الآخرين أو إرسال رسائل مزعجة أو محاولة الوصول إلى بيانات الآخرين أو إلى شيفرة النظام."],
+  ["اقتراحات الذكاء الاصطناعي ليست استشارة مهنية","تُنشأ الاقتراحات آليًا وقد تكون خاطئة أو قديمة، وهي ليست استشارة مالية أو قانونية أو طبية أو استشارة في الهجرة. راجع القرارات المهمة مع مختص مؤهَّل."],
+  ["الوكلاء المساعدون لا يتصرفون إلا بموافقتك","يمكن للوكلاء البحث وتحضير الإجراءات، لكنهم لا يقدّمون طلبات ولا يدفعون ولا يوقّعون ولا يتواصلون مع أي جهة نيابةً عنك دون تأكيد صريح منك."],
+  ["الملكية الفكرية","البرنامج والعلامة التجارية ملك لـ Apacom. وما تكتبه يبقى ملكًا لك، وتسمح لنا باستخدامه فقط لتقديم الخدمة لك."],
+  ["المسؤولية","تُقدَّم الخدمة كما هي. وفي الحدود التي يسمح بها القانون، لا يتحمّل Apacom مسؤولية الخسائر غير المباشرة الناتجة عن قرارات تتخذها بناءً على الاقتراحات."],
+  ["التعديلات وإنهاء الحساب","قد نحدّث هذه الشروط، وسنُعلمك بالتغييرات الجوهرية عبر البريد الإلكتروني. يمكنك إغلاق حسابك في أي وقت، وقد نعلّق الحسابات التي تخالف هذه الشروط."],
+  ["القانون الواجب التطبيق","تخضع هذه الشروط لقانون [يُستكمل اسم البلد]. وتظل الحمايات الإلزامية للمستهلك في بلد إقامتك سارية."]]}
+},
+conditions:{
+ en:{title:"Conditions of Service",intro:"These conditions describe who can register and how the service works day to day.",s:[
+  ["Who can register","You must be at least 18 years old, or have reached the age of digital consent in your country with permission from a parent or guardian."],
+  ["Email verification","Your account becomes active only after you confirm your email with a 6-digit code. The code is valid for 10 minutes and allows 5 attempts."],
+  ["One person, one email","Each email address can register only once. Duplicate or fake accounts may be removed."],
+  ["Price","The demo is free. If paid plans are introduced, prices will be shown clearly before you pay, and nothing will be charged without your agreement."],
+  ["Availability","We aim for the agent to run around the clock, but maintenance or outages can interrupt it. We do not guarantee uninterrupted service."],
+  ["Your information","Keep your profile up to date so suggestions stay relevant. You can edit or delete your answers at any time, and all situation questions are optional."],
+  ["Communications","We send service emails such as verification codes and important notices. Marketing messages are sent only if you opt in."],
+  ["Contact","Questions about these conditions: [contact email to be completed]."]]},
+ fr:{title:"Conditions de service",intro:"Ces conditions précisent qui peut s’inscrire et comment le service fonctionne au quotidien.",s:[
+  ["Qui peut s’inscrire","Vous devez avoir au moins 18 ans, ou l’âge de la majorité numérique dans votre pays avec l’autorisation d’un parent ou d’un tuteur."],
+  ["Vérification de l’e-mail","Votre compte n’est activé qu’après la confirmation de votre e-mail par un code à 6 chiffres. Le code est valable 10 minutes et permet 5 essais."],
+  ["Une personne, un e-mail","Chaque adresse e-mail ne peut s’inscrire qu’une seule fois. Les comptes en double ou faux peuvent être supprimés."],
+  ["Prix","La démo est gratuite. Si des offres payantes sont proposées, les prix seront affichés clairement avant le paiement et rien ne sera prélevé sans votre accord."],
+  ["Disponibilité","Nous visons un fonctionnement 24 h/24, mais la maintenance ou des pannes peuvent l’interrompre. Nous ne garantissons pas un service sans interruption."],
+  ["Vos informations","Tenez votre profil à jour pour que les suggestions restent pertinentes. Vous pouvez modifier ou supprimer vos réponses à tout moment ; toutes les questions sur votre situation sont facultatives."],
+  ["Communications","Nous envoyons des e-mails de service, comme les codes de vérification et les avis importants. Les messages marketing ne sont envoyés qu’avec votre accord."],
+  ["Contact","Questions sur ces conditions : [e-mail de contact à compléter]."]]},
+ zh:{title:"服务条件",intro:"本条件说明谁可以注册，以及服务的日常运作方式。",s:[
+  ["注册资格","您必须年满 18 周岁，或已达到您所在国家规定的数字同意年龄并获得父母或监护人的许可。"],
+  ["邮箱验证","您需通过 6 位验证码确认邮箱后，账户方可激活。验证码有效期为 10 分钟，最多可尝试 5 次。"],
+  ["一人一邮箱","每个电子邮箱只能注册一次。重复或虚假账户可能会被删除。"],
+  ["价格","演示版免费。若将来推出付费方案，价格会在付款前清楚显示，未经您同意不会收取任何费用。"],
+  ["服务可用性","我们力求智能体全天候运行，但维护或故障可能导致中断。我们不保证服务永不中断。"],
+  ["您的信息","请及时更新个人资料，以保持建议的相关性。您可随时修改或删除回答，所有关于现状的问题均为选填。"],
+  ["通知","我们会发送服务类邮件，如验证码和重要通知。仅在您同意后才会发送营销信息。"],
+  ["联系方式","如对本条件有疑问，请联系：[待填写联系邮箱]。"]]},
+ ar:{title:"أحكام الخدمة",intro:"تبيّن هذه الأحكام مَن يحق له التسجيل وكيف تعمل الخدمة يومًا بيوم.",s:[
+  ["مَن يحق له التسجيل","يجب أن يكون عمرك ١٨ عامًا على الأقل، أو أن تكون قد بلغت سن الموافقة الرقمية في بلدك مع إذن من أحد الوالدين أو الوصي."],
+  ["التحقق من البريد","لا يُفعَّل حسابك إلا بعد تأكيد بريدك برمز من ٦ أرقام. الرمز صالح لمدة ١٠ دقائق ويسمح بـ ٥ محاولات."],
+  ["شخص واحد، بريد واحد","يمكن لكل عنوان بريد التسجيل مرة واحدة فقط، وقد تُحذف الحسابات المكررة أو المزيفة."],
+  ["السعر","النسخة التجريبية مجانية. وإذا أُضيفت خطط مدفوعة، فستُعرض الأسعار بوضوح قبل الدفع، ولن يُخصم أي مبلغ دون موافقتك."],
+  ["توفّر الخدمة","نسعى إلى أن يعمل الوكيل على مدار الساعة، لكن الصيانة أو الأعطال قد توقفه، ولا نضمن خدمة دون انقطاع."],
+  ["معلوماتك","حدّث ملفك باستمرار لتبقى الاقتراحات مناسبة. يمكنك تعديل إجاباتك أو حذفها في أي وقت، وجميع أسئلة الوضع الحالي اختيارية."],
+  ["المراسلات","نرسل رسائل خدمية مثل رموز التحقق والإشعارات المهمة، ولا نرسل رسائل تسويقية إلا إذا وافقت على ذلك."],
+  ["التواصل","للاستفسار عن هذه الأحكام: [يُستكمل البريد الإلكتروني للتواصل]."]]}
+},
+privacy:{
+ en:{title:"Privacy and GDPR notice",intro:"This notice explains what personal data we collect, why we collect it, and the rights you have under the EU General Data Protection Regulation (GDPR, called RGPD in French) and similar laws.",s:[
+  ["Who is responsible","[Company name, address and registration number to be completed]. Data protection contact: [privacy email to be completed]."],
+  ["Data we collect","Identity and account: first name, surname, email, country and a hashed password. Profile: your answers about work, income range, household, housing, education, difficulties and goals. Technical: your language preference, stored in your browser."],
+  ["Why, and on what legal basis","To create and run your account (contract, Art. 6(1)(b)); to personalise suggestions and helper agents (consent, Art. 6(1)(a)); to keep the service secure (legitimate interest, Art. 6(1)(f)). Some goals, such as health, may reveal sensitive data; we process it only with your explicit consent (Art. 9(2)(a))."],
+  ["Automated suggestions","Suggestions are produced automatically, but they never lead to decisions with legal or similarly significant effects on you without human review and your approval (Art. 22)."],
+  ["Sharing and transfers","We do not sell your data. Service providers (hosting, email, AI processing) handle it on our instructions. Transfers outside the European Economic Area are protected by adequacy decisions or Standard Contractual Clauses."],
+  ["How long we keep data","As long as your account is active. After you close it, your data is deleted within 30 days, except what the law requires us to keep."],
+  ["Your rights","You can access, correct, delete or export your data, restrict or object to its processing, and withdraw consent at any time without affecting earlier processing. Write to [privacy email]. You can also complain to your supervisory authority, for example the CNIL in France."],
+  ["Security","Data is encrypted in transit, passwords are hashed, and access is limited to people who need it."]]},
+ fr:{title:"Politique de confidentialité et RGPD",intro:"Cette politique explique quelles données personnelles nous collectons, pourquoi, et quels droits vous avez au titre du Règlement général sur la protection des données (RGPD) et des lois similaires.",s:[
+  ["Responsable du traitement","[Nom, adresse et numéro d’immatriculation de la société à compléter]. Contact protection des données : [e-mail à compléter]."],
+  ["Données collectées","Identité et compte : prénom, nom, e-mail, pays et mot de passe haché. Profil : vos réponses sur le travail, la tranche de revenus, le foyer, le logement, les études, les difficultés et les objectifs. Technique : votre préférence de langue, enregistrée dans votre navigateur."],
+  ["Finalités et bases légales","Créer et gérer votre compte (exécution du contrat, art. 6.1.b) ; personnaliser les suggestions et les agents (consentement, art. 6.1.a) ; assurer la sécurité du service (intérêt légitime, art. 6.1.f). Certains objectifs, comme la santé, peuvent révéler des données sensibles ; nous ne les traitons qu’avec votre consentement explicite (art. 9.2.a)."],
+  ["Suggestions automatisées","Les suggestions sont produites automatiquement, mais n’entraînent jamais de décision produisant des effets juridiques ou similaires à votre égard sans intervention humaine ni votre accord (art. 22)."],
+  ["Partage et transferts","Nous ne vendons pas vos données. Nos prestataires (hébergement, e-mail, traitement IA) les traitent selon nos instructions. Les transferts hors de l’Espace économique européen sont encadrés par des décisions d’adéquation ou des clauses contractuelles types."],
+  ["Durée de conservation","Tant que votre compte est actif. Après sa fermeture, vos données sont supprimées sous 30 jours, sauf obligation légale de conservation."],
+  ["Vos droits","Vous pouvez accéder à vos données, les rectifier, les effacer ou les récupérer, limiter leur traitement ou vous y opposer, et retirer votre consentement à tout moment sans effet sur les traitements antérieurs. Écrivez à [e-mail à compléter]. Vous pouvez aussi saisir la CNIL ou l’autorité de contrôle de votre pays."],
+  ["Sécurité","Les données sont chiffrées en transit, les mots de passe sont hachés et l’accès est limité aux personnes qui en ont besoin."]]},
+ zh:{title:"隐私声明与 GDPR",intro:"本声明说明我们收集哪些个人数据、收集原因，以及您依据欧盟《通用数据保护条例》（GDPR，法语称 RGPD）及类似法律享有的权利。",s:[
+  ["数据控制者","[待填写公司名称、地址和注册号]。数据保护联系方式：[待填写隐私邮箱]。"],
+  ["我们收集的数据","身份与账户：名、姓、电子邮箱、国家/地区和经哈希处理的密码。个人资料：您关于工作、收入区间、家庭、住房、教育、困难和目标的回答。技术数据：保存在浏览器中的语言偏好。"],
+  ["目的与法律依据","创建和运营您的账户（履行合同，第 6(1)(b) 条）；个性化建议和助手智能体（同意，第 6(1)(a) 条）；保障服务安全（正当利益，第 6(1)(f) 条）。部分目标（如健康）可能涉及敏感数据，我们仅在您明确同意后处理（第 9(2)(a) 条）。"],
+  ["自动化建议","建议由系统自动生成，但未经人工审核和您的同意，绝不会产生对您具有法律效力或类似重大影响的决定（第 22 条）。"],
+  ["共享与跨境传输","我们不会出售您的数据。服务提供商（托管、邮件、AI 处理）按照我们的指示处理数据。向欧洲经济区以外的传输受充分性认定或标准合同条款保护。"],
+  ["保存期限","在您的账户有效期间保存。账户注销后，数据将在 30 天内删除，法律要求保留的除外。"],
+  ["您的权利","您可以访问、更正、删除或导出您的数据，限制或反对处理，并可随时撤回同意，且不影响此前的处理。请发送邮件至[隐私邮箱]。您也可以向所在国的监管机构投诉，例如法国的 CNIL。"],
+  ["安全","数据在传输过程中加密，密码经哈希处理，仅有需要的人员才能访问。"]]},
+ ar:{title:"إشعار الخصوصية واللائحة العامة لحماية البيانات (GDPR)",intro:"يشرح هذا الإشعار البيانات الشخصية التي نجمعها وسبب جمعها، والحقوق التي تمنحك إياها اللائحة العامة لحماية البيانات في الاتحاد الأوروبي (GDPR، وتُعرف بالفرنسية باسم RGPD) والقوانين المماثلة.",s:[
+  ["المسؤول عن المعالجة","[يُستكمل اسم الشركة وعنوانها ورقم تسجيلها]. جهة التواصل لحماية البيانات: [يُستكمل بريد الخصوصية]."],
+  ["البيانات التي نجمعها","الهوية والحساب: الاسم واسم العائلة والبريد الإلكتروني والبلد وكلمة مرور مُجزّأة (hashed). الملف الشخصي: إجاباتك عن العمل وشريحة الدخل والأسرة والسكن والتعليم والصعوبات والأهداف. بيانات تقنية: تفضيل اللغة المحفوظ في متصفحك."],
+  ["الغرض والأساس القانوني","إنشاء حسابك وتشغيله (تنفيذ العقد، المادة ٦(١)(ب))؛ وتخصيص الاقتراحات والوكلاء المساعدين (الموافقة، المادة ٦(١)(أ))؛ والحفاظ على أمن الخدمة (المصلحة المشروعة، المادة ٦(١)(و)). قد تكشف بعض الأهداف، مثل الصحة، عن بيانات حساسة، ولا نعالجها إلا بموافقتك الصريحة (المادة ٩(٢)(أ))."],
+  ["الاقتراحات الآلية","تُنتَج الاقتراحات آليًا، لكنها لا تؤدي أبدًا إلى قرارات ذات أثر قانوني أو أثر مماثل في أهميته عليك دون مراجعة بشرية وموافقتك (المادة ٢٢)."],
+  ["المشاركة والنقل","لا نبيع بياناتك. يتعامل معها مزوّدو الخدمات (الاستضافة والبريد ومعالجة الذكاء الاصطناعي) وفق تعليماتنا. ويُحمى نقلها خارج المنطقة الاقتصادية الأوروبية بقرارات الكفاية أو بالبنود التعاقدية القياسية."],
+  ["مدة الاحتفاظ","طوال مدة نشاط حسابك. وبعد إغلاقه تُحذف بياناتك خلال ٣٠ يومًا، باستثناء ما يُلزمنا القانون بالاحتفاظ به."],
+  ["حقوقك","يحق لك الاطلاع على بياناتك وتصحيحها وحذفها ونقلها، وتقييد معالجتها أو الاعتراض عليها، وسحب موافقتك في أي وقت دون أن يؤثر ذلك في المعالجة السابقة. راسلنا على [بريد الخصوصية]. ويمكنك أيضًا تقديم شكوى إلى سلطة الرقابة في بلدك، مثل CNIL في فرنسا."],
+  ["الأمان","تُشفَّر البيانات أثناء نقلها، وتُخزَّن كلمات المرور بعد تجزئتها، ويقتصر الوصول على الأشخاص الذين يحتاجون إليه."]]}
+}};
+
+function docLink(doc, key){
+  const a=document.createElement("a"); a.href="#"+doc+"-"+lang; a.target="_blank"; a.rel="noopener"; a.textContent=t(key);
+  a.addEventListener("click", e=>{ e.preventDefault(); e.stopPropagation(); openDoc(doc); });
+  return a;
+}
+/* each document opens in its own new tab; if the browser blocks the new tab, it opens on this page */
+function openDoc(doc){
+  const url = location.href.split("#")[0] + "#" + doc + "-" + lang;
+  let w=null; try{ w = window.open(url, "_blank"); }catch(e){}
+  if(w){ try{ w.opener=null; }catch(e){} } else { location.hash = doc + "-" + lang; }
+}
+function renderAgree(){
+  const box=$("agreeTxt"); box.textContent="";
+  const parts = t("agree").split(/(\{terms\}|\{conditions\})/);
+  for(const p of parts){
+    if(p==="{terms}") box.appendChild(docLink("terms","linkTerms"));
+    else if(p==="{conditions}") box.appendChild(docLink("conditions","linkConditions"));
+    else if(p) box.appendChild(document.createTextNode(p));
+  }
+}
+function renderFooter(){
+  const f=$("footer"); f.textContent="";
+  const nav=document.createElement("nav"); nav.className="legal-links";
+  nav.append(docLink("terms","linkTerms"), docLink("conditions","linkConditions"), docLink("privacy","linkPrivacy"));
+  const p=document.createElement("p"); p.textContent=t("footer");
+  f.append(nav,p);
+}
+let currentDoc=null;
+function parseHash(){ const m=/^#(terms|conditions|privacy)(?:-(en|fr|zh|ar))?$/.exec(location.hash); return m?{doc:m[1], lang:m[2]}:null; }
+function renderDoc(){
+  const d = LEGAL[currentDoc][lang]; const art=$("docBody"); art.textContent="";
+  const h=document.createElement("h1"); h.className="doc-title"; h.textContent=d.title;
+  let date; try{ date=new Intl.DateTimeFormat(lang,{dateStyle:"long"}).format(new Date(LEGAL_VERSION+"T12:00:00")); }catch(e){ date=LEGAL_VERSION; }
+  const up=document.createElement("p"); up.className="doc-meta"; up.textContent=t("updated",{date});
+  const dr=document.createElement("p"); dr.className="note"; dr.textContent=t("draft");
+  const intro=document.createElement("p"); intro.className="doc-intro"; intro.textContent=d.intro;
+  art.append(h,up,dr,intro);
+  d.s.forEach(([title,body],i)=>{ const h2=document.createElement("h2"); h2.textContent=(i+1)+". "+title; const p=document.createElement("p"); p.textContent=body; art.append(h2,p); });
+  document.title = d.title + " | Apacom";
+  $("docBack").textContent = t("backReg");
+  try{ const want="#"+currentDoc+"-"+lang; if(location.hash!==want) history.replaceState(null,"",want); }catch(e){}
+}
+function route(){
+  const r=parseHash();
+  if(r){
+    currentDoc=r.doc;
+    if(r.lang && r.lang!==lang){ setLang(r.lang); }
+    $("app").hidden=true; $("docView").hidden=false; renderDoc(); window.scrollTo(0,0);
+  } else if(currentDoc){
+    currentDoc=null; $("docView").hidden=true; $("app").hidden=false; document.title="Apacom | Personal Agent";
+  }
+}
+window.addEventListener("hashchange", route);
+
+$("agree").addEventListener("change", ()=>{ setErr("agreeErr"); $("agree").removeAttribute("aria-invalid"); });
+$("docBack").onclick = ()=>{ if(history.length<=1){ try{ window.close(); }catch(e){} } location.hash=""; };
 
 /* ============ boot ============ */
 buildIndex();
@@ -802,6 +1013,7 @@ let saved=null; try{ saved=localStorage.getItem("apa_lang"); }catch(e){}
 const navLang = (navigator.language||"en").slice(0,2);
 setLang(saved && T[saved] ? saved : (T[navLang] ? navLang : "en"));
 go(1);
+route();
 detectCountry().then(d=>{ if(d){ st.detected=d; if(!st.country){ st.country=d.code; } renderCountryValue(); } });
 </script>
 </body>
