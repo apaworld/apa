@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apacom — Personal Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ffffff; --ink:#15171c; --muted:#5d6472; --line:#e3e5ea; --soft:#f5f6f8;
+  --accent:#2a3fe0; --accent-ink:#ffffff; --accent-soft:#eef0fd;
+  --ok:#0f7d55; --err:#c0322b; --note:#fff8e1; --note-line:#f0d98a;
+  --font:'Figtree','IBM Plex Sans Arabic','Noto Sans SC',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --emoji:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#121318; --ink:#eceef3; --muted:#a1a7b4; --line:#2b2e37; --soft:#1b1d24;
+    --accent:#7d8cff; --accent-ink:#0d0f1a; --accent-soft:#232848;
+    --ok:#4fd1a0; --err:#ff8a80; --note:#2a2616; --note-line:#5b4f22;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121318; --ink:#eceef3; --muted:#a1a7b4; --line:#2b2e37; --soft:#1b1d24;
+  --accent:#7d8cff; --accent-ink:#0d0f1a; --accent-soft:#232848;
+  --ok:#4fd1a0; --err:#ff8a80; --note:#2a2616; --note-line:#5b4f22;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+html[lang="zh"] body{font-family:'Noto Sans SC','Figtree',system-ui,sans-serif}
+html[lang="ar"] body{font-family:'IBM Plex Sans Arabic','Figtree',system-ui,sans-serif;line-height:1.65}
+.flag{font-family:var(--emoji);font-size:1.15em;line-height:1;font-style:normal}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;max-width:1080px;margin:0 auto}
+.mark{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.mark i{width:22px;height:22px;border-radius:50%;border:3px solid var(--accent);display:inline-block;position:relative}
+.mark i::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--accent)}
+.lang{position:relative}
+.lang-btn{display:flex;align-items:center;gap:8px;background:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer}
+.lang-btn:hover{background:var(--soft)}
+.lang-menu{position:absolute;inset-inline-end:0;top:calc(100% + 6px);background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:6px;min-width:250px;white-space:nowrap;box-shadow:0 10px 30px rgba(20,24,40,.12);z-index:30;display:none}
+.lang-menu.open{display:block}
+.lang-menu button{display:flex;width:100%;align-items:center;gap:10px;padding:9px 10px;border:0;background:none;border-radius:8px;cursor:pointer;text-align:start}
+.lang-menu button:hover,.lang-menu button[aria-checked="true"]{background:var(--accent-soft)}
+.lang-menu small{color:var(--muted);margin-inline-start:auto;padding-inline-start:16px;font-size:.78rem}
+
+/* hero */
+main{max-width:560px;margin:0 auto;padding:28px 20px 60px}
+h1{font-size:clamp(1.9rem,5.2vw,2.75rem);line-height:1.08;letter-spacing:-.035em;font-weight:800;margin:20px 0 14px}
+html[lang="ar"] h1,html[lang="zh"] h1{letter-spacing:0;line-height:1.3}
+h1 .hours{display:block;font-size:1.65em;letter-spacing:-.05em;color:var(--accent);font-variant-numeric:tabular-nums}
+html[lang="ar"] h1 .hours,html[lang="zh"] h1 .hours{letter-spacing:0}
+.lead{color:var(--muted);font-size:1.06rem;margin:0 0 32px;max-width:52ch}
+
+/* stepper */
+.steps{display:flex;gap:6px;list-style:none;padding:0;margin:0 0 26px}
+.steps li{flex:1;font-size:.82rem;color:var(--muted)}
+.steps li::before{content:"";display:block;height:4px;border-radius:4px;background:var(--line);margin-bottom:7px}
+.steps li.on{color:var(--ink);font-weight:600}
+.steps li.on::before,.steps li.done::before{background:var(--accent)}
+.steps b{font-variant-numeric:tabular-nums;margin-inline-end:4px}
+
+/* form */
+h2{font-size:1.4rem;letter-spacing:-.02em;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 22px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.row{grid-template-columns:1fr}}
+.field{margin-bottom:16px;position:relative}
+label.lbl,.lbl{display:block;font-size:.88rem;font-weight:600;margin-bottom:6px}
+.inp{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--paper);transition:border-color .15s}
+.inp:hover{border-color:#c6cad3}
+.inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.inp[aria-invalid="true"]{border-color:var(--err)}
+textarea.inp{min-height:84px;resize:vertical}
+.err{color:var(--err);font-size:.85rem;margin-top:5px;min-height:0}
+.err:empty{display:none}
+.hint{color:var(--muted);font-size:.84rem;margin-top:5px}
+.pw{position:relative}
+.pw .inp{padding-right:76px}
+[dir="rtl"] .pw .inp{padding-left:76px;padding-right:14px;text-align:right}
+.pw-toggle{position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--accent);font-weight:600;font-size:.86rem;padding:6px 8px;cursor:pointer}
+.meter{display:flex;gap:4px;margin-top:8px;align-items:center}
+.meter span{height:4px;flex:1;border-radius:4px;background:var(--line)}
+.meter em{font-style:normal;font-size:.8rem;color:var(--muted);min-width:56px;text-align:end}
+.meter[data-s="1"] span:nth-child(1){background:var(--err)}
+.meter[data-s="2"] span:nth-child(-n+2){background:#d89a1c}
+.meter[data-s="3"] span{background:var(--ok)}
+
+/* country combobox */
+.cb-btn{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:start;cursor:pointer}
+.cb-btn .ph{color:var(--muted)}
+.cb-btn .chev{color:var(--muted);font-size:.8rem}
+.cb-pop{position:absolute;inset-inline:0;top:calc(100% + 4px);background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 40px rgba(20,24,40,.14);z-index:20;display:none;overflow:hidden}
+.cb-pop.open{display:block}
+.cb-pop .inp{border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none}
+.cb-list{max-height:290px;overflow-y:auto;margin:0;padding:4px;list-style:none}
+.cb-list .grp{font-size:.76rem;color:var(--muted);padding:8px 10px 4px}
+.cb-list [role="option"]{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 10px;border-radius:8px;cursor:pointer}
+.cb-list [role="option"][aria-selected="true"]{font-weight:600}
+.cb-list [role="option"].act{background:var(--accent-soft)}
+.cb-list .code{color:var(--muted);font-size:.78rem;margin-inline-start:6px}
+.cb-empty{padding:14px;color:var(--muted);font-size:.9rem}
+
+/* choice groups */
+fieldset{border:0;padding:0;margin:0 0 20px;min-width:0}
+legend{font-size:.88rem;font-weight:600;margin-bottom:8px;padding:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chip span{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:.92rem;transition:background .12s,border-color .12s}
+.chip input:hover+span{border-color:#b9bec9}
+.chip input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+
+/* buttons */
+.actions{display:flex;gap:10px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.btn{border:0;border-radius:10px;padding:13px 22px;font-weight:600;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn:hover{filter:brightness(1.07)}
+.btn[disabled]{opacity:.55;cursor:default;filter:none}
+.btn.full{width:100%}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+.link{background:none;border:0;color:var(--accent);font-weight:600;cursor:pointer;padding:6px 0}
+.link[disabled]{color:var(--muted);cursor:default}
+
+.note{background:var(--note);border:1px solid var(--note-line);border-radius:10px;padding:12px 14px;font-size:.92rem;margin:0 0 18px}
+.note b{font-variant-numeric:tabular-nums;letter-spacing:.12em;font-size:1.05rem}
+.code-inp{font-size:1.5rem;letter-spacing:.5em;text-align:center;font-variant-numeric:tabular-nums}
+.ok{color:var(--ok);font-weight:600}
+
+/* done */
+.summary{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 22px}
+.summary dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 16px;margin:0;font-size:.92rem}
+.summary dt{color:var(--muted)}
+.summary dd{margin:0}
+.agents{list-style:none;padding:0;margin:0 0 22px}
+.agents li{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;padding:14px 0;border-top:1px solid var(--line)}
+.agents li:last-child{border-bottom:1px solid var(--line)}
+.agents .dot{width:10px;height:10px;border-radius:50%;background:var(--ok);margin-top:7px;box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 18%,transparent)}
+.agents h3{margin:0;font-size:1rem}
+.agents p{margin:0;color:var(--muted);font-size:.92rem;grid-column:2}
+.agents ul{grid-column:2;margin:6px 0 0;padding-inline-start:18px;font-size:.9rem}
+.agents .rh{grid-column:2;font-size:.8rem;color:var(--muted);margin-top:8px;font-weight:600}
+.status{font-size:.86rem;color:var(--muted);margin:0 0 18px}
+footer{max-width:560px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:.8rem}
+.agree{display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:.93rem}
+.agree input{width:18px;height:18px;margin:2px 0 0;flex:none;accent-color:var(--accent);cursor:pointer}
+.agree input[aria-invalid="true"]{outline:2px solid var(--err);outline-offset:2px}
+.agree a,.legal-links a{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.legal-links{display:flex;flex-wrap:wrap;gap:6px 20px;margin-bottom:8px}
+.legal-links a{font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:18px}
+.doc{max-width:66ch}
+.doc .doc-title{font-size:clamp(1.7rem,4.5vw,2.3rem);letter-spacing:-.03em;line-height:1.15;margin:16px 0 6px}
+html[lang="ar"] .doc .doc-title,html[lang="zh"] .doc .doc-title{letter-spacing:0;line-height:1.4}
+.doc-meta{color:var(--muted);font-size:.88rem;margin:0 0 18px}
+.doc-intro{font-size:1.04rem;margin:0 0 8px}
+.doc h2{font-size:1.06rem;margin:26px 0 6px;letter-spacing:0}
+.doc p{margin:0 0 6px;max-width:66ch}
+#docBack{margin-top:30px}
+/* clickable avatar */
+.avatar-edit{position:relative;flex:none}
+.avatar-pick{position:relative;display:block;border-radius:50%;cursor:pointer}
+.avatar-pick:focus-within{outline:2px solid var(--accent);outline-offset:3px}
+.avatar-cam{position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;background:rgba(15,18,30,.55);color:#fff;opacity:0;transition:opacity .15s}
+.avatar-pick:hover .avatar-cam,.avatar-pick:focus-within .avatar-cam{opacity:1}
+@media (hover:none){.avatar-cam{opacity:0}}
+.avatar-del{position:absolute;inset-inline-end:-4px;top:-4px;width:26px;height:26px;border-radius:50%;border:2px solid var(--paper);background:var(--ink);color:var(--paper);display:grid;place-items:center;cursor:pointer;padding:0}
+.avatar-del:hover{background:var(--err)}
+/* top bar user */
+body.wide footer{max-width:880px}
+.top-r{display:flex;align-items:center;gap:10px}
+.top-user{display:flex;align-items:center;gap:8px}
+.avatar-btn{display:flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;padding:4px 6px;border-radius:999px;font-weight:600}
+.avatar-btn:hover{background:var(--soft)}
+@media (max-width:560px){#topName{display:none}}
+.btn.sm{padding:7px 14px;font-size:.88rem;border-radius:999px}
+.avatar{display:inline-grid;place-items:center;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:700;overflow:hidden;flex:none}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar.sm{width:30px;height:30px;font-size:.78rem}
+.avatar.lg{width:64px;height:64px;font-size:1.35rem}
+.avatar.xl{width:96px;height:96px;font-size:1.9rem}
+.switch{margin:18px 0 0;color:var(--muted);font-size:.93rem;text-align:center}
+.flash{background:var(--accent-soft);border-radius:10px;padding:12px 14px;margin:0 0 18px;font-weight:600}
+
+/* cabinet */
+#cab{max-width:880px;margin:0 auto;padding:24px 20px 60px}
+.cab-head{display:flex;align-items:center;gap:18px;margin:8px 0 22px}
+.cab-hello{font-size:clamp(1.6rem,4vw,2.2rem);letter-spacing:-.03em;line-height:1.15;margin:0 0 4px}
+html[lang="ar"] .cab-hello,html[lang="zh"] .cab-hello{letter-spacing:0}
+.cab-meta{margin:0;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.93rem}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:26px;overflow-x:auto;scrollbar-width:none}
+.tabs button{background:none;border:0;padding:12px 14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs button:hover{color:var(--ink)}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.pill{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 16px;font-weight:600;cursor:pointer}
+.pill[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.pill small{font-weight:600;font-size:.74rem;border-radius:999px;padding:1px 8px}
+.pill .count{background:var(--accent);color:var(--accent-ink)}
+.pill .soon{background:var(--soft);color:var(--muted)}
+.domain h2{font-size:1.5rem;margin:0 0 6px}
+.sec-h{font-size:.95rem;margin:26px 0 8px;color:var(--muted);font-weight:600}
+.ask{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;margin-bottom:18px}
+.ask .err{grid-column:1/-1;margin:0}
+@media (max-width:560px){.ask{grid-template-columns:1fr}}
+.answer{border-inline-start:3px solid var(--accent);padding:4px 0 4px 18px;margin:0 0 22px}
+[dir="rtl"] .answer{padding:4px 18px 4px 0}
+.answer-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px;align-items:baseline}
+.answer h4{margin:0;font-size:1.06rem}
+.answer time{color:var(--muted);font-size:.8rem}
+.answer p{margin:6px 0}
+.answer .asked{color:var(--muted);font-style:italic;font-size:.92rem}
+.answer ol,.answer ul{margin:4px 0 8px;padding-inline-start:20px}
+.answer .rh{font-size:.8rem;color:var(--muted);font-weight:600;margin-top:10px}
+.muted-link{color:var(--muted);font-weight:500;font-size:.85rem}
+.facts{display:grid;grid-template-columns:minmax(140px,max-content) 1fr;gap:10px 24px;margin:0 0 24px}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0}
+.facts dd.muted{color:var(--muted)}
+@media (max-width:520px){.facts{grid-template-columns:1fr;gap:2px}.facts dd{margin-bottom:10px}}
+.sec{border-top:1px solid var(--line);padding:24px 0;max-width:640px}
+.sec:first-child{border-top:0;padding-top:0}
+.sec h2{font-size:1.1rem;margin:0 0 10px}
+.photo-row{display:flex;gap:20px;align-items:center}
+.file-btn{cursor:pointer;display:inline-block}
+.file-btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.link.danger{color:var(--err)}
+.okmsg{color:var(--ok);font-weight:600;font-size:.9rem}
+.okmsg:empty{display:none}
+.verify-box{margin-top:18px;padding-top:18px;border-top:1px dashed var(--line)}
+.danger-zone h2{color:var(--err)}
+.danger-btn{background:var(--err);color:#fff}
+.flash-wrap{max-width:880px;margin:0 auto;padding:0 20px}
+.tabs .count{display:inline-block;margin-inline-start:6px;background:var(--accent);color:var(--accent-ink);border-radius:999px;font-size:.72rem;padding:1px 7px;vertical-align:1px}
+.tab-h{font-size:1.5rem;margin:0 0 6px}
+.pending-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;background:var(--accent-soft);border-radius:10px;padding:10px 14px;margin:0 0 20px;font-weight:600}
+.brief{margin:6px 0 20px}
+.brief-greet{font-size:1.15rem;margin:0 0 16px;max-width:60ch}
+.brief-item{padding:14px 0;border-top:1px solid var(--line)}
+.brief-item h3{font-size:1.04rem;margin:6px 0 4px}
+.brief-item p{margin:0;color:var(--muted);max-width:66ch}
+.area-tag{display:inline-block;font-size:.76rem;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:2px 10px}
+.old-brief{border-top:1px solid var(--line);padding:10px 0}
+.old-brief summary{cursor:pointer;font-weight:600}
+.proposal{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 14px;max-width:680px}
+.proposal-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;color:var(--muted);font-size:.84rem}
+.proposal h3{margin:10px 0 4px;font-size:1.06rem}
+.proposal p{margin:0 0 4px;color:var(--muted)}
+.decided{list-style:none;padding:0;margin:0;max-width:680px}
+.decided li{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding:10px 0;border-top:1px solid var(--line);font-size:.93rem}
+.decided .d-title{flex:1 1 240px}
+.decided time{color:var(--muted);font-size:.82rem}
+.status-approved{color:var(--ok);font-weight:600}
+.status-declined{color:var(--muted);font-weight:600}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="mark"><i aria-hidden="true"></i><span>Apacom</span></div>
+  <div class="top-r">
+  <div class="top-user" id="topUser" hidden>
+    <button type="button" class="avatar-btn" id="topAvatarBtn"><span class="avatar sm" id="topAvatar"></span><span id="topName"></span></button>
+    <button type="button" class="btn ghost sm" id="logoutBtn" data-t="logout"></button>
+  </div>
+  <div class="lang">
+    <button class="lang-btn" id="langBtn" aria-haspopup="menu" aria-expanded="false">
+      <span class="flag" id="langFlag"></span><span id="langName"></span><span aria-hidden="true">▾</span>
+    </button>
+    <div class="lang-menu" id="langMenu" role="menu"></div>
+  </div>
+  </div>
+</header>
+<div class="flash-wrap"><p class="flash" id="flash" role="status" hidden></p></div>
+
+<main id="app">
+  <div id="hero">
+    <h1 id="heroTitle"></h1>
+    <p class="lead" id="heroSub"></p>
+  </div>
+
+  <ol class="steps" id="steps" aria-label="Progress"></ol>
+
+  <!-- SIGN IN -->
+  <section id="login" hidden>
+    <h2 data-t="signInTitle"></h2>
+    <form id="fL" novalidate>
+      <div class="field"><label class="lbl" for="liEm" data-t="email"></label><input class="inp" id="liEm" type="email" autocomplete="email" dir="ltr"></div>
+      <div class="field"><label class="lbl" for="liPw" data-t="password"></label><input class="inp" id="liPw" type="password" autocomplete="current-password" dir="ltr"><div class="err" id="liErr"></div></div>
+      <button class="btn full" id="liBtn" type="submit" data-t="signInBtn"></button>
+    </form>
+    <p class="switch"><button type="button" class="link" id="toReset" data-t="forgotLink"></button></p>
+    <p class="switch"><span data-t="noAccount"></span> <button type="button" class="link" id="toRegister" data-t="createLink"></button></p>
+  </section>
+
+  <!-- FORGOT PASSWORD -->
+  <section id="reset" hidden>
+    <h2 data-t="resetTitle"></h2>
+    <form id="fR1" novalidate>
+      <p class="sub" data-t="resetSub"></p>
+      <div class="field"><label class="lbl" for="rEm" data-t="email"></label><input class="inp" id="rEm" type="email" autocomplete="email" dir="ltr"><div class="err" id="rEmErr"></div></div>
+      <button class="btn full" type="submit" data-t="sendResetBtn"></button>
+    </form>
+    <form id="fR2" novalidate hidden>
+      <p class="sub" id="rSent"></p>
+      <p class="note" id="rDemo" role="status" hidden></p>
+      <div class="field"><label class="lbl" for="rCode" data-t="codeLabel"></label><input class="inp code-inp" id="rCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr"></div>
+      <div class="field"><label class="lbl" for="rPw" data-t="newPw"></label><input class="inp" id="rPw" type="password" autocomplete="new-password" dir="ltr"><div class="hint" data-t="pwHint"></div></div>
+      <div class="err" id="rErr"></div>
+      <button class="btn full" type="submit" data-t="setNewPw"></button>
+    </form>
+    <p class="switch"><button type="button" class="link" id="resetBack" data-t="backToLogin"></button></p>
+  </section>
+
+  <!-- STEP 1: account -->
+  <section id="s1">
+    <form id="f1" novalidate>
+      <div class="row">
+        <div class="field">
+          <label class="lbl" for="fn" data-t="firstName"></label>
+          <input class="inp" id="fn" autocomplete="given-name" required>
+          <div class="err" id="fnErr"></div>
+        </div>
+        <div class="field">
+          <label class="lbl" for="ln" data-t="lastName"></label>
+          <input class="inp" id="ln" autocomplete="family-name" required>
+          <div class="err" id="lnErr"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl" for="em" data-t="email"></label>
+        <input class="inp" id="em" type="email" autocomplete="email" inputmode="email" dir="ltr" required>
+        <div class="err" id="emErr"></div>
+      </div>
+      <div class="field">
+        <label class="lbl" for="pw" data-t="password"></label>
+        <div class="pw">
+          <input class="inp" id="pw" type="password" autocomplete="new-password" dir="ltr" required>
+          <button type="button" class="pw-toggle" id="pwToggle"></button>
+        </div>
+        <div class="meter" id="meter" data-s="0" aria-live="polite"><span></span><span></span><span></span><em id="meterTxt"></em></div>
+        <div class="hint" data-t="pwHint"></div>
+        <div class="err" id="pwErr"></div>
+      </div>
+      <div class="field" id="cb">
+        <span class="lbl" id="cbLbl" data-t="country"></span>
+        <button type="button" class="inp cb-btn" id="cbBtn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="cbLbl cbBtn">
+          <span id="cbVal" class="ph"></span><span class="chev" aria-hidden="true">▾</span>
+        </button>
+        <div class="cb-pop" id="cbPop">
+          <input class="inp" id="cbSearch" role="combobox" aria-controls="cbList" aria-expanded="true" aria-autocomplete="list" autocomplete="off">
+          <ul class="cb-list" id="cbList" role="listbox" aria-labelledby="cbLbl"></ul>
+        </div>
+        <div class="hint" id="cbHint"></div>
+        <div class="err" id="cbErr"></div>
+      </div>
+      <div class="field">
+        <label class="agree"><input type="checkbox" id="agree"><span id="agreeTxt"></span></label>
+        <div class="err" id="agreeErr"></div>
+      </div>
+      <button class="btn full" id="createBtn" type="submit" data-t="createAccount"></button>
+    </form>
+    <p class="switch"><span data-t="haveAccount"></span> <button type="button" class="link" id="toLogin" data-t="signInLink"></button></p>
+  </section>
+
+  <!-- STEP 2: verify -->
+  <section id="s2" hidden>
+    <h2 data-t="verifyTitle"></h2>
+    <p class="sub" id="verifySent"></p>
+    <p class="note" id="demoCode" role="status"></p>
+    <form id="f2" novalidate>
+      <div class="field">
+        <label class="lbl" for="code" data-t="codeLabel"></label>
+        <input class="inp code-inp" id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr">
+        <div class="err" id="codeErr"></div>
+      </div>
+      <button class="btn full" type="submit" data-t="verify"></button>
+      <div class="actions" style="justify-content:space-between">
+        <button type="button" class="link" id="resendBtn"></button>
+        <button type="button" class="link" id="changeEmail" data-t="changeEmail"></button>
+      </div>
+    </form>
+  </section>
+
+  <!-- STEP 3: situation -->
+  <section id="s3" hidden>
+    <p class="ok" id="verifiedMsg" data-t="verified"></p>
+    <h2 data-t="sitTitle"></h2>
+    <p class="sub" data-t="sitSub"></p>
+    <form id="f3" novalidate>
+      <div id="sitGroups"></div>
+      <div class="field">
+        <label class="lbl" for="challenge" data-t="challenge"></label>
+        <textarea class="inp" id="challenge" data-tph="challengePh"></textarea>
+      </div>
+      <div class="actions"><button class="btn ghost" type="button" id="cancelEdit" data-t="cancel" hidden></button><button class="btn" type="submit" data-t="next"></button></div>
+    </form>
+  </section>
+
+  <!-- STEP 4: goals -->
+  <section id="s4" hidden>
+    <h2 data-t="goalsTitle"></h2>
+    <p class="sub" data-t="goalsSub"></p>
+    <form id="f4" novalidate>
+      <div id="goalGroups"></div>
+      <div class="field">
+        <label class="lbl" for="dream" data-t="dream"></label>
+        <textarea class="inp" id="dream" data-tph="dreamPh"></textarea>
+      </div>
+      <div id="hzGroup"></div>
+      <div class="err" id="goalErr"></div>
+      <div class="actions">
+        <button class="btn ghost" type="button" id="back4" data-t="back"></button>
+        <button class="btn" type="submit" data-t="finish"></button>
+      </div>
+    </form>
+  </section>
+
+</main>
+
+<!-- PERSONAL CABINET -->
+<main id="cab" hidden>
+  <div class="cab-head">
+    <div class="avatar-edit">
+      <label class="avatar-pick" id="headPhotoPick">
+        <input type="file" id="photoIn2" accept="image/*" class="sr">
+        <span class="avatar lg" id="cabAvatar" aria-hidden="true"></span>
+        <span class="avatar-cam" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+        <span class="sr" id="headPhotoLbl"></span>
+      </label>
+      <button type="button" class="avatar-del" id="headPhotoDel" hidden><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span class="sr" id="headPhotoDelLbl"></span></button>
+    </div>
+    <div><h1 class="cab-hello" id="cabHello"></h1><p class="cab-meta" id="cabMeta"></p><p class="err" id="headPhotoErr"></p></div>
+  </div>
+  <div class="tabs" role="tablist" id="cabTabs"></div>
+
+  <section id="tab-today" role="tabpanel" aria-labelledby="tabbtn-today"></section>
+  <section id="tab-agent" role="tabpanel" aria-labelledby="tabbtn-agent" hidden></section>
+  <section id="tab-inbox" role="tabpanel" aria-labelledby="tabbtn-inbox" hidden></section>
+  <section id="tab-profile" role="tabpanel" aria-labelledby="tabbtn-profile" hidden></section>
+
+  <section id="tab-account" role="tabpanel" aria-labelledby="tabbtn-account" hidden>
+    <div class="sec">
+      <h2 data-t="photo"></h2>
+      <div class="photo-row">
+        <span class="avatar xl" id="accAvatar" aria-hidden="true"></span>
+        <div>
+          <div class="actions" style="margin:0">
+            <label class="btn ghost file-btn"><input type="file" id="photoIn" accept="image/*" class="sr"><span id="photoBtnTxt"></span></label>
+            <button type="button" class="link danger" id="photoRemove" data-t="photoRemove"></button>
+          </div>
+          <p class="hint" data-t="photoHint"></p><p class="err" id="photoErr"></p><p class="okmsg" id="photoOk" role="status"></p>
+        </div>
+      </div>
+    </div>
+    <form class="sec" id="fName" novalidate>
+      <h2 data-t="nameTitle"></h2>
+      <div class="row">
+        <div class="field"><label class="lbl" for="fn2" data-t="firstName"></label><input class="inp" id="fn2" autocomplete="given-name"></div>
+        <div class="field"><label class="lbl" for="ln2" data-t="lastName"></label><input class="inp" id="ln2" autocomplete="family-name"></div>
+      </div>
+      <p class="err" id="nameErr"></p>
+      <div class="actions"><button class="btn" type="submit" data-t="save"></button><span class="okmsg" id="nameOk" role="status"></span></div>
+    </form>
+    <form class="sec" id="fEmail" novalidate>
+      <h2 data-t="emailTitle"></h2>
+      <p class="sub" id="curEmail"></p>
+      <div class="row">
+        <div class="field"><label class="lbl" for="ne" data-t="newEmail"></label><input class="inp" id="ne" type="email" autocomplete="email" dir="ltr"></div>
+        <div class="field"><label class="lbl" for="nePw" data-t="currentPw"></label><input class="inp" id="nePw" type="password" autocomplete="current-password" dir="ltr"></div>
+      </div>
+      <p class="err" id="neErr"></p>
+      <div class="actions"><button class="btn" type="submit" data-t="sendCodeBtn"></button><span class="okmsg" id="neOk" role="status"></span></div>
+      <div id="neVerify" class="verify-box" hidden>
+        <p class="sub" id="neSent"></p>
+        <p class="note" id="neDemo" role="status"></p>
+        <div class="field"><label class="lbl" for="neCode" data-t="codeLabel"></label><input class="inp code-inp" id="neCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr"><div class="err" id="neCodeErr"></div></div>
+        <div class="actions"><button class="btn" type="button" id="neVerifyBtn" data-t="verify"></button><button class="btn ghost" type="button" id="neCancel" data-t="cancel"></button></div>
+      </div>
+    </form>
+    <form class="sec" id="fPw" novalidate>
+      <h2 data-t="pwTitle"></h2>
+      <div class="row">
+        <div class="field"><label class="lbl" for="cpw" data-t="currentPw"></label><input class="inp" id="cpw" type="password" autocomplete="current-password" dir="ltr"></div>
+        <div class="field"><label class="lbl" for="npw" data-t="newPw"></label><input class="inp" id="npw" type="password" autocomplete="new-password" dir="ltr"></div>
+      </div>
+      <p class="hint" data-t="pwHint"></p><p class="err" id="npwErr"></p>
+      <div class="actions"><button class="btn" type="submit" data-t="save"></button><span class="okmsg" id="pwOk" role="status"></span></div>
+    </form>
+    <div class="sec">
+      <h2 data-t="checkinTitle"></h2>
+      <div id="ciGroup"></div><span class="okmsg" id="ciOk" role="status"></span>
+    </div>
+  </section>
+
+  <section id="tab-privacy" role="tabpanel" aria-labelledby="tabbtn-privacy" hidden>
+    <div class="sec">
+      <h2 data-t="consentTitle"></h2>
+      <p class="sub" id="consentTxt"></p>
+      <nav class="legal-links" id="consentLinks"></nav>
+    </div>
+    <div class="sec">
+      <h2 data-t="exportTitle"></h2>
+      <p class="sub" data-t="exportSub"></p>
+      <button class="btn ghost" type="button" id="exportBtn" data-t="exportBtn"></button>
+      <p class="err" id="exportErr"></p>
+    </div>
+    <div class="sec danger-zone">
+      <h2 data-t="deleteTitle"></h2>
+      <p class="sub" data-t="deleteSub"></p>
+      <button class="btn danger-btn" type="button" id="delStart" data-t="deleteBtn"></button>
+      <div id="delBlock" hidden>
+        <div class="field" style="max-width:320px"><label class="lbl" for="delPw" data-t="deleteConfirm"></label><input class="inp" id="delPw" type="password" autocomplete="current-password" dir="ltr"><div class="err" id="delErr"></div></div>
+        <div class="actions"><button class="btn danger-btn" type="button" id="delFinal" data-t="deleteFinal"></button><button class="btn ghost" type="button" id="delCancel" data-t="cancel"></button></div>
+      </div>
+    </div>
+  </section>
+</main>
+<main id="docView" hidden>
+  <article id="docBody" class="doc"></article>
+  <button class="btn ghost" id="docBack" type="button"></button>
+</main>
+<footer id="footer"></footer>
+
+<script>
+"use strict";
+/* ============ i18n ============ */
+const LANGS = [
+  {code:"en", flag:"GB", native:"English", sub:"English"},
+  {code:"fr", flag:"FR", native:"Français", sub:"French"},
+  {code:"zh", flag:"CN", native:"中文（普通话）", sub:"Mandarin"},
+  {code:"ar", flag:"SA", native:"العربية", sub:"Arabic (MSA)", rtl:true}
+];
+const T = {
+en:{heroHours:"8,760 hours a year.",heroTitle:"Your agent works every one of them.",heroSub:"Tell it who you are and where you want to go. It searches for solutions worldwide and starts small helper agents for each task.",steps:["Account","Verify","Situation","Goals"],
+firstName:"First name",lastName:"Surname",email:"Email",password:"Password",show:"Show",hide:"Hide",pwHint:"At least 8 characters, including a letter and a number.",pw1:"Weak",pw2:"Fair",pw3:"Strong",
+country:"Country",countrySearch:"Search by name or code, e.g. USA, UK",countryPick:"Choose your country",suggested:"Suggested for you",allCountries:"All countries",detectedIp:"Detected from your connection. Change it if it's wrong.",detectedDevice:"Guessed from your device settings. Change it if it's wrong.",noMatch:"No country matches “{q}”.",
+createAccount:"Create account",checking:"Checking…",errRequired:"Fill in this field.",errEmail:"Enter an email like name@example.com.",errTaken:"This email already has an account. Each email can register only once.",errPw:"Use at least 8 characters with a letter and a number.",errCountry:"Choose a country.",
+verifyTitle:"Check your inbox",verifySent:"We sent a 6-digit code to {email}.",demoCode:"Demo mode: no email is actually sent. Your code is {code}",codeLabel:"Verification code",verify:"Verify email",resend:"Send a new code",resendIn:"New code available in {s}s",errCode:"That code doesn't match. {n} tries left.",errExpired:"This code expired. Send a new one.",errLocked:"Too many tries. Send a new code.",changeEmail:"Change email",verified:"Email verified.",
+sitTitle:"Where you are now",sitSub:"This helps your agent understand your starting point. Skip anything you'd rather not share.",
+employment:"Work",employed:"Employed",self:"Self-employed",student:"Student",seeking:"Looking for work",retired:"Retired",caregiver:"Caring for family",
+incomeQ:"Money each month",hard:"Hard to cover basics",basic:"Covers the basics",comfortable:"Comfortable",saving:"Comfortable and saving",na:"Prefer not to say",
+household:"Who you live with",alone:"Alone",withPartner:"With a partner",kids:"With children",relatives:"With parents or relatives",shared:"With roommates",
+housing:"Home",own:"I own",rent:"I rent",familyHome:"Family home",unstable:"No stable place",
+education:"Education",secondary:"Secondary school",vocational:"Vocational training",bachelor:"Bachelor's degree",master:"Master's or higher",
+challenge:"What's hardest right now?",challengePh:"For example: my rent went up and I can't find better-paid work.",
+goalsTitle:"Where you want to go",goalsSub:"Pick as many as you like. Each goal gets its own helper agent.",social:"Social goals",economic:"Economic goals",
+g_friends:"Make new friends",g_partner:"Find a partner",g_family:"More time with family",g_community:"Join a community",g_health:"Feel healthier",g_language:"Learn a language",g_abroad:"Move abroad",
+g_job:"Find a job",g_income:"Earn more",g_business:"Start a business",g_save:"Build savings",g_debt:"Pay off debt",g_home:"Buy a home",g_invest:"Start investing",g_skills:"Learn a new skill",
+dream:"In one sentence, what would make you happier this year?",dreamPh:"For example: a stable job in Canada and free evenings for my kids.",horizon:"When",m3:"Next 3 months",y1:"This year",y3:"In 3+ years",
+back:"Back",next:"Continue",finish:"Save my profile",errGoal:"Choose at least one goal.",
+doneTitle:"Your agent is ready, {name}.",doneSub:"These are the helper agents it would start for you.",planBtn:"Build my first plan with Claude",planning:"Building your plan…",planErr:"The plan couldn't be built right now. Try again in a minute.",startOver:"Register another person",
+savedDb:"Your profile is saved privately to your account.",savedLocal:"Your profile is saved in this browser only.",savedMemory:"Demo mode: your profile is kept until you close this page.",
+sumName:"Name",sumEmail:"Email",sumCountry:"Country",sumSituation:"Situation",sumGoals:"Goals",firstSteps:"First steps",resources:"Where to look",
+footer:"Demo prototype. Real email delivery, IP lookup and 24/7 follow-up need a server."},
+
+fr:{heroHours:"8 760 heures par an.",heroTitle:"Votre agent travaille chacune d’entre elles.",heroSub:"Dites-lui qui vous êtes et où vous voulez aller. Il cherche des solutions dans le monde entier et lance de petits agents pour chaque tâche.",steps:["Compte","Vérification","Situation","Objectifs"],
+firstName:"Prénom",lastName:"Nom",email:"E-mail",password:"Mot de passe",show:"Afficher",hide:"Masquer",pwHint:"Au moins 8 caractères, dont une lettre et un chiffre.",pw1:"Faible",pw2:"Moyen",pw3:"Fort",
+country:"Pays",countrySearch:"Rechercher par nom ou code, ex. USA, UK",countryPick:"Choisissez votre pays",suggested:"Suggéré pour vous",allCountries:"Tous les pays",detectedIp:"Détecté à partir de votre connexion. Modifiez-le s’il est faux.",detectedDevice:"Déduit des réglages de votre appareil. Modifiez-le s’il est faux.",noMatch:"Aucun pays ne correspond à « {q} ».",
+createAccount:"Créer mon compte",checking:"Vérification…",errRequired:"Remplissez ce champ.",errEmail:"Saisissez un e-mail comme nom@exemple.com.",errTaken:"Cet e-mail a déjà un compte. Chaque e-mail ne peut s’inscrire qu’une seule fois.",errPw:"Utilisez au moins 8 caractères avec une lettre et un chiffre.",errCountry:"Choisissez un pays.",
+verifyTitle:"Consultez votre boîte mail",verifySent:"Nous avons envoyé un code à 6 chiffres à {email}.",demoCode:"Mode démo : aucun e-mail n’est réellement envoyé. Votre code est {code}",codeLabel:"Code de vérification",verify:"Vérifier l’e-mail",resend:"Envoyer un nouveau code",resendIn:"Nouveau code disponible dans {s} s",errCode:"Ce code ne correspond pas. Encore {n} essai(s).",errExpired:"Ce code a expiré. Demandez-en un nouveau.",errLocked:"Trop d’essais. Demandez un nouveau code.",changeEmail:"Modifier l’e-mail",verified:"E-mail vérifié.",
+sitTitle:"Où vous en êtes",sitSub:"Cela aide votre agent à comprendre votre point de départ. Passez ce que vous préférez ne pas partager.",
+employment:"Travail",employed:"Salarié(e)",self:"Indépendant(e)",student:"Étudiant(e)",seeking:"En recherche d’emploi",retired:"Retraité(e)",caregiver:"Aidant(e) familial(e)",
+incomeQ:"Argent chaque mois",hard:"Difficile de couvrir l’essentiel",basic:"Couvre l’essentiel",comfortable:"Confortable",saving:"Confortable, j’épargne",na:"Je préfère ne pas répondre",
+household:"Avec qui vous vivez",alone:"Seul(e)",withPartner:"En couple",kids:"Avec des enfants",relatives:"Avec parents ou proches",shared:"En colocation",
+housing:"Logement",own:"Propriétaire",rent:"Locataire",familyHome:"Chez la famille",unstable:"Sans logement stable",
+education:"Études",secondary:"Secondaire",vocational:"Formation professionnelle",bachelor:"Licence",master:"Master ou plus",
+challenge:"Qu’est-ce qui est le plus difficile en ce moment ?",challengePh:"Par exemple : mon loyer a augmenté et je ne trouve pas de travail mieux payé.",
+goalsTitle:"Où vous voulez aller",goalsSub:"Choisissez-en autant que vous voulez. Chaque objectif a son propre agent.",social:"Objectifs sociaux",economic:"Objectifs économiques",
+g_friends:"Me faire de nouveaux amis",g_partner:"Trouver un(e) partenaire",g_family:"Plus de temps en famille",g_community:"Rejoindre une communauté",g_health:"Être en meilleure santé",g_language:"Apprendre une langue",g_abroad:"Partir à l’étranger",
+g_job:"Trouver un emploi",g_income:"Gagner plus",g_business:"Créer une entreprise",g_save:"Épargner",g_debt:"Rembourser mes dettes",g_home:"Acheter un logement",g_invest:"Commencer à investir",g_skills:"Apprendre une compétence",
+dream:"En une phrase, qu’est-ce qui vous rendrait plus heureux(se) cette année ?",dreamPh:"Par exemple : un emploi stable au Canada et mes soirées libres pour mes enfants.",horizon:"Quand",m3:"Dans les 3 mois",y1:"Cette année",y3:"Dans 3 ans ou plus",
+back:"Retour",next:"Continuer",finish:"Enregistrer mon profil",errGoal:"Choisissez au moins un objectif.",
+doneTitle:"Votre agent est prêt, {name}.",doneSub:"Voici les agents qu’il lancerait pour vous.",planBtn:"Créer mon premier plan avec Claude",planning:"Création de votre plan…",planErr:"Impossible de créer le plan pour le moment. Réessayez dans une minute.",startOver:"Inscrire une autre personne",
+savedDb:"Votre profil est enregistré de façon privée sur votre compte.",savedLocal:"Votre profil est enregistré dans ce navigateur uniquement.",savedMemory:"Mode démo : votre profil est conservé jusqu’à la fermeture de la page.",
+sumName:"Nom",sumEmail:"E-mail",sumCountry:"Pays",sumSituation:"Situation",sumGoals:"Objectifs",firstSteps:"Premières étapes",resources:"Où chercher",
+footer:"Prototype de démonstration. L’envoi réel d’e-mails, la localisation par IP et le suivi 24 h/24 nécessitent un serveur."},
+
+zh:{heroHours:"一年 8760 小时。",heroTitle:"您的智能体每一小时都在为您工作。",heroSub:"告诉它您是谁、想去哪里。它会在全球范围内寻找解决方案，并为每项任务启动小型助手智能体。",steps:["账户","验证","现状","目标"],
+firstName:"名",lastName:"姓",email:"电子邮箱",password:"密码",show:"显示",hide:"隐藏",pwHint:"至少 8 个字符，需包含字母和数字。",pw1:"弱",pw2:"中",pw3:"强",
+country:"国家/地区",countrySearch:"按名称或代码搜索，例如 USA、UK",countryPick:"选择您的国家/地区",suggested:"为您推荐",allCountries:"所有国家/地区",detectedIp:"根据您的网络连接检测，如有误请更改。",detectedDevice:"根据您的设备设置推测，如有误请更改。",noMatch:"没有与“{q}”匹配的国家/地区。",
+createAccount:"创建账户",checking:"正在检查…",errRequired:"请填写此项。",errEmail:"请输入有效邮箱，例如 name@example.com。",errTaken:"此邮箱已注册。每个邮箱只能注册一次。",errPw:"请使用至少 8 个字符，并包含字母和数字。",errCountry:"请选择国家/地区。",
+verifyTitle:"请查收邮件",verifySent:"我们已向 {email} 发送 6 位验证码。",demoCode:"演示模式：不会真正发送邮件。您的验证码是 {code}",codeLabel:"验证码",verify:"验证邮箱",resend:"发送新验证码",resendIn:"{s} 秒后可重新发送",errCode:"验证码不正确，还剩 {n} 次机会。",errExpired:"验证码已过期，请重新发送。",errLocked:"尝试次数过多，请重新发送验证码。",changeEmail:"更换邮箱",verified:"邮箱已验证。",
+sitTitle:"您的现状",sitSub:"这能帮助智能体了解您的起点。不想分享的内容可以跳过。",
+employment:"工作",employed:"受雇",self:"自雇",student:"学生",seeking:"正在找工作",retired:"已退休",caregiver:"照顾家人",
+incomeQ:"每月收入",hard:"难以维持基本开支",basic:"能维持基本开支",comfortable:"比较宽裕",saving:"宽裕且有储蓄",na:"不便透露",
+household:"与谁同住",alone:"独居",withPartner:"与伴侣",kids:"与孩子",relatives:"与父母或亲戚",shared:"与室友",
+housing:"住房",own:"自有住房",rent:"租房",familyHome:"住在家人家",unstable:"没有稳定住所",
+education:"教育程度",secondary:"中学",vocational:"职业培训",bachelor:"本科",master:"硕士及以上",
+challenge:"目前最困难的是什么？",challengePh:"例如：房租上涨了，我找不到薪水更高的工作。",
+goalsTitle:"您想去哪里",goalsSub:"可多选。每个目标都有专属的助手智能体。",social:"社会目标",economic:"经济目标",
+g_friends:"结交新朋友",g_partner:"寻找伴侣",g_family:"多陪家人",g_community:"加入社群",g_health:"更加健康",g_language:"学习一门语言",g_abroad:"移居海外",
+g_job:"找到工作",g_income:"增加收入",g_business:"创业",g_save:"积累储蓄",g_debt:"还清债务",g_home:"购买住房",g_invest:"开始投资",g_skills:"学习新技能",
+dream:"用一句话说说，今年什么会让您更幸福？",dreamPh:"例如：在加拿大找到稳定工作，晚上有时间陪孩子。",horizon:"时间",m3:"未来 3 个月",y1:"今年内",y3:"3 年以上",
+back:"返回",next:"继续",finish:"保存我的资料",errGoal:"请至少选择一个目标。",
+doneTitle:"{name}，您的智能体已准备就绪。",doneSub:"以下是它将为您启动的助手智能体。",planBtn:"用 Claude 制定我的第一份计划",planning:"正在制定计划…",planErr:"暂时无法生成计划，请稍后再试。",startOver:"为另一个人注册",
+savedDb:"您的资料已私密保存到您的账户。",savedLocal:"您的资料仅保存在此浏览器中。",savedMemory:"演示模式：关闭页面前会保留您的资料。",
+sumName:"姓名",sumEmail:"邮箱",sumCountry:"国家/地区",sumSituation:"现状",sumGoals:"目标",firstSteps:"第一步",resources:"去哪里找",
+footer:"演示原型。真实邮件发送、IP 定位和全天候跟进需要服务器支持。"},
+
+ar:{heroHours:"٨٧٦٠ ساعة في السنة.",heroTitle:"ووكيلك يعمل من أجلك في كل ساعة منها.",heroSub:"أخبره مَن أنت وإلى أين تريد أن تصل. يبحث عن حلول حول العالم ويُطلق وكلاء مساعدين صغارًا لكل مهمة.",steps:["الحساب","التحقق","الوضع الحالي","الأهداف"],
+firstName:"الاسم",lastName:"اسم العائلة",email:"البريد الإلكتروني",password:"كلمة المرور",show:"إظهار",hide:"إخفاء",pwHint:"٨ أحرف على الأقل، تتضمن حرفًا ورقمًا.",pw1:"ضعيفة",pw2:"متوسطة",pw3:"قوية",
+country:"البلد",countrySearch:"ابحث بالاسم أو الرمز، مثل USA أو UK",countryPick:"اختر بلدك",suggested:"مقترح لك",allCountries:"جميع البلدان",detectedIp:"تم التعرّف عليه من اتصالك. غيّره إن كان خاطئًا.",detectedDevice:"تم تخمينه من إعدادات جهازك. غيّره إن كان خاطئًا.",noMatch:"لا يوجد بلد يطابق «{q}».",
+createAccount:"إنشاء الحساب",checking:"جارٍ التحقق…",errRequired:"املأ هذا الحقل.",errEmail:"أدخل بريدًا إلكترونيًا مثل name@example.com.",errTaken:"هذا البريد مسجّل بالفعل. يمكن لكل بريد التسجيل مرة واحدة فقط.",errPw:"استخدم ٨ أحرف على الأقل مع حرف ورقم.",errCountry:"اختر بلدًا.",
+verifyTitle:"تحقّق من بريدك",verifySent:"أرسلنا رمزًا من ٦ أرقام إلى {email}.",demoCode:"وضع تجريبي: لا يُرسَل أي بريد فعليًا. رمزك هو {code}",codeLabel:"رمز التحقق",verify:"تأكيد البريد",resend:"إرسال رمز جديد",resendIn:"يمكنك طلب رمز جديد بعد {s} ث",errCode:"الرمز غير صحيح. تبقّت {n} محاولات.",errExpired:"انتهت صلاحية الرمز. اطلب رمزًا جديدًا.",errLocked:"محاولات كثيرة. اطلب رمزًا جديدًا.",changeEmail:"تغيير البريد",verified:"تم تأكيد البريد.",
+sitTitle:"وضعك الحالي",sitSub:"يساعد هذا وكيلك على فهم نقطة انطلاقك. تخطَّ ما لا تريد مشاركته.",
+employment:"العمل",employed:"موظف",self:"أعمل لحسابي",student:"طالب",seeking:"أبحث عن عمل",retired:"متقاعد",caregiver:"أرعى أسرتي",
+incomeQ:"الدخل الشهري",hard:"يصعب تغطية الأساسيات",basic:"يغطي الأساسيات",comfortable:"مريح",saving:"مريح وأدّخر",na:"أفضّل عدم الإجابة",
+household:"مع مَن تعيش",alone:"وحدي",withPartner:"مع شريك",kids:"مع أطفال",relatives:"مع الوالدين أو الأقارب",shared:"مع زملاء سكن",
+housing:"السكن",own:"ملك",rent:"إيجار",familyHome:"منزل العائلة",unstable:"بلا سكن مستقر",
+education:"التعليم",secondary:"ثانوي",vocational:"تدريب مهني",bachelor:"بكالوريوس",master:"ماجستير فأعلى",
+challenge:"ما أصعب شيء تواجهه الآن؟",challengePh:"مثال: ارتفع إيجاري ولا أجد عملًا بأجر أفضل.",
+goalsTitle:"إلى أين تريد أن تصل",goalsSub:"اختر ما تشاء. لكل هدف وكيل مساعد خاص به.",social:"أهداف اجتماعية",economic:"أهداف اقتصادية",
+g_friends:"تكوين صداقات جديدة",g_partner:"إيجاد شريك حياة",g_family:"وقت أطول مع العائلة",g_community:"الانضمام إلى مجتمع",g_health:"صحة أفضل",g_language:"تعلّم لغة",g_abroad:"الانتقال إلى الخارج",
+g_job:"إيجاد عمل",g_income:"زيادة الدخل",g_business:"تأسيس مشروع",g_save:"بناء مدخرات",g_debt:"سداد الديون",g_home:"شراء منزل",g_invest:"البدء في الاستثمار",g_skills:"تعلّم مهارة جديدة",
+dream:"في جملة واحدة: ما الذي سيجعلك أسعد هذا العام؟",dreamPh:"مثال: عمل مستقر في كندا وأمسيات حرّة لأطفالي.",horizon:"متى",m3:"خلال ٣ أشهر",y1:"هذا العام",y3:"بعد ٣ سنوات أو أكثر",
+back:"رجوع",next:"متابعة",finish:"حفظ ملفي",errGoal:"اختر هدفًا واحدًا على الأقل.",
+doneTitle:"وكيلك جاهز يا {name}.",doneSub:"هؤلاء هم الوكلاء المساعدون الذين سيبدأ بهم من أجلك.",planBtn:"أنشئ خطتي الأولى مع Claude",planning:"جارٍ إنشاء خطتك…",planErr:"تعذّر إنشاء الخطة الآن. حاول مجددًا بعد دقيقة.",startOver:"تسجيل شخص آخر",
+savedDb:"حُفظ ملفك بشكل خاص في حسابك.",savedLocal:"حُفظ ملفك في هذا المتصفح فقط.",savedMemory:"وضع تجريبي: يُحتفظ بملفك حتى تغلق الصفحة.",
+sumName:"الاسم",sumEmail:"البريد",sumCountry:"البلد",sumSituation:"الوضع",sumGoals:"الأهداف",firstSteps:"الخطوات الأولى",resources:"أين تبحث",
+footer:"نموذج تجريبي. يتطلب الإرسال الفعلي للبريد وتحديد الموقع عبر IP والمتابعة على مدار الساعة خادمًا."}
+};
+
+/* helper agents spawned per goal: [name, mission] */
+const AGENTS = {
+friends:{en:["Community connector","Finds meetups and groups near you that match your interests."],fr:["Connecteur social","Trouve des rencontres et des groupes près de chez vous selon vos centres d’intérêt."],zh:["社交连接助手","寻找附近符合您兴趣的聚会和团体。"],ar:["موصّل المجتمع","يجد لقاءات ومجموعات قريبة منك تناسب اهتماماتك."]},
+partner:{en:["Social companion","Suggests safe, well-reviewed ways to meet new people."],fr:["Compagnon social","Propose des moyens sûrs et reconnus de rencontrer de nouvelles personnes."],zh:["交友助手","推荐安全、口碑好的结识新朋友的方式。"],ar:["رفيق التعارف","يقترح طرقًا آمنة وموثوقة للتعرّف على أشخاص جدد."]},
+family:{en:["Family planner","Protects family time in your week and suggests shared activities."],fr:["Planificateur familial","Préserve du temps en famille dans votre semaine et propose des activités communes."],zh:["家庭规划助手","在您的日程中留出家庭时间，并推荐共同活动。"],ar:["منظّم وقت العائلة","يحجز وقتًا للعائلة في أسبوعك ويقترح أنشطة مشتركة."]},
+community:{en:["Volunteer matcher","Matches you with local and online causes that need your skills."],fr:["Bénévolat","Vous met en relation avec des causes locales et en ligne qui ont besoin de vos compétences."],zh:["志愿匹配助手","为您匹配需要您技能的本地和线上公益项目。"],ar:["منسّق التطوع","يربطك بمبادرات محلية وإلكترونية تحتاج إلى مهاراتك."]},
+health:{en:["Wellbeing coach","Builds small daily habits for sleep, movement and stress."],fr:["Coach bien-être","Installe de petites habitudes quotidiennes pour le sommeil, le mouvement et le stress."],zh:["健康教练","帮您养成睡眠、运动和减压的日常小习惯。"],ar:["مدرّب العافية","يبني عادات يومية صغيرة للنوم والحركة والتوتر."]},
+language:{en:["Language tutor","Plans short daily lessons and finds conversation partners."],fr:["Tuteur de langue","Prévoit de courtes leçons quotidiennes et trouve des partenaires de conversation."],zh:["语言导师","安排每日短课，并为您寻找语伴。"],ar:["معلّم اللغة","يخطط دروسًا يومية قصيرة ويجد شركاء محادثة."]},
+abroad:{en:["Relocation advisor","Compares visas, cost of living and job markets abroad."],fr:["Conseiller expatriation","Compare visas, coût de la vie et marchés de l’emploi à l’étranger."],zh:["移居顾问","比较海外签证、生活成本和就业市场。"],ar:["مستشار الانتقال","يقارن التأشيرات وتكاليف المعيشة وأسواق العمل في الخارج."]},
+job:{en:["Job scout","Searches international job boards for roles that fit your profile."],fr:["Éclaireur emploi","Parcourt les sites d’emploi internationaux pour trouver des postes adaptés à votre profil."],zh:["求职侦察员","在国际招聘网站上搜索适合您的职位。"],ar:["مستكشف الوظائف","يبحث في مواقع التوظيف الدولية عن وظائف تناسب ملفك."]},
+income:{en:["Income booster","Finds raises, side income and better-paid roles for your skills."],fr:["Booster de revenus","Repère augmentations, revenus complémentaires et postes mieux payés pour vos compétences."],zh:["增收助手","为您的技能寻找加薪、副业和更高薪的岗位。"],ar:["معزّز الدخل","يبحث عن زيادات ودخل إضافي ووظائف أعلى أجرًا لمهاراتك."]},
+business:{en:["Venture starter","Turns your idea into a first step, with grants and programs in your country."],fr:["Lanceur de projet","Transforme votre idée en première étape, avec les aides et programmes de votre pays."],zh:["创业启动助手","把您的想法变成第一步，并查找您所在国家的补助和项目。"],ar:["مُطلق المشاريع","يحوّل فكرتك إلى خطوة أولى، مع المنح والبرامج المتاحة في بلدك."]},
+save:{en:["Budget keeper","Tracks spending and sets up an emergency fund you can reach."],fr:["Gardien du budget","Suit vos dépenses et construit une épargne de précaution atteignable."],zh:["预算管家","跟踪支出，帮您建立可实现的应急储蓄。"],ar:["حارس الميزانية","يتابع إنفاقك ويبني صندوق طوارئ يمكنك تحقيقه."]},
+debt:{en:["Debt planner","Orders your debts and finds free advice services near you."],fr:["Planificateur de dettes","Hiérarchise vos dettes et trouve des services de conseil gratuits près de chez vous."],zh:["债务规划助手","为您的债务排序，并查找附近的免费咨询服务。"],ar:["مخطط الديون","يرتّب ديونك ويجد خدمات استشارة مجانية قريبة منك."]},
+home:{en:["Home finder","Watches listings and first-buyer programs where you want to live."],fr:["Chercheur de logement","Surveille les annonces et les aides aux primo-accédants là où vous voulez vivre."],zh:["购房助手","关注您想居住地区的房源和首次购房补贴。"],ar:["باحث المنازل","يتابع العروض وبرامج دعم المشترين لأول مرة حيث تريد أن تعيش."]},
+invest:{en:["Investment explainer","Explains low-cost options in plain words. It never decides for you."],fr:["Guide de l’investissement","Explique simplement les options à faible coût. Il ne décide jamais à votre place."],zh:["投资讲解员","用通俗语言讲解低成本投资选项，但从不替您做决定。"],ar:["شارح الاستثمار","يشرح الخيارات منخفضة التكلفة بلغة بسيطة، ولا يقرّر نيابةً عنك أبدًا."]},
+skills:{en:["Course finder","Finds free and certified courses worldwide that employers value."],fr:["Chercheur de formations","Trouve dans le monde entier des formations gratuites et certifiantes reconnues par les employeurs."],zh:["课程搜索助手","在全球寻找雇主认可的免费和认证课程。"],ar:["باحث الدورات","يجد دورات مجانية ومعتمدة حول العالم يقدّرها أصحاب العمل."]}
+};
+
+/* ============ cabinet strings ============ */
+const CUI = {
+en:{signInTitle:"Sign in",signInBtn:"Sign in",noAccount:"New to Apacom?",createLink:"Create an account",haveAccount:"Already have an account?",signInLink:"Sign in",errLogin:"Email or password is incorrect.",logout:"Log out",cancel:"Cancel",save:"Save",saved:"Saved.",
+tabAgent:"My agent",tabProfile:"Situation and goals",tabAccount:"Account",tabPrivacy:"Privacy and data",hello:"Hello, {name}",memberSince:"Member since {date}",
+d_social:"Social life",d_economic:"Money and work",d_health:"Health",d_learning:"Education",soon:"Coming soon",soonText:"APA will cover this area in a future version. Your profile is already ready for it.",
+domainAgents:"Helper agents on this",noGoalsDomain:"You haven't picked any goals in this area yet.",addGoals:"Add goals",answersTitle:"Answers from APA",askLabel:"Ask APA",askPh:"Ask a question about this area, or leave it empty for a general update.",askBtn:"Ask APA",asking:"APA is thinking…",noAnswers:"No answers yet. Ask APA to get your first one.",askUnavailable:"Answers will appear here once APA's server is connected.",askErr:"APA couldn't answer right now. Try again in a minute.",youAsked:"You asked: {q}",whatToDo:"What to do",removeAnswer:"Remove",
+editSit:"Edit situation and goals",notAnswered:"Not answered",sumChallenge:"Hardest right now",sumDream:"Happier this year",sumHorizon:"When",
+photo:"Photo",photoAdd:"Add photo",photoChange:"Change photo",photoRemove:"Remove photo",photoHint:"Optional. Any image works; it's cropped to a square and shrunk to 256 px.",photoErr:"Choose an image file.",
+nameTitle:"Name",emailTitle:"Email",currentEmail:"Current email: {email}",newEmail:"New email",currentPw:"Current password",sendCodeBtn:"Send verification code",errPwWrong:"That password is incorrect.",errSameEmail:"This is already your email.",emailChanged:"Your email is now {email}.",
+pwTitle:"Password",newPw:"New password",pwChanged:"Password changed.",checkinTitle:"Check-ins",checkinSub:"How often APA reports back to you.",ci_daily:"Every day",ci_weekly:"Every week",ci_news:"Only when there's news",
+consentTitle:"Your consent",consentText:"You accepted the Terms and Conditions (version {v}) on {date}.",exportTitle:"Download my data",exportSub:"Get a copy of everything APA stores about you, as a JSON file.",exportBtn:"Download my data",exportErr:"The download didn't start. Try again.",
+deleteTitle:"Delete account",deleteSub:"This permanently deletes your profile, answers and photo. Your email becomes free to register again.",deleteBtn:"Delete my account",deleteConfirm:"Enter your password to confirm",deleteFinal:"Delete permanently",deleted:"Your account was deleted."},
+fr:{signInTitle:"Se connecter",signInBtn:"Se connecter",noAccount:"Nouveau sur Apacom ?",createLink:"Créer un compte",haveAccount:"Vous avez déjà un compte ?",signInLink:"Se connecter",errLogin:"E-mail ou mot de passe incorrect.",logout:"Se déconnecter",cancel:"Annuler",save:"Enregistrer",saved:"Enregistré.",
+tabAgent:"Mon agent",tabProfile:"Situation et objectifs",tabAccount:"Compte",tabPrivacy:"Confidentialité et données",hello:"Bonjour, {name}",memberSince:"Membre depuis le {date}",
+d_social:"Vie sociale",d_economic:"Argent et travail",d_health:"Santé",d_learning:"Éducation",soon:"Bientôt",soonText:"APA couvrira ce domaine dans une prochaine version. Votre profil est déjà prêt.",
+domainAgents:"Agents à l’œuvre",noGoalsDomain:"Vous n’avez encore choisi aucun objectif dans ce domaine.",addGoals:"Ajouter des objectifs",answersTitle:"Réponses d’APA",askLabel:"Demander à APA",askPh:"Posez une question sur ce domaine, ou laissez vide pour un point général.",askBtn:"Demander à APA",asking:"APA réfléchit…",noAnswers:"Aucune réponse pour l’instant. Demandez à APA pour obtenir la première.",askUnavailable:"Les réponses apparaîtront ici dès que le serveur d’APA sera connecté.",askErr:"APA n’a pas pu répondre. Réessayez dans une minute.",youAsked:"Votre question : {q}",whatToDo:"À faire",removeAnswer:"Supprimer",
+editSit:"Modifier ma situation et mes objectifs",notAnswered:"Non renseigné",sumChallenge:"Le plus difficile",sumDream:"Plus heureux cette année",sumHorizon:"Quand",
+photo:"Photo",photoAdd:"Ajouter une photo",photoChange:"Changer de photo",photoRemove:"Supprimer la photo",photoHint:"Facultatif. N’importe quelle image ; elle est recadrée en carré et réduite à 256 px.",photoErr:"Choisissez un fichier image.",
+nameTitle:"Nom",emailTitle:"E-mail",currentEmail:"E-mail actuel : {email}",newEmail:"Nouvel e-mail",currentPw:"Mot de passe actuel",sendCodeBtn:"Envoyer le code de vérification",errPwWrong:"Ce mot de passe est incorrect.",errSameEmail:"C’est déjà votre e-mail.",emailChanged:"Votre e-mail est maintenant {email}.",
+pwTitle:"Mot de passe",newPw:"Nouveau mot de passe",pwChanged:"Mot de passe modifié.",checkinTitle:"Points de suivi",checkinSub:"À quelle fréquence APA vous fait un retour.",ci_daily:"Chaque jour",ci_weekly:"Chaque semaine",ci_news:"Seulement s’il y a du nouveau",
+consentTitle:"Votre consentement",consentText:"Vous avez accepté les conditions (version {v}) le {date}.",exportTitle:"Télécharger mes données",exportSub:"Obtenez une copie de tout ce qu’APA conserve sur vous, au format JSON.",exportBtn:"Télécharger mes données",exportErr:"Le téléchargement n’a pas démarré. Réessayez.",
+deleteTitle:"Supprimer le compte",deleteSub:"Cette action supprime définitivement votre profil, vos réponses et votre photo. Votre e-mail pourra de nouveau être utilisé.",deleteBtn:"Supprimer mon compte",deleteConfirm:"Saisissez votre mot de passe pour confirmer",deleteFinal:"Supprimer définitivement",deleted:"Votre compte a été supprimé."},
+zh:{signInTitle:"登录",signInBtn:"登录",noAccount:"第一次使用 Apacom？",createLink:"创建账户",haveAccount:"已有账户？",signInLink:"登录",errLogin:"邮箱或密码不正确。",logout:"退出登录",cancel:"取消",save:"保存",saved:"已保存。",
+tabAgent:"我的智能体",tabProfile:"现状与目标",tabAccount:"账户",tabPrivacy:"隐私与数据",hello:"您好，{name}",memberSince:"注册于 {date}",
+d_social:"社交生活",d_economic:"财务与工作",d_health:"健康",d_learning:"教育",soon:"即将推出",soonText:"APA 将在后续版本中覆盖这一领域，您的资料已为此做好准备。",
+domainAgents:"负责此领域的助手智能体",noGoalsDomain:"您还没有在此领域选择目标。",addGoals:"添加目标",answersTitle:"APA 的回答",askLabel:"问 APA",askPh:"就此领域提问，或留空以获取总体建议。",askBtn:"问 APA",asking:"APA 正在思考…",noAnswers:"还没有回答。向 APA 提问，获取第一条建议。",askUnavailable:"连接 APA 服务器后，回答会显示在这里。",askErr:"APA 暂时无法回答，请稍后再试。",youAsked:"您的问题：{q}",whatToDo:"行动步骤",removeAnswer:"删除",
+editSit:"修改现状与目标",notAnswered:"未填写",sumChallenge:"目前最困难的",sumDream:"今年的幸福愿望",sumHorizon:"时间",
+photo:"照片",photoAdd:"添加照片",photoChange:"更换照片",photoRemove:"删除照片",photoHint:"选填。任意图片均可，将裁剪为正方形并缩小至 256 像素。",photoErr:"请选择图片文件。",
+nameTitle:"姓名",emailTitle:"电子邮箱",currentEmail:"当前邮箱：{email}",newEmail:"新邮箱",currentPw:"当前密码",sendCodeBtn:"发送验证码",errPwWrong:"密码不正确。",errSameEmail:"这已经是您的邮箱。",emailChanged:"您的邮箱已更改为 {email}。",
+pwTitle:"密码",newPw:"新密码",pwChanged:"密码已更改。",checkinTitle:"定期反馈",checkinSub:"APA 向您汇报的频率。",ci_daily:"每天",ci_weekly:"每周",ci_news:"仅在有新消息时",
+consentTitle:"您的同意记录",consentText:"您已于 {date} 同意条款和条件（版本 {v}）。",exportTitle:"下载我的数据",exportSub:"以 JSON 文件形式获取 APA 保存的关于您的全部数据。",exportBtn:"下载我的数据",exportErr:"下载未开始，请重试。",
+deleteTitle:"删除账户",deleteSub:"这将永久删除您的资料、回答和照片，您的邮箱可以重新注册。",deleteBtn:"删除我的账户",deleteConfirm:"请输入密码以确认",deleteFinal:"永久删除",deleted:"您的账户已删除。"},
+ar:{signInTitle:"تسجيل الدخول",signInBtn:"تسجيل الدخول",noAccount:"جديد على Apacom؟",createLink:"إنشاء حساب",haveAccount:"لديك حساب بالفعل؟",signInLink:"تسجيل الدخول",errLogin:"البريد الإلكتروني أو كلمة المرور غير صحيحة.",logout:"تسجيل الخروج",cancel:"إلغاء",save:"حفظ",saved:"تم الحفظ.",
+tabAgent:"وكيلي",tabProfile:"الوضع والأهداف",tabAccount:"الحساب",tabPrivacy:"الخصوصية والبيانات",hello:"مرحبًا، {name}",memberSince:"عضو منذ {date}",
+d_social:"الحياة الاجتماعية",d_economic:"المال والعمل",d_health:"الصحة",d_learning:"التعليم",soon:"قريبًا",soonText:"سيغطي APA هذا المجال في إصدار قادم، وملفك جاهز له بالفعل.",
+domainAgents:"الوكلاء المساعدون في هذا المجال",noGoalsDomain:"لم تختر أي هدف في هذا المجال بعد.",addGoals:"إضافة أهداف",answersTitle:"إجابات APA",askLabel:"اسأل APA",askPh:"اطرح سؤالًا عن هذا المجال، أو اتركه فارغًا للحصول على تحديث عام.",askBtn:"اسأل APA",asking:"APA يفكّر…",noAnswers:"لا توجد إجابات بعد. اسأل APA لتحصل على أول إجابة.",askUnavailable:"ستظهر الإجابات هنا بعد ربط خادم APA.",askErr:"تعذّر على APA الإجابة الآن. حاول مجددًا بعد دقيقة.",youAsked:"سؤالك: {q}",whatToDo:"ما يجب فعله",removeAnswer:"حذف",
+editSit:"تعديل الوضع والأهداف",notAnswered:"لم تتم الإجابة",sumChallenge:"الأصعب الآن",sumDream:"ما يسعدك هذا العام",sumHorizon:"متى",
+photo:"الصورة",photoAdd:"إضافة صورة",photoChange:"تغيير الصورة",photoRemove:"حذف الصورة",photoHint:"اختياري. أي صورة؛ تُقصّ بشكل مربع وتُصغَّر إلى ٢٥٦ بكسل.",photoErr:"اختر ملف صورة.",
+nameTitle:"الاسم",emailTitle:"البريد الإلكتروني",currentEmail:"البريد الحالي: {email}",newEmail:"البريد الجديد",currentPw:"كلمة المرور الحالية",sendCodeBtn:"إرسال رمز التحقق",errPwWrong:"كلمة المرور غير صحيحة.",errSameEmail:"هذا هو بريدك الحالي بالفعل.",emailChanged:"أصبح بريدك الآن {email}.",
+pwTitle:"كلمة المرور",newPw:"كلمة المرور الجديدة",pwChanged:"تم تغيير كلمة المرور.",checkinTitle:"المتابعات",checkinSub:"عدد مرات تواصل APA معك.",ci_daily:"كل يوم",ci_weekly:"كل أسبوع",ci_news:"فقط عند وجود جديد",
+consentTitle:"موافقتك",consentText:"وافقت على الشروط والأحكام (الإصدار {v}) بتاريخ {date}.",exportTitle:"تنزيل بياناتي",exportSub:"احصل على نسخة من كل ما يحفظه APA عنك في ملف JSON.",exportBtn:"تنزيل بياناتي",exportErr:"لم يبدأ التنزيل. حاول مجددًا.",
+deleteTitle:"حذف الحساب",deleteSub:"يؤدي هذا إلى حذف ملفك وإجاباتك وصورتك نهائيًا، ويصبح بريدك متاحًا للتسجيل من جديد.",deleteBtn:"حذف حسابي",deleteConfirm:"أدخل كلمة المرور للتأكيد",deleteFinal:"حذف نهائي",deleted:"تم حذف حسابك."}
+};
+for(const l in CUI) Object.assign(T[l], CUI[l]);
+
+/* ============ v4 strings: password reset, daily brief, approvals ============ */
+const V4 = {
+en:{forgotLink:"Forgot password?",resetTitle:"Reset your password",resetSub:"Enter your account email. We'll send a code to set a new password.",sendResetBtn:"Send code",resetSent:"If an account exists for {email}, we sent a 6-digit code.",setNewPw:"Set new password",resetDone:"Password reset. You're signed in.",backToLogin:"Back to sign in",
+tabToday:"Today",tabInbox:"Approvals",briefTitle:"Your brief for {date}",briefSub:"What APA found across your life areas.",briefBtn:"Prepare today's brief",briefing:"APA is preparing your brief…",briefNone:"Your brief for today isn't ready yet.",briefErr:"The brief couldn't be prepared. Try again in a minute.",briefRefresh:"Refresh brief",earlierBriefs:"Earlier briefs",pendingNote:"Waiting for your approval: {n}",openInbox:"Review them",
+inboxTitle:"Waiting for your approval",inboxSub:"APA never acts for you without a yes. Approve or decline each proposal.",inboxEmpty:"Nothing is waiting. New proposals arrive with your daily brief.",approve:"Approve",decline:"Decline",approvedNote:"Approved. In this demo nothing is sent; the full version carries it out and reports back here.",history:"Decided",st_approved:"Approved",st_declined:"Declined",proposedBy:"Proposed by {agent}",undo:"Undo"},
+fr:{forgotLink:"Mot de passe oublié ?",resetTitle:"Réinitialiser votre mot de passe",resetSub:"Saisissez l’e-mail de votre compte. Nous vous enverrons un code pour définir un nouveau mot de passe.",sendResetBtn:"Envoyer le code",resetSent:"Si un compte existe pour {email}, nous avons envoyé un code à 6 chiffres.",setNewPw:"Définir le nouveau mot de passe",resetDone:"Mot de passe réinitialisé. Vous êtes connecté(e).",backToLogin:"Retour à la connexion",
+tabToday:"Aujourd’hui",tabInbox:"Validations",briefTitle:"Votre point du {date}",briefSub:"Ce qu’APA a trouvé dans vos domaines de vie.",briefBtn:"Préparer le point du jour",briefing:"APA prépare votre point…",briefNone:"Votre point du jour n’est pas encore prêt.",briefErr:"Le point n’a pas pu être préparé. Réessayez dans une minute.",briefRefresh:"Actualiser le point",earlierBriefs:"Points précédents",pendingNote:"En attente de votre accord : {n}",openInbox:"Les examiner",
+inboxTitle:"En attente de votre accord",inboxSub:"APA n’agit jamais pour vous sans votre oui. Acceptez ou refusez chaque proposition.",inboxEmpty:"Rien en attente. Les nouvelles propositions arrivent avec votre point du jour.",approve:"Accepter",decline:"Refuser",approvedNote:"Accepté. Dans cette démo, rien n’est envoyé ; la version complète l’exécute et vous en rend compte ici.",history:"Décisions",st_approved:"Accepté",st_declined:"Refusé",proposedBy:"Proposé par {agent}",undo:"Annuler"},
+zh:{forgotLink:"忘记密码？",resetTitle:"重置密码",resetSub:"请输入账户邮箱，我们将发送验证码以设置新密码。",sendResetBtn:"发送验证码",resetSent:"如果 {email} 已注册，我们已发送 6 位验证码。",setNewPw:"设置新密码",resetDone:"密码已重置，您已登录。",backToLogin:"返回登录",
+tabToday:"今日",tabInbox:"待批准",briefTitle:"{date} 的简报",briefSub:"APA 在您各个生活领域中的发现。",briefBtn:"生成今日简报",briefing:"APA 正在准备简报…",briefNone:"今日简报尚未生成。",briefErr:"无法生成简报，请稍后再试。",briefRefresh:"刷新简报",earlierBriefs:"往日简报",pendingNote:"等待您批准：{n} 项",openInbox:"去查看",
+inboxTitle:"等待您批准",inboxSub:"未经您同意，APA 绝不会代您行动。请逐项批准或拒绝。",inboxEmpty:"暂无待批准事项。新的建议会随每日简报一起送达。",approve:"批准",decline:"拒绝",approvedNote:"已批准。演示版不会真正执行；完整版将执行并在此汇报结果。",history:"已处理",st_approved:"已批准",st_declined:"已拒绝",proposedBy:"由{agent}提议",undo:"撤销"},
+ar:{forgotLink:"نسيت كلمة المرور؟",resetTitle:"إعادة تعيين كلمة المرور",resetSub:"أدخل البريد الإلكتروني لحسابك، وسنرسل رمزًا لتعيين كلمة مرور جديدة.",sendResetBtn:"إرسال الرمز",resetSent:"إذا كان هناك حساب مرتبط بـ {email} فقد أرسلنا رمزًا من ٦ أرقام.",setNewPw:"تعيين كلمة المرور الجديدة",resetDone:"تمت إعادة تعيين كلمة المرور، وقد سجّلت الدخول.",backToLogin:"العودة إلى تسجيل الدخول",
+tabToday:"اليوم",tabInbox:"الموافقات",briefTitle:"موجزك ليوم {date}",briefSub:"ما وجده APA في مجالات حياتك.",briefBtn:"إعداد موجز اليوم",briefing:"APA يُعدّ موجزك…",briefNone:"موجز اليوم لم يُعدّ بعد.",briefErr:"تعذّر إعداد الموجز. حاول مجددًا بعد دقيقة.",briefRefresh:"تحديث الموجز",earlierBriefs:"الموجزات السابقة",pendingNote:"بانتظار موافقتك: {n}",openInbox:"مراجعتها",
+inboxTitle:"بانتظار موافقتك",inboxSub:"لا يتصرف APA نيابةً عنك أبدًا دون موافقتك. وافق على كل اقتراح أو ارفضه.",inboxEmpty:"لا شيء بانتظارك. تصل الاقتراحات الجديدة مع موجزك اليومي.",approve:"موافقة",decline:"رفض",approvedNote:"تمت الموافقة. في هذا العرض التجريبي لا يُرسَل شيء؛ أما النسخة الكاملة فتنفّذه وتبلغك بالنتيجة هنا.",history:"تم البتّ فيها",st_approved:"تمت الموافقة",st_declined:"مرفوض",proposedBy:"اقترحه {agent}",undo:"تراجع"}
+};
+for(const l in V4) Object.assign(T[l], V4[l]);
+
+const SIT = [
+  {key:"employment", opts:["employed","self","student","seeking","retired","caregiver"]},
+  {key:"incomeQ",    opts:["hard","basic","comfortable","saving","na"]},
+  {key:"household",  opts:["alone","withPartner","kids","relatives","shared"], multi:true},
+  {key:"housing",    opts:["own","rent","familyHome","unstable"]},
+  {key:"education",  opts:["secondary","vocational","bachelor","master"]}
+];
+const GOALS = {social:["friends","partner","family","community","health","language","abroad"], economic:["job","income","business","save","debt","home","invest","skills"]};
+
+/* ============ countries (ISO 3166-1 + Kosovo = 250) ============ */
+const CODES = "AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW".split(" ");
+const ALIASES = {
+  US:["usa","us","u.s.a","united states of america","america","etats-unis","etats unis","美国","أمريكا","الولايات المتحدة"],
+  GB:["uk","u.k","united kingdom","great britain","britain","england","scotland","wales","northern ireland","royaume-uni","angleterre","英国","بريطانيا"],
+  AE:["uae","emirates","dubai","阿联酋","الإمارات"], SA:["ksa","saudi","السعودية"], KR:["south korea","korea","韩国"], KP:["north korea","dprk","朝鲜"],
+  RU:["russia","俄罗斯"], CZ:["czechia","czech republic"], CI:["ivory coast","cote d'ivoire"], CD:["drc","dr congo","congo kinshasa"], CG:["congo brazzaville"],
+  NL:["holland"], MM:["burma"], SZ:["swaziland"], MK:["macedonia"], TR:["turkey","turkiye"], VA:["vatican","holy see"], LA:["laos"], IR:["iran","persia"],
+  SY:["syria"], TZ:["tanzania"], VN:["vietnam","viet nam"], MD:["moldova"], PS:["palestine","فلسطين"], CV:["cape verde"], TL:["east timor"], FM:["micronesia"],
+  XK:["kosovo"], DE:["germany","deutschland"], ES:["spain","espana"], CH:["switzerland","suisse","schweiz"], CN:["prc","china","中国"], HK:["hong kong"], TW:["taiwan"],
+  BO:["bolivia"], VE:["venezuela"], BA:["bosnia"], EG:["egypt","مصر"], MA:["morocco","المغرب"], DZ:["algeria","الجزائر"], TN:["tunisia","تونس"]
+};
+const flagOf = c => String.fromCodePoint(...[...c].map(ch => 0x1F1E6 + ch.charCodeAt(0) - 65));
+const norm = s => (s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[’']/g,"'").trim();
+const dnCache = {};
+function countryName(code, lang){
+  try{ dnCache[lang] = dnCache[lang] || new Intl.DisplayNames([lang], {type:"region"}); return dnCache[lang].of(code) || code; }catch(e){ return code; }
+}
+const SEARCH_INDEX = {};
+function buildIndex(){
+  for(const c of CODES){
+    const names = LANGS.map(l => countryName(c, l.code));
+    SEARCH_INDEX[c] = {names: names.map(norm), aliases: (ALIASES[c]||[]).map(norm)};
+  }
+}
+
+/* country guess: IP first (works when self-hosted), then timezone, then browser locale */
+const TZ = "Europe/London:GB,Europe/Paris:FR,Europe/Berlin:DE,Europe/Madrid:ES,Europe/Rome:IT,Europe/Lisbon:PT,Europe/Amsterdam:NL,Europe/Brussels:BE,Europe/Zurich:CH,Europe/Vienna:AT,Europe/Dublin:IE,Europe/Stockholm:SE,Europe/Oslo:NO,Europe/Copenhagen:DK,Europe/Helsinki:FI,Europe/Warsaw:PL,Europe/Prague:CZ,Europe/Budapest:HU,Europe/Bucharest:RO,Europe/Sofia:BG,Europe/Athens:GR,Europe/Istanbul:TR,Europe/Kiev:UA,Europe/Kyiv:UA,Europe/Moscow:RU,Europe/Minsk:BY,Europe/Belgrade:RS,Europe/Zagreb:HR,Europe/Luxembourg:LU,Europe/Monaco:MC,Africa/Cairo:EG,Africa/Casablanca:MA,Africa/Algiers:DZ,Africa/Tunis:TN,Africa/Tripoli:LY,Africa/Lagos:NG,Africa/Accra:GH,Africa/Abidjan:CI,Africa/Dakar:SN,Africa/Nairobi:KE,Africa/Addis_Ababa:ET,Africa/Johannesburg:ZA,Africa/Kinshasa:CD,Africa/Douala:CM,Africa/Khartoum:SD,Africa/Dar_es_Salaam:TZ,Africa/Kampala:UG,Africa/Luanda:AO,Africa/Maputo:MZ,Africa/Bamako:ML,Asia/Dubai:AE,Asia/Riyadh:SA,Asia/Qatar:QA,Asia/Kuwait:KW,Asia/Bahrain:BH,Asia/Muscat:OM,Asia/Baghdad:IQ,Asia/Amman:JO,Asia/Beirut:LB,Asia/Damascus:SY,Asia/Jerusalem:IL,Asia/Gaza:PS,Asia/Hebron:PS,Asia/Tehran:IR,Asia/Aden:YE,Asia/Karachi:PK,Asia/Kolkata:IN,Asia/Calcutta:IN,Asia/Dhaka:BD,Asia/Kathmandu:NP,Asia/Colombo:LK,Asia/Shanghai:CN,Asia/Urumqi:CN,Asia/Hong_Kong:HK,Asia/Macau:MO,Asia/Taipei:TW,Asia/Tokyo:JP,Asia/Seoul:KR,Asia/Singapore:SG,Asia/Kuala_Lumpur:MY,Asia/Jakarta:ID,Asia/Manila:PH,Asia/Bangkok:TH,Asia/Ho_Chi_Minh:VN,Asia/Saigon:VN,Asia/Almaty:KZ,Asia/Tashkent:UZ,Asia/Baku:AZ,Asia/Tbilisi:GE,Asia/Yerevan:AM,Asia/Kabul:AF,Australia/Sydney:AU,Australia/Melbourne:AU,Australia/Perth:AU,Australia/Brisbane:AU,Pacific/Auckland:NZ,America/New_York:US,America/Chicago:US,America/Denver:US,America/Los_Angeles:US,America/Phoenix:US,America/Anchorage:US,Pacific/Honolulu:US,America/Detroit:US,America/Toronto:CA,America/Vancouver:CA,America/Montreal:CA,America/Edmonton:CA,America/Halifax:CA,America/Mexico_City:MX,America/Bogota:CO,America/Lima:PE,America/Santiago:CL,America/Argentina/Buenos_Aires:AR,America/Buenos_Aires:AR,America/Sao_Paulo:BR,America/Caracas:VE,America/Havana:CU,America/Montevideo:UY,America/Asuncion:PY,America/La_Paz:BO,America/Guayaquil:EC,America/Panama:PA,America/Costa_Rica:CR,America/Guatemala:GT,America/Santo_Domingo:DO,America/Port-au-Prince:HT,America/Puerto_Rico:PR,America/Jamaica:JM"
+  .split(",").reduce((m,p)=>{const [k,v]=p.split(":");m[k]=v;return m;},{});
+async function detectCountry(){
+  // 1) IP lookup. Works when the page is self-hosted (e.g. Netlify).
+  //    Inside the claude.ai viewer outside network calls are blocked, so this fails fast and we fall back.
+  try{
+    const ctl = new AbortController(); const tm = setTimeout(()=>ctl.abort(), 2000);
+    const r = await fetch("https://ipapi.co/country/", {signal:ctl.signal}); clearTimeout(tm);
+    if(r.ok){ const c = (await r.text()).trim().toUpperCase(); if(CODES.includes(c)) return {code:c, source:"ip"}; }
+  }catch(e){}
+  // 2) device time zone
+  try{ const tz = Intl.DateTimeFormat().resolvedOptions().timeZone; if(TZ[tz]) return {code:TZ[tz], source:"device"}; }catch(e){}
+  // 3) browser language region, e.g. fr-CA
+  for(const l of (navigator.languages||[navigator.language||""])){
+    const m = /[-_]([A-Z]{2})\b/i.exec(l); if(m && CODES.includes(m[1].toUpperCase())) return {code:m[1].toUpperCase(), source:"device"};
+  }
+  return null;
+}
+
+/* ============ storage: claude.ai db → localStorage → memory ============
+   registry/<sha256(email)> = {uid}       shared, holds no personal data, enforces one account per email
+   data/users/me/<uid>      = profile     private to the signed-in claude.ai viewer
+   Production: replace with a real backend (auth server + database). */
+const Store = {
+  mode:"memory", db:null, mem:{reg:{}, prof:{}, session:null}, ready:null,
+  init(){
+    this.ready = (async ()=>{
+      try{
+        if(window.claude && typeof window.claude.use === "function"){
+          const [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+          if(db && user && await user.id()){ this.db = db; this.mode = "db"; return; }
+        }
+      }catch(e){}
+      try{ localStorage.setItem("_apa","1"); localStorage.removeItem("_apa"); this.mode = "local"; }catch(e){ this.mode = "memory"; }
+    })();
+    return this.ready;
+  },
+  _lget(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(e){ return null; } },
+  _lset(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+  _lmap(k, fn){ const m = this._lget(k)||{}; fn(m); this._lset(k, m); },
+  async getReg(h){
+    await this.ready;
+    if(this.mode==="db"){ const s = await this.db.doc("registry/"+h).get(); return s.exists ? (s.data()||{}) : null; }
+    if(this.mode==="local") return (this._lget("apa_registry")||{})[h] || null;
+    return this.mem.reg[h] || null;
+  },
+  async setReg(h, uid){
+    const v = {uid, at:Date.now()};
+    if(this.mode==="db") return this.db.doc("registry/"+h).set(v);
+    if(this.mode==="local") return this._lmap("apa_registry", m=>{ m[h]=v; });
+    this.mem.reg[h]=v;
+  },
+  async delReg(h){
+    if(this.mode==="db") return this.db.doc("registry/"+h).delete();
+    if(this.mode==="local") return this._lmap("apa_registry", m=>{ delete m[h]; });
+    delete this.mem.reg[h];
+  },
+  async getProfile(uid){
+    await this.ready;
+    if(this.mode==="db"){ const s = await this.db.collection("data/users/me").doc(uid).get(); return s.exists ? s.data() : null; }
+    if(this.mode==="local") return (this._lget("apa_profiles")||{})[uid] || null;
+    return this.mem.prof[uid] || null;
+  },
+  async saveProfile(p){
+    p.updatedAt = new Date().toISOString();
+    const data = JSON.parse(JSON.stringify(p));
+    if(this.mode==="db") return this.db.collection("data/users/me").doc(p.uid).set(data);
+    if(this.mode==="local") return this._lmap("apa_profiles", m=>{ m[p.uid]=data; });
+    this.mem.prof[p.uid]=data;
+  },
+  async delProfile(uid){
+    if(this.mode==="db") return this.db.collection("data/users/me").doc(uid).delete();
+    if(this.mode==="local") return this._lmap("apa_profiles", m=>{ delete m[uid]; });
+    delete this.mem.prof[uid];
+  },
+  getSession(){ try{ return localStorage.getItem("apa_session"); }catch(e){ return this.mem.session; } },
+  setSession(uid){ try{ localStorage.setItem("apa_session", uid); }catch(e){} this.mem.session=uid; },
+  clearSession(){ try{ localStorage.removeItem("apa_session"); }catch(e){} this.mem.session=null; }
+};
+async function sha256(s){
+  try{ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+  catch(e){ let h=0; for(const ch of s){ h=(h*31+ch.charCodeAt(0))|0; } return "h"+(h>>>0).toString(16); }
+}
+const hex = b => [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+function randomId(n=16){ const a=new Uint8Array(n); crypto.getRandomValues(a); return hex(a); }
+/* password: salted PBKDF2 in this demo. A real backend must hash on the server (argon2/bcrypt). */
+async function hashPw(pw, salt, iter=150000){
+  salt = salt || randomId(16);
+  try{
+    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveBits"]);
+    const bits = await crypto.subtle.deriveBits({name:"PBKDF2", hash:"SHA-256", salt:new TextEncoder().encode(salt), iterations:iter}, key, 256);
+    return {alg:"PBKDF2-SHA256", iter, salt, hash:hex(bits)};
+  }catch(e){ return {alg:"SHA256", iter:1, salt, hash:await sha256(salt+pw)}; }
+}
+async function checkPw(pw, rec){ if(!rec || !pw) return false; const r = await hashPw(pw, rec.salt, rec.iter); return r.hash===rec.hash; }
+
+/* ============ state + helpers ============ */
+const $ = id => document.getElementById(id);
+let lang = "en";
+const st = {view:"s1", country:null, detected:null, user:null, verify:null, sit:{}, goals:[], horizon:null, dream:"", challenge:"", profile:null, editing:false, tab:"agent", domain:"social"};
+function t(k, vars){ let s = (T[lang][k] ?? T.en[k] ?? k); if(vars) for(const v in vars) s = s.split("{"+v+"}").join(vars[v]); return s; }
+
+/* ============ language switcher ============ */
+function renderLangMenu(){
+  const m = $("langMenu"); m.textContent = "";
+  for(const l of LANGS){
+    const b = document.createElement("button");
+    b.type="button"; b.setAttribute("role","menuitemradio"); b.setAttribute("aria-checked", String(l.code===lang)); b.lang = l.code;
+    b.innerHTML = `<span class="flag">${flagOf(l.flag)}</span><span></span><small></small>`;
+    b.children[1].textContent = l.native; b.children[2].textContent = l.sub;
+    b.onclick = () => { setLang(l.code); toggleLang(false); $("langBtn").focus(); };
+    m.appendChild(b);
+  }
+}
+function toggleLang(open){ $("langMenu").classList.toggle("open", open); $("langBtn").setAttribute("aria-expanded", String(open)); if(open) $("langMenu").querySelector('[aria-checked="true"]').focus(); }
+$("langBtn").onclick = e => { e.stopPropagation(); toggleLang(!$("langMenu").classList.contains("open")); };
+$("langMenu").addEventListener("keydown", e => {
+  const items = [...$("langMenu").children]; const i = items.indexOf(document.activeElement);
+  if(e.key==="ArrowDown"){ e.preventDefault(); items[(i+1)%items.length].focus(); }
+  if(e.key==="ArrowUp"){ e.preventDefault(); items[(i-1+items.length)%items.length].focus(); }
+  if(e.key==="Escape"){ toggleLang(false); $("langBtn").focus(); }
+});
+
+function setLang(code){
+  lang = code;
+  const L = LANGS.find(l=>l.code===code);
+  document.documentElement.lang = code; document.documentElement.dir = L.rtl ? "rtl" : "ltr";
+  $("langFlag").textContent = flagOf(L.flag); $("langName").textContent = L.native;
+  try{ localStorage.setItem("apa_lang", code); }catch(e){}
+  renderLangMenu(); applyText();
+  if(st.profile && st.profile.uiLanguage!==code){ st.profile.uiLanguage=code; Store.saveProfile(st.profile).catch(()=>{}); }
+}
+
+function applyText(){
+  document.querySelectorAll("[data-t]").forEach(el => el.textContent = t(el.dataset.t));
+  document.querySelectorAll("[data-tph]").forEach(el => el.placeholder = t(el.dataset.tph));
+  $("heroTitle").innerHTML = ""; const hs = document.createElement("span"); hs.className="hours"; hs.textContent = t("heroHours");
+  $("heroTitle").append(hs, document.createTextNode(t("heroTitle")));
+  $("heroSub").textContent = t("heroSub");
+  renderFooter(); renderAgree(); if(currentDoc) renderDoc();
+  $("cbSearch").placeholder = t("countrySearch");
+  $("pwToggle").textContent = $("pw").type==="password" ? t("show") : t("hide");
+  renderSteps(); renderCountryValue(); updateMeter(); renderCountryList();
+  renderChoiceGroups();
+  if(st.verify) { $("verifySent").textContent = t("verifySent",{email:st.user.email}); renderDemoCode(); tickResend(); }
+  if(st.view==="cab") renderCabinet();
+  if(st.emailChange) renderNeDemo();
+  document.querySelectorAll(".okmsg[data-k],.flash[data-k]").forEach(el => { el.textContent = t(el.dataset.k, JSON.parse(el.dataset.v||"null")); });
+  // re-translate any visible error
+  document.querySelectorAll(".err[data-k]").forEach(el => { el.textContent = t(el.dataset.k, JSON.parse(el.dataset.v||"null")); });
+}
+function setErr(id, key, vars){ const el=$(id); if(!key){ el.textContent=""; delete el.dataset.k; return; } el.dataset.k=key; el.dataset.v=JSON.stringify(vars||null); el.textContent=t(key,vars); }
+
+/* ============ password ============ */
+function pwScore(p){ if(!p) return 0; let s=0; if(p.length>=8) s++; if(/[a-z]/i.test(p)&&/\d/.test(p)) s++; if(p.length>=12 || (/[A-Z]/.test(p)&&/[a-z]/.test(p)&&/[^A-Za-z0-9]/.test(p))) s++; return Math.max(1,s); }
+function updateMeter(){ const s = pwScore($("pw").value); $("meter").dataset.s=s; $("meterTxt").textContent = s ? t("pw"+s) : ""; }
+$("pw").addEventListener("input", ()=>{ updateMeter(); setErr("pwErr"); $("pw").removeAttribute("aria-invalid"); });
+$("pwToggle").onclick = ()=>{ const p=$("pw"); p.type = p.type==="password"?"text":"password"; $("pwToggle").textContent = p.type==="password"?t("show"):t("hide"); };
+
+/* ============ country combobox ============ */
+let cbItems = [], cbActive = -1;
+function renderCountryValue(){
+  const v = $("cbVal"); v.textContent="";
+  if(!st.country){ v.className="ph"; v.textContent=t("countryPick"); }
+  else{ v.className=""; const n=document.createElement("span"); n.textContent=countryName(st.country,lang); const f=document.createElement("span"); f.className="flag"; f.style.marginInlineStart="10px"; f.textContent=flagOf(st.country); v.append(n,f); }
+  const h = $("cbHint");
+  h.textContent = (st.detected && st.country===st.detected.code) ? t(st.detected.source==="ip"?"detectedIp":"detectedDevice") : "";
+}
+function countryMatches(q){
+  const nq = norm(q);
+  const coll = new Intl.Collator(lang);
+  const all = CODES.map(c=>({c, name:countryName(c,lang)})).sort((a,b)=>coll.compare(a.name,b.name));
+  if(!nq) return all.map(x=>({...x, rank:0}));
+  const out=[];
+  for(const x of all){
+    const ix = SEARCH_INDEX[x.c]; let rank = 99;
+    if(x.c.toLowerCase()===nq || ix.aliases.includes(nq)) rank=0;
+    else if(ix.names.some(n=>n.startsWith(nq)) || ix.aliases.some(a=>a.startsWith(nq))) rank=1;
+    else if(ix.names.some(n=>n.includes(nq)) || ix.aliases.some(a=>a.includes(nq))) rank=2;
+    if(rank<99) out.push({...x, rank});
+  }
+  return out.sort((a,b)=>a.rank-b.rank || coll.compare(a.name,b.name));
+}
+function renderCountryList(){
+  const ul=$("cbList"); ul.textContent=""; const q=$("cbSearch").value;
+  let list = countryMatches(q); cbItems=[];
+  const addGroup = txt => { const li=document.createElement("li"); li.className="grp"; li.setAttribute("role","presentation"); li.textContent=txt; ul.appendChild(li); };
+  const addOpt = x => {
+    const li=document.createElement("li"); li.setAttribute("role","option"); li.id="opt-"+x.c+"-"+cbItems.length;
+    li.setAttribute("aria-selected", String(x.c===st.country));
+    const left=document.createElement("span"); left.textContent=x.name; const code=document.createElement("span"); code.className="code"; code.textContent=x.c; left.appendChild(code);
+    const f=document.createElement("span"); f.className="flag"; f.textContent=flagOf(x.c);
+    li.append(left,f); li.onmousedown = e=>{ e.preventDefault(); pickCountry(x.c); };
+    ul.appendChild(li); cbItems.push({el:li, c:x.c});
+  };
+  if(!q && st.detected){ addGroup(t("suggested")); addOpt({c:st.detected.code, name:countryName(st.detected.code,lang)}); addGroup(t("allCountries")+" ("+CODES.length+")"); }
+  if(!list.length){ const li=document.createElement("li"); li.className="cb-empty"; li.textContent=t("noMatch",{q}); ul.appendChild(li); }
+  list.forEach(addOpt);
+  setActive(q ? 0 : Math.max(0, cbItems.findIndex(i=>i.c===st.country)));
+}
+function setActive(i){
+  cbItems.forEach(x=>x.el.classList.remove("act")); cbActive=i;
+  if(cbItems[i]){ cbItems[i].el.classList.add("act"); $("cbSearch").setAttribute("aria-activedescendant", cbItems[i].el.id); cbItems[i].el.scrollIntoView({block:"nearest"}); }
+  else $("cbSearch").removeAttribute("aria-activedescendant");
+}
+function openCb(open){
+  $("cbPop").classList.toggle("open",open); $("cbBtn").setAttribute("aria-expanded",String(open));
+  if(open){ $("cbSearch").value=""; renderCountryList(); $("cbSearch").focus(); }
+}
+function pickCountry(c){ st.country=c; setErr("cbErr"); $("cbBtn").removeAttribute("aria-invalid"); renderCountryValue(); openCb(false); $("cbBtn").focus(); }
+$("cbBtn").onclick = ()=>openCb(!$("cbPop").classList.contains("open"));
+$("cbSearch").addEventListener("input", renderCountryList);
+$("cbSearch").addEventListener("keydown", e=>{
+  if(e.key==="ArrowDown"){ e.preventDefault(); setActive(Math.min(cbItems.length-1, cbActive+1)); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); setActive(Math.max(0, cbActive-1)); }
+  else if(e.key==="Enter"){ e.preventDefault(); if(cbItems[cbActive]) pickCountry(cbItems[cbActive].c); }
+  else if(e.key==="Escape"){ openCb(false); $("cbBtn").focus(); }
+});
+document.addEventListener("click", e=>{
+  if(!$("cb").contains(e.target)) openCb(false) || null;
+  if(!e.target.closest(".lang")) toggleLangSafe();
+});
+function toggleLangSafe(){ if($("langMenu").classList.contains("open")){ $("langMenu").classList.remove("open"); $("langBtn").setAttribute("aria-expanded","false"); } }
+
+/* ============ views ============ */
+const VIEWS = ["login","reset","s1","s2","s3","s4"];
+function showView(v){
+  st.view = v;
+  const inCab = v==="cab";
+  $("app").hidden = inCab; $("cab").hidden = !inCab; document.body.classList.toggle("wide", inCab);
+  VIEWS.forEach(id => $(id).hidden = id!==v);
+  $("hero").hidden = inCab || st.editing;
+  $("verifiedMsg").hidden = !!st.editing; $("cancelEdit").hidden = !st.editing;
+  $("topUser").hidden = !st.profile;
+  renderSteps(); renderTopUser();
+  window.scrollTo({top:0, behavior:"smooth"});
+  if(v==="s3"||v==="s4"){ const first=$(v).querySelector("input,textarea"); if(first) setTimeout(()=>first.focus({preventScroll:true}),50); }
+}
+function go(n){ showView("s"+n); }
+function renderSteps(){
+  const ol=$("steps"); ol.textContent="";
+  const n = {s1:1,s2:2,s3:3,s4:4}[st.view];
+  ol.hidden = !n || st.editing;
+  if(!n) return;
+  t("steps").forEach((name,i)=>{
+    const li=document.createElement("li"); const k=i+1;
+    if(k===n){ li.className="on"; li.setAttribute("aria-current","step"); } else if(k<n) li.className="done";
+    const b=document.createElement("b"); b.textContent=k; li.append(b, document.createTextNode(name)); ol.appendChild(li);
+  });
+}
+function setOk(id, key, vars){ const el=$(id); if(!key){ el.textContent=""; delete el.dataset.k; return; } el.dataset.k=key; el.dataset.v=JSON.stringify(vars||null); el.textContent=t(key,vars); clearTimeout(el._t); el._t=setTimeout(()=>setOk(id),6000); }
+/* all dates use the French standard DD/MM/YYYY and 24-hour time, in every language */
+const pad2 = n => String(n).padStart(2,"0");
+function fmtDate(iso){ const d=new Date(iso); if(isNaN(d)) return ""; return pad2(d.getDate())+"/"+pad2(d.getMonth()+1)+"/"+d.getFullYear(); }
+function fmtTime(iso){ const d=new Date(iso); if(isNaN(d)) return ""; return fmtDate(iso)+" "+pad2(d.getHours())+":"+pad2(d.getMinutes()); }
+function genCode(){ const n=crypto.getRandomValues(new Uint32Array(1))[0]; return {code:String(n%1000000).padStart(6,"0"), expires:Date.now()+600000, tries:5}; }
+function checkCode(v, c){ if(Date.now()>v.expires) return "errExpired"; if(v.tries<=0) return "errLocked"; if(c!==v.code){ v.tries--; return v.tries>0?"errCode":"errLocked"; } return null; }
+const pwOk = p => p.length>=8 && /[a-z]/i.test(p) && /\d/.test(p);
+
+/* ============ step 1: account ============ */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+["fn","ln","em"].forEach(id=>$(id).addEventListener("input",()=>{ setErr(id+"Err"); $(id).removeAttribute("aria-invalid"); }));
+$("f1").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const fn=$("fn").value.trim(), ln=$("ln").value.trim(), em=$("em").value.trim().toLowerCase(), pw=$("pw").value;
+  let firstBad=null; const bad=(id,errId,k)=>{ setErr(errId,k); $(id).setAttribute("aria-invalid","true"); firstBad=firstBad||$(id); };
+  if(!fn) bad("fn","fnErr","errRequired");
+  if(!ln) bad("ln","lnErr","errRequired");
+  if(!em) bad("em","emErr","errRequired"); else if(!EMAIL_RE.test(em)) bad("em","emErr","errEmail");
+  if(!pwOk(pw)) bad("pw","pwErr","errPw");
+  if(!st.country) bad("cbBtn","cbErr","errCountry");
+  if(!$("agree").checked) bad("agree","agreeErr","errAgree");
+  if(firstBad){ firstBad.focus(); return; }
+  const btn=$("createBtn"); btn.disabled=true; btn.textContent=t("checking");
+  try{
+    const h = await sha256(em);
+    if(await Store.getReg(h)){ bad("em","emErr","errTaken"); firstBad.focus(); return; }
+    st.user = {first:fn, last:ln, email:em, hash:h, country:st.country, pw:await hashPw(pw),
+               consent:{termsAndConditions:true, version:LEGAL_VERSION, acceptedAt:new Date().toISOString()}};
+    $("pw").value=""; updateMeter();
+    sendCode(); $("verifySent").textContent = t("verifySent",{email:em}); $("code").value=""; setErr("codeErr");
+    go(2);
+  }catch(err){ setErr("emErr","askErr"); }
+  finally{ btn.disabled=false; btn.textContent=t("createAccount"); }
+});
+
+/* ============ step 2: email verification (simulated) ============ */
+let resendTimer=null;
+function sendCode(){ st.verify = Object.assign(genCode(), {resendAt:Date.now()+30000}); renderDemoCode(); tickResend(); }
+function renderDemoCode(){ const p=$("demoCode"); p.textContent=t("demoCode",{code:""}); const b=document.createElement("b"); b.textContent=st.verify.code; p.appendChild(b); }
+function tickResend(){
+  clearInterval(resendTimer);
+  const upd=()=>{ const s=Math.ceil((st.verify.resendAt-Date.now())/1000); const b=$("resendBtn");
+    if(s>0){ b.disabled=true; b.textContent=t("resendIn",{s}); } else { b.disabled=false; b.textContent=t("resend"); clearInterval(resendTimer); } };
+  upd(); resendTimer=setInterval(upd,1000);
+}
+$("resendBtn").onclick = ()=>{ sendCode(); setErr("codeErr"); $("code").value=""; $("code").focus(); };
+$("changeEmail").onclick = ()=>{ clearInterval(resendTimer); st.verify=null; go(1); $("em").focus(); $("em").select(); };
+$("code").addEventListener("input", ()=>{ $("code").value=$("code").value.replace(/\D/g,"").slice(0,6); setErr("codeErr"); });
+$("f2").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const bad = checkCode(st.verify, $("code").value); if(bad) return setErr("codeErr", bad, {n:st.verify.tries});
+  const u = st.user;
+  if(await Store.getReg(u.hash)){ go(1); setErr("emErr","errTaken"); $("em").setAttribute("aria-invalid","true"); return; }
+  const now = new Date().toISOString();
+  const p = {uid:randomId(), emailHash:u.hash, firstName:u.first, lastName:u.last, email:u.email, country:u.country, uiLanguage:lang,
+             pw:u.pw, consent:u.consent, emailVerifiedAt:now, createdAt:now, photo:null,
+             situation:{}, challenge:"", goals:[], dream:"", horizon:null, answers:{}, settings:{checkin:"weekly"}};
+  await Store.setReg(u.hash, p.uid);
+  await Store.saveProfile(p);
+  clearInterval(resendTimer); st.verify=null; st.user=null;
+  st.profile = p; Store.setSession(p.uid);
+  go(3);
+});
+
+/* ============ steps 3 & 4: situation and goals (sign-up and edit) ============ */
+function chipGroup(legendKey, name, opts, multi, labelFn, selected){
+  const fs=document.createElement("fieldset"); const lg=document.createElement("legend"); lg.textContent=t(legendKey); fs.appendChild(lg);
+  const wrap=document.createElement("div"); wrap.className="chips";
+  for(const o of opts){
+    const lab=document.createElement("label"); lab.className="chip";
+    const inp=document.createElement("input"); inp.type=multi?"checkbox":"radio"; inp.name=name; inp.value=o;
+    inp.checked = multi ? (selected||[]).includes(o) : selected===o;
+    const sp=document.createElement("span"); sp.textContent=labelFn(o);
+    lab.append(inp,sp); wrap.appendChild(lab);
+  }
+  fs.appendChild(wrap); return fs;
+}
+function readGroup(name, multi){ const v=[...document.querySelectorAll(`input[name="${name}"]:checked`)].map(i=>i.value); return multi?v:(v[0]||null); }
+function captureChoices(){
+  if(!$("sitGroups").children.length) return;
+  SIT.forEach(g=>st.sit[g.key]=readGroup("sit_"+g.key, g.multi));
+  st.goals=[...readGroup("g_social",true), ...readGroup("g_economic",true)];
+  st.horizon=readGroup("hz",false);
+}
+function renderChoiceGroups(){
+  captureChoices();
+  const sg=$("sitGroups"); sg.textContent="";
+  SIT.forEach(g=>sg.appendChild(chipGroup(g.key, "sit_"+g.key, g.opts, g.multi, o=>t(o), st.sit[g.key])));
+  const gg=$("goalGroups"); gg.textContent="";
+  gg.appendChild(chipGroup("social","g_social",GOALS.social,true,o=>t("g_"+o),st.goals));
+  gg.appendChild(chipGroup("economic","g_economic",GOALS.economic,true,o=>t("g_"+o),st.goals));
+  const hz=$("hzGroup"); hz.textContent=""; hz.appendChild(chipGroup("horizon","hz",["m3","y1","y3"],false,o=>t(o),st.horizon));
+}
+function loadChoices(p){
+  st.sit = JSON.parse(JSON.stringify(p.situation||{})); st.goals=[...(p.goals||[])]; st.horizon=p.horizon||null;
+  $("challenge").value=p.challenge||""; $("dream").value=p.dream||"";
+  $("sitGroups").textContent=""; renderChoiceGroups();
+}
+$("goalGroups").addEventListener("change", ()=>setErr("goalErr"));
+$("f3").addEventListener("submit", e=>{ e.preventDefault(); captureChoices(); st.challenge=$("challenge").value.trim(); go(4); });
+$("back4").onclick = ()=>{ captureChoices(); st.dream=$("dream").value.trim(); go(3); };
+$("cancelEdit").onclick = ()=>{ st.editing=false; openCabinet("profile"); };
+$("f4").addEventListener("submit", async e=>{
+  e.preventDefault(); captureChoices();
+  if(!st.goals.length){ setErr("goalErr","errGoal"); $("goalGroups").querySelector("input").focus(); return; }
+  const p = st.profile;
+  Object.assign(p, {situation:st.sit, challenge:$("challenge").value.trim(), goals:st.goals, dream:$("dream").value.trim(), horizon:st.horizon});
+  await Store.saveProfile(p);
+  const wasEditing = st.editing; st.editing=false;
+  openCabinet(wasEditing ? "profile" : "today");
+});
+
+/* ============ sign in / out ============ */
+$("toLogin").onclick = ()=>{ showView("login"); $("liEm").focus(); };
+$("toRegister").onclick = ()=>{ showView("s1"); $("fn").focus(); };
+["liEm","liPw"].forEach(id=>$(id).addEventListener("input",()=>setErr("liErr")));
+$("fL").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const em=$("liEm").value.trim().toLowerCase(), pw=$("liPw").value;
+  const btn=$("liBtn"); btn.disabled=true;
+  try{
+    const reg = EMAIL_RE.test(em) ? await Store.getReg(await sha256(em)) : null;
+    const p = reg && reg.uid ? await Store.getProfile(reg.uid) : null;
+    if(!p || !(await checkPw(pw, p.pw))){ setErr("liErr","errLogin"); $("liPw").select(); return; }
+    $("liPw").value=""; st.profile=p; Store.setSession(p.uid);
+    if(!p.goals || !p.goals.length){ loadChoices(p); go(3); } else openCabinet("today");
+  } finally { btn.disabled=false; }
+});
+function logout(){
+  Store.clearSession(); st.profile=null; st.editing=false; st.emailChange=null;
+  document.querySelectorAll("#cab input").forEach(i=>{ if(i.type!=="radio") i.value=""; });
+  ["fn","ln","em","pw","challenge","dream","code"].forEach(id=>$(id).value=""); $("agree").checked=false;
+  st.sit={}; st.goals=[]; st.horizon=null; $("sitGroups").textContent=""; renderChoiceGroups();
+  showView("login");
+}
+$("logoutBtn").onclick = logout;
+function flash(key){ const f=$("flash"); f.hidden=false; f.dataset.k=key; f.textContent=t(key); setTimeout(()=>{ f.hidden=true; delete f.dataset.k; }, 8000); }
+
+/* ============ avatar ============ */
+function initials(p){ return ((p.firstName||"")[0]||"").toUpperCase() + ((p.lastName||"")[0]||"").toUpperCase(); }
+function paintAvatar(el, p){
+  el.textContent="";
+  if(p && p.photo){ const img=document.createElement("img"); img.src=p.photo; img.alt=""; el.appendChild(img); }
+  else el.textContent = p ? initials(p) : "";
+}
+function renderTopUser(){ if(st.profile){ paintAvatar($("topAvatar"), st.profile); $("topName").textContent = st.profile.firstName; } }
+$("topAvatarBtn").onclick = ()=>{ if(st.profile) openCabinet(st.tab||"today"); };
+
+/* ============ cabinet ============ */
+const DOMAINS = [
+  {key:"social",   goals:GOALS.social,   about:"relationships, friendships, family, community, wellbeing, languages, moving abroad"},
+  {key:"economic", goals:GOALS.economic, about:"work, income, business, savings, debt, housing, investing, skills"},
+  {key:"health",   soon:true},
+  {key:"learning", soon:true}
+];
+const TABS = ["today","agent","inbox","profile","account","privacy"];
+let sampleNs=null, downloadsNs=null;
+(async()=>{ try{ if(window.claude && window.claude.use){
+  [sampleNs, downloadsNs] = await Promise.all([claude.use("sample"), claude.use("downloads")]);
+  if(st.view==="cab") renderCabinet();
+} }catch(e){} })();
+
+function openCabinet(tab){
+  st.tab = tab || st.tab || "today"; st.domain = st.domain || "social";
+  const p = st.profile;
+  $("fn2").value=p.firstName; $("ln2").value=p.lastName;
+  showView("cab"); renderCabinet();
+}
+function renderCabinet(){
+  if(!st.profile) return;
+  const p = st.profile;
+  paintAvatar($("cabAvatar"), p); paintAvatar($("accAvatar"), p);
+  $("headPhotoLbl").textContent = p.photo ? t("photoChange") : t("photoAdd");
+  $("headPhotoPick").title = p.photo ? t("photoChange") : t("photoAdd");
+  $("headPhotoDel").hidden = !p.photo; $("headPhotoDelLbl").textContent = t("photoRemove"); $("headPhotoDel").title = t("photoRemove");
+  $("cabHello").textContent = t("hello",{name:p.firstName});
+  const meta=$("cabMeta"); meta.textContent="";
+  const c=document.createElement("span"); const f=document.createElement("span"); f.className="flag"; f.textContent=flagOf(p.country);
+  c.append(f, document.createTextNode(" "+countryName(p.country,lang)));
+  const m=document.createElement("span"); m.textContent=t("memberSince",{date:fmtDate(p.createdAt)});
+  meta.append(c,m);
+  const tabs=$("cabTabs"); tabs.textContent="";
+  TABS.forEach(k=>{
+    const b=document.createElement("button"); b.type="button"; b.setAttribute("role","tab"); b.id="tabbtn-"+k;
+    b.setAttribute("aria-controls","tab-"+k); b.setAttribute("aria-selected", String(k===st.tab)); b.tabIndex = k===st.tab?0:-1;
+    b.textContent=t("tab"+k[0].toUpperCase()+k.slice(1)); b.onclick=()=>selectTab(k); tabs.appendChild(b);
+    if(k==="inbox"){ const n=(p.actions||[]).filter(a=>a.status==="pending").length; if(n){ const c=el("span","count",String(n)); c.setAttribute("aria-label",t("pendingNote",{n})); b.appendChild(c); } }
+  });
+  TABS.forEach(k=>$("tab-"+k).hidden = k!==st.tab);
+  renderTodayTab(); renderAgentTab(); renderInboxTab(); renderProfileTab(); renderAccountTab(); renderPrivacyTab();
+}
+function selectTab(k){ st.tab=k; renderCabinet(); $("tabbtn-"+k).focus(); }
+$("cabTabs").addEventListener("keydown", e=>{
+  const i=TABS.indexOf(st.tab); const rtl=document.documentElement.dir==="rtl";
+  const next = {ArrowRight: rtl?-1:1, ArrowLeft: rtl?1:-1}[e.key];
+  if(next){ e.preventDefault(); selectTab(TABS[(i+next+TABS.length)%TABS.length]); }
+});
+
+/* --- My agent: one part per life area --- */
+function el(tag, cls, text){ const x=document.createElement(tag); if(cls) x.className=cls; if(text!=null) x.textContent=text; return x; }
+function renderAgentTab(){
+  const box=$("tab-agent"); if(!box || !st.profile) return; box.textContent="";
+  const p=st.profile;
+  const pills=el("div","pills"); pills.setAttribute("role","group");
+  DOMAINS.forEach(d=>{
+    const b=el("button","pill"); b.type="button"; b.setAttribute("aria-pressed", String(d.key===st.domain));
+    b.append(document.createTextNode(t("d_"+d.key)));
+    if(d.soon) b.appendChild(el("small","soon",t("soon")));
+    else { const n=(p.goals||[]).filter(g=>d.goals.includes(g)).length; if(n) b.appendChild(el("small","count",String(n))); }
+    b.onclick=()=>{ st.domain=d.key; renderAgentTab(); box.querySelector('.pill[aria-pressed="true"]').focus(); };
+    pills.appendChild(b);
+  });
+  box.appendChild(pills);
+  const d=DOMAINS.find(x=>x.key===st.domain);
+  const panel=el("div","domain");
+  panel.appendChild(el("h2",null,t("d_"+d.key)));
+  if(d.soon){ panel.appendChild(el("p","sub",t("soonText"))); box.appendChild(panel); return; }
+
+  const mine=(p.goals||[]).filter(g=>d.goals.includes(g));
+  panel.appendChild(el("h3","sec-h",t("domainAgents")));
+  if(!mine.length){
+    panel.appendChild(el("p","sub",t("noGoalsDomain")));
+    const add=el("button","btn ghost",t("addGoals")); add.type="button"; add.onclick=startEdit; panel.appendChild(add);
+  } else {
+    const ul=el("ul","agents");
+    mine.forEach(g=>{ const li=el("li"); const dot=el("span","dot"); dot.setAttribute("aria-hidden","true");
+      li.append(dot, el("h3",null,AGENTS[g][lang][0]), el("p",null,AGENTS[g][lang][1])); ul.appendChild(li); });
+    panel.appendChild(ul);
+  }
+
+  panel.appendChild(el("h3","sec-h",t("answersTitle")));
+  if(sampleNs){
+    const f=document.createElement("form"); f.className="ask"; f.noValidate=true;
+    const lab=el("label","sr",t("askLabel")); lab.htmlFor="askQ";
+    const ta=el("textarea","inp"); ta.id="askQ"; ta.placeholder=t("askPh"); ta.rows=2; ta.value=st.askDraft||""; ta.oninput=()=>st.askDraft=ta.value;
+    const btn=el("button","btn",st.asking?t("asking"):t("askBtn")); btn.type="submit"; btn.disabled=!!st.asking;
+    const er=el("p","err"); er.id="askErr";
+    f.append(lab,ta,btn,er); f.onsubmit=ev=>{ ev.preventDefault(); askApa(d); };
+    panel.appendChild(f);
+  } else panel.appendChild(el("p","note",t("askUnavailable")));
+
+  const list=(p.answers||{})[d.key]||[];
+  if(!list.length) panel.appendChild(el("p","sub",t("noAnswers")));
+  list.forEach((a,idx)=>{
+    const art=el("article","answer");
+    const head=el("div","answer-head"); head.append(el("h4",null,a.title), el("time",null,fmtTime(a.at)));
+    art.appendChild(head);
+    if(a.q) art.appendChild(el("p","asked",t("youAsked",{q:a.q})));
+    art.appendChild(el("p",null,a.summary));
+    if(a.actions && a.actions.length){ art.appendChild(el("div","rh",t("whatToDo"))); const ol=el("ol"); a.actions.forEach(x=>ol.appendChild(el("li",null,x))); art.appendChild(ol); }
+    if(a.resources && a.resources.length){ art.appendChild(el("div","rh",t("resources"))); const ul=el("ul"); a.resources.forEach(x=>ul.appendChild(el("li",null,x))); art.appendChild(ul); }
+    const rm=el("button","link muted-link",t("removeAnswer")); rm.type="button";
+    rm.onclick=async()=>{ p.answers[d.key].splice(idx,1); await Store.saveProfile(p); renderAgentTab(); };
+    art.appendChild(rm);
+    panel.appendChild(art);
+  });
+  box.appendChild(panel);
+}
+const LANG_NAME = {en:"English",fr:"French",zh:"Simplified Chinese (Mandarin)",ar:"Modern Standard Arabic"};
+async function askApa(d){
+  if(st.asking) return;
+  const p=st.profile, q=(st.askDraft||"").trim();
+  st.asking=true; renderAgentTab();
+  const prev=((p.answers||{})[d.key]||[]).slice(0,5).map(a=>a.title);
+  const ctx={country:countryName(p.country,"en"), situation:p.situation, hardest_now:p.challenge,
+             goals_in_this_area:(p.goals||[]).filter(g=>d.goals.includes(g)).map(g=>T.en["g_"+g]), happier_this_year:p.dream, horizon:p.horizon};
+  const prompt=`You are APA, a personal agent that helps one person with the "${T.en["d_"+d.key]}" part of their life (${d.about}).
+Person (JSON): ${JSON.stringify(ctx)}
+Titles of earlier answers, do not repeat them: ${JSON.stringify(prev)}
+${q ? `The person asks: """${q}"""` : "No specific question: give the most useful next update for this area."}
+Write everything in ${LANG_NAME[lang]}. Return ONLY a JSON object, no markdown:
+{"title":"short title","summary":"2-3 sentences","actions":["3 to 5 concrete steps"],"resources":["2 to 4 real, well-known organizations, programs or websites, international or in the person's country"]}
+Be practical and kind. You are not a financial, legal or medical professional; say so when it matters.`;
+  try{
+    const r = await sampleNs.json(prompt, {modelTier:"default"});
+    if(!r || !r.title) throw new Error("bad");
+    const a={at:new Date().toISOString(), lang, q, title:String(r.title), summary:String(r.summary||""),
+             actions:(r.actions||[]).map(String).slice(0,6), resources:(r.resources||[]).map(String).slice(0,5)};
+    p.answers = p.answers||{}; p.answers[d.key] = [a, ...(p.answers[d.key]||[])].slice(0,20);
+    await Store.saveProfile(p); st.askDraft="";
+    st.asking=false; renderAgentTab();
+  }catch(err){
+    st.asking=false;
+    if(err && err.code==="not_granted"){ sampleNs=null; }
+    renderAgentTab(); if($("askErr")) setErr("askErr","askErr");
+  }
+}
+
+/* --- Situation and goals --- */
+function startEdit(){ st.editing=true; loadChoices(st.profile); go(3); }
+function renderProfileTab(){
+  const box=$("tab-profile"); box.textContent=""; const p=st.profile;
+  const dl=el("dl","facts");
+  const row=(k,v)=>{ dl.append(el("dt",null,t(k)), el("dd",v?null:"muted",v||t("notAnswered"))); };
+  SIT.forEach(g=>{ const v=(p.situation||{})[g.key]; row(g.key, Array.isArray(v)? v.map(x=>t(x)).join(", ") : (v?t(v):"")); });
+  row("sumChallenge", p.challenge);
+  DOMAINS.filter(d=>!d.soon).forEach(d=>row(d.key, (p.goals||[]).filter(g=>d.goals.includes(g)).map(g=>t("g_"+g)).join(", ")));
+  row("sumDream", p.dream); row("sumHorizon", p.horizon?t(p.horizon):"");
+  const b=el("button","btn",t("editSit")); b.type="button"; b.onclick=startEdit;
+  box.append(dl,b);
+}
+
+/* --- Account --- */
+function renderAccountTab(){
+  const p=st.profile;
+  $("photoBtnTxt").textContent = p.photo ? t("photoChange") : t("photoAdd");
+  $("photoRemove").hidden = !p.photo;
+  $("curEmail").textContent = t("currentEmail",{email:p.email});
+  const ci=$("ciGroup"); ci.textContent="";
+  ci.appendChild(chipGroup("checkinSub","ci",["ci_daily","ci_weekly","ci_news"],false,o=>t(o),"ci_"+((p.settings||{}).checkin||"weekly")));
+}
+async function handlePhoto(input, errId){
+  const file=input.files[0]; input.value=""; setErr("photoErr"); setErr("headPhotoErr");
+  if(!file) return; if(!/^image\//.test(file.type)) return setErr(errId,"photoErr");
+  try{
+    const url = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+    const img = await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
+    const S=256, cv=document.createElement("canvas"); cv.width=cv.height=S; const cx=cv.getContext("2d");
+    const side=Math.min(img.width,img.height); cx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,S,S);
+    st.profile.photo = cv.toDataURL("image/jpeg",0.85);
+    await Store.saveProfile(st.profile); renderCabinet(); renderTopUser(); setOk("photoOk","saved");
+  }catch(e){ setErr(errId,"photoErr"); }
+}
+async function removePhoto(){ st.profile.photo=null; await Store.saveProfile(st.profile); renderCabinet(); renderTopUser(); }
+$("photoIn").addEventListener("change", ()=>handlePhoto($("photoIn"),"photoErr"));
+$("photoIn2").addEventListener("change", ()=>handlePhoto($("photoIn2"),"headPhotoErr"));
+$("headPhotoDel").onclick = async ()=>{ await removePhoto(); $("photoIn2").focus(); };
+$("photoRemove").onclick = async ()=>{ await removePhoto(); $("photoIn").focus(); };
+$("fName").addEventListener("submit", async e=>{
+  e.preventDefault(); const a=$("fn2").value.trim(), b=$("ln2").value.trim();
+  setErr("nameErr"); if(!a||!b) return setErr("nameErr","errRequired");
+  st.profile.firstName=a; st.profile.lastName=b; await Store.saveProfile(st.profile);
+  renderCabinet(); renderTopUser(); setOk("nameOk","saved");
+});
+$("fEmail").addEventListener("submit", async e=>{
+  e.preventDefault(); setErr("neErr");
+  const em=$("ne").value.trim().toLowerCase(), pw=$("nePw").value, p=st.profile;
+  if(!EMAIL_RE.test(em)) return setErr("neErr","errEmail");
+  if(em===p.email) return setErr("neErr","errSameEmail");
+  if(!(await checkPw(pw,p.pw))) return setErr("neErr","errPwWrong");
+  const h=await sha256(em);
+  if(await Store.getReg(h)) return setErr("neErr","errTaken");
+  st.emailChange = Object.assign(genCode(), {email:em, hash:h});
+  $("nePw").value=""; $("neVerify").hidden=false; renderNeDemo(); $("neCode").value=""; $("neCode").focus();
+});
+function renderNeDemo(){ const n=$("neDemo"); n.textContent=t("demoCode",{code:""}); n.appendChild(el("b",null,st.emailChange.code)); $("neSent").textContent=t("verifySent",{email:st.emailChange.email}); }
+$("neCode").addEventListener("input", ()=>{ $("neCode").value=$("neCode").value.replace(/\D/g,"").slice(0,6); setErr("neCodeErr"); });
+$("neCancel").onclick = ()=>{ st.emailChange=null; $("neVerify").hidden=true; $("ne").value=""; };
+$("neVerifyBtn").onclick = async ()=>{
+  const v=st.emailChange, p=st.profile; const bad=checkCode(v,$("neCode").value);
+  if(bad) return setErr("neCodeErr",bad,{n:v.tries});
+  if(await Store.getReg(v.hash)){ $("neVerify").hidden=true; return setErr("neErr","errTaken"); }
+  await Store.setReg(v.hash, p.uid); await Store.delReg(p.emailHash);
+  Object.assign(p,{email:v.email, emailHash:v.hash, emailVerifiedAt:new Date().toISOString()});
+  await Store.saveProfile(p); st.emailChange=null;
+  $("neVerify").hidden=true; $("ne").value=""; renderAccountTab(); setOk("neOk","emailChanged",{email:p.email});
+};
+$("fPw").addEventListener("submit", async e=>{
+  e.preventDefault(); setErr("npwErr");
+  const cur=$("cpw").value, nw=$("npw").value, p=st.profile;
+  if(!(await checkPw(cur,p.pw))) return setErr("npwErr","errPwWrong");
+  if(!pwOk(nw)) return setErr("npwErr","errPw");
+  p.pw = await hashPw(nw); await Store.saveProfile(p);
+  $("cpw").value=""; $("npw").value=""; setOk("pwOk","pwChanged");
+});
+$("ciGroup").addEventListener("change", async e=>{
+  const v=e.target.value.replace("ci_",""); st.profile.settings=Object.assign({},st.profile.settings,{checkin:v});
+  await Store.saveProfile(st.profile); setOk("ciOk","saved");
+});
+
+/* --- Privacy and data --- */
+function renderPrivacyTab(){
+  const p=st.profile, c=p.consent||{};
+  $("consentTxt").textContent = t("consentText",{v:c.version||"-", date:fmtDate(c.acceptedAt)});
+  const links=$("consentLinks"); links.textContent="";
+  links.append(docLink("terms","linkTerms"), docLink("conditions","linkConditions"), docLink("privacy","linkPrivacy"));
+}
+$("exportBtn").onclick = async ()=>{
+  setErr("exportErr");
+  const p=Object.assign({}, st.profile); delete p.pw;
+  const json = JSON.stringify({exportedAt:new Date().toISOString(), service:"Apacom", profile:p}, null, 2);
+  const filename = "apacom-my-data.json";
+  try{
+    if(downloadsNs){ await downloadsNs.save({filename, data:json}); return; }
+    const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([json],{type:"application/json"})); a.download=filename;
+    document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }catch(err){ if(!err || err.code!=="cancelled") setErr("exportErr","exportErr"); }
+};
+$("delStart").onclick = ()=>{ $("delBlock").hidden=false; $("delStart").hidden=true; $("delPw").focus(); };
+$("delCancel").onclick = ()=>{ $("delBlock").hidden=true; $("delStart").hidden=false; $("delPw").value=""; setErr("delErr"); };
+$("delFinal").onclick = async ()=>{
+  const p=st.profile;
+  if(!(await checkPw($("delPw").value, p.pw))) return setErr("delErr","errPwWrong");
+  await Store.delReg(p.emailHash); await Store.delProfile(p.uid);
+  $("delPw").value=""; $("delBlock").hidden=true; $("delStart").hidden=false;
+  logout(); showView("s1"); flash("deleted");
+};
+
+/* ============ forgot password ============ */
+$("toReset").onclick = ()=>{ $("fR1").hidden=false; $("fR2").hidden=true; $("rEm").value=$("liEm").value; showView("reset"); $("rEm").focus(); };
+$("resetBack").onclick = ()=>{ st.reset=null; showView("login"); };
+$("fR1").addEventListener("submit", async e=>{
+  e.preventDefault(); setErr("rEmErr");
+  const em=$("rEm").value.trim().toLowerCase(); if(!EMAIL_RE.test(em)) return setErr("rEmErr","errEmail");
+  const reg = await Store.getReg(await sha256(em));
+  const p = reg && reg.uid ? await Store.getProfile(reg.uid) : null;
+  st.reset = Object.assign(genCode(), {email:em, uid: p ? p.uid : null});
+  $("rSent").textContent = t("resetSent",{email:em});
+  // same message whether or not the account exists, so the form can't be used to probe emails.
+  // the demo shows the code only when an account exists, standing in for the real email.
+  const d=$("rDemo"); d.hidden=!p; if(p){ d.textContent=t("demoCode",{code:""}); d.appendChild(el("b",null,st.reset.code)); }
+  $("fR1").hidden=true; $("fR2").hidden=false; $("rCode").value=""; $("rPw").value=""; setErr("rErr"); $("rCode").focus();
+});
+$("rCode").addEventListener("input", ()=>{ $("rCode").value=$("rCode").value.replace(/\D/g,"").slice(0,6); setErr("rErr"); });
+$("fR2").addEventListener("submit", async e=>{
+  e.preventDefault(); const r=st.reset;
+  if(!r.uid){ r.tries--; return setErr("rErr", r.tries>0?"errCode":"errLocked", {n:Math.max(0,r.tries)}); }
+  const bad=checkCode(r, $("rCode").value); if(bad) return setErr("rErr",bad,{n:r.tries});
+  if(!pwOk($("rPw").value)) return setErr("rErr","errPw");
+  const p = await Store.getProfile(r.uid); if(!p) return setErr("rErr","errExpired");
+  p.pw = await hashPw($("rPw").value); await Store.saveProfile(p);
+  $("rPw").value=""; st.reset=null; st.profile=p; Store.setSession(p.uid);
+  if(!p.goals || !p.goals.length){ loadChoices(p); go(3); } else openCabinet("today");
+  flash("resetDone");
+});
+
+/* ============ daily brief ============ */
+const todayKey = () => new Date().toLocaleDateString("en-CA");
+function areaTag(area){ return el("span","area-tag",t("d_"+area)); }
+function briefItems(b){
+  const wrap=el("div","brief");
+  if(b.greeting) wrap.appendChild(el("p","brief-greet",b.greeting));
+  (b.items||[]).forEach(it=>{ const a=el("article","brief-item"); a.append(areaTag(it.area), el("h3",null,it.headline), el("p",null,it.detail)); wrap.appendChild(a); });
+  return wrap;
+}
+function renderTodayTab(){
+  const box=$("tab-today"); if(!box || !st.profile) return; box.textContent="";
+  const p=st.profile;
+  box.appendChild(el("h2","tab-h",t("briefTitle",{date:fmtDate(new Date().toISOString())})));
+  box.appendChild(el("p","sub",t("briefSub")));
+  const pending=(p.actions||[]).filter(a=>a.status==="pending");
+  if(pending.length){
+    const bar=el("div","pending-bar"); bar.appendChild(el("span",null,t("pendingNote",{n:pending.length})));
+    const rv=el("button","link",t("openInbox")); rv.type="button"; rv.onclick=()=>selectTab("inbox"); bar.appendChild(rv);
+    box.appendChild(bar);
+  }
+  const today=(p.briefs||[]).find(b=>b.date===todayKey());
+  if(today) box.appendChild(briefItems(today));
+  else box.appendChild(el("p","sub",t("briefNone")));
+  if(sampleNs){
+    const b=el("button", today?"btn ghost":"btn", st.briefing?t("briefing"):(today?t("briefRefresh"):t("briefBtn")));
+    b.type="button"; b.disabled=!!st.briefing; b.onclick=makeBrief; box.appendChild(b);
+  } else box.appendChild(el("p","note",t("askUnavailable")));
+  const er=el("p","err"); er.id="briefErr"; box.appendChild(er);
+  const older=(p.briefs||[]).filter(b=>b.date!==todayKey());
+  if(older.length){
+    box.appendChild(el("h3","sec-h",t("earlierBriefs")));
+    older.forEach(b=>{ const d=document.createElement("details"); d.className="old-brief"; d.appendChild(el("summary",null,fmtDate(b.at))); d.appendChild(briefItems(b)); box.appendChild(d); });
+  }
+}
+async function makeBrief(){
+  if(st.briefing || !sampleNs) return;
+  const p=st.profile; st.briefing=true; renderTodayTab();
+  const areas = DOMAINS.filter(d=>!d.soon).map(d=>({area:d.key, goals:(p.goals||[]).filter(g=>d.goals.includes(g))}));
+  const ctx={country:countryName(p.country,"en"), situation:p.situation, hardest_now:p.challenge, happier_this_year:p.dream, horizon:p.horizon,
+             areas:areas.map(a=>({area:a.area, goals:a.goals.map(g=>({key:g, label:T.en["g_"+g]}))}))};
+  const recent=(p.briefs||[]).slice(0,3).flatMap(b=>(b.items||[]).map(i=>i.headline));
+  const pendingTitles=(p.actions||[]).filter(a=>a.status==="pending").map(a=>a.title);
+  const prompt=`You are APA, a personal agent that works around the clock for one person. Prepare their daily brief for ${todayKey()}.
+Person (JSON): ${JSON.stringify(ctx)}
+Recent headlines, do not repeat: ${JSON.stringify(recent)}
+Proposals already waiting for approval, do not repeat: ${JSON.stringify(pendingTitles)}
+Write everything in ${LANG_NAME[lang]}. Return ONLY a JSON object, no markdown:
+{"greeting":"one warm, specific sentence",
+ "items":[{"area":"social or economic","headline":"short","detail":"1-2 sentences: a concrete finding, tip or opportunity"}],
+ "proposals":[{"area":"social or economic","goal":"one of the goal keys above","kind":"apply, contact, enroll, book or other","title":"short action APA could take for the person","detail":"exactly what APA would do and why it helps"}]}
+Give 2 to 4 items covering the areas that have goals, and 1 to 3 proposals. Proposals must be things that need the person's permission. Be practical and kind; never present financial, legal or medical guidance as certain.`;
+  try{
+    const r = await sampleNs.json(prompt, {modelTier:"default"});
+    if(!r || !Array.isArray(r.items)) throw new Error("bad");
+    const okArea = a => a==="social"||a==="economic" ? a : "social";
+    const brief={date:todayKey(), at:new Date().toISOString(), lang, greeting:String(r.greeting||""),
+      items:r.items.slice(0,5).map(i=>({area:okArea(i.area), headline:String(i.headline||""), detail:String(i.detail||"")}))};
+    p.briefs=[brief, ...(p.briefs||[]).filter(b=>b.date!==brief.date)].slice(0,7);
+    const allGoals=[...GOALS.social, ...GOALS.economic];
+    (Array.isArray(r.proposals)?r.proposals:[]).slice(0,3).forEach(x=>{
+      p.actions=p.actions||[];
+      p.actions.unshift({id:randomId(8), area:okArea(x.area), goal:allGoals.includes(x.goal)?x.goal:null, kind:String(x.kind||"other"),
+        title:String(x.title||""), detail:String(x.detail||""), status:"pending", createdAt:new Date().toISOString(), lang});
+    });
+    p.actions=(p.actions||[]).slice(0,50);
+    await Store.saveProfile(p);
+    st.briefing=false; renderCabinet();
+  }catch(err){
+    st.briefing=false; if(err && err.code==="not_granted") sampleNs=null;
+    renderTodayTab(); if($("briefErr")) setErr("briefErr","briefErr");
+  }
+}
+
+/* ============ approvals inbox ============ */
+function agentName(a){ return a.goal && AGENTS[a.goal] ? AGENTS[a.goal][lang][0] : t("d_"+a.area); }
+async function decide(a, status){
+  a.status=status; a.decidedAt = status==="pending" ? null : new Date().toISOString();
+  await Store.saveProfile(st.profile); renderCabinet();
+  if(status==="approved") setOk("inboxOk","approvedNote");
+}
+function renderInboxTab(){
+  const box=$("tab-inbox"); if(!box || !st.profile) return; box.textContent="";
+  const list=st.profile.actions||[];
+  box.appendChild(el("h2","tab-h",t("inboxTitle")));
+  box.appendChild(el("p","sub",t("inboxSub")));
+  const ok=el("p","okmsg"); ok.id="inboxOk"; ok.setAttribute("role","status"); box.appendChild(ok);
+  const pending=list.filter(a=>a.status==="pending");
+  if(!pending.length) box.appendChild(el("p","sub",t("inboxEmpty")));
+  pending.forEach(a=>{
+    const art=el("article","proposal");
+    const meta=el("div","proposal-meta"); meta.append(areaTag(a.area), el("span",null,t("proposedBy",{agent:agentName(a)})));
+    const acts=el("div","actions");
+    const yes=el("button","btn",t("approve")); yes.type="button"; yes.onclick=()=>decide(a,"approved");
+    const no=el("button","btn ghost",t("decline")); no.type="button"; no.onclick=()=>decide(a,"declined");
+    acts.append(yes,no);
+    art.append(meta, el("h3",null,a.title), el("p",null,a.detail), acts);
+    box.appendChild(art);
+  });
+  const done=list.filter(a=>a.status!=="pending");
+  if(done.length){
+    box.appendChild(el("h3","sec-h",t("history")));
+    const ul=el("ul","decided");
+    done.forEach(a=>{
+      const li=el("li"); const s=el("span","status-"+a.status, t("st_"+a.status));
+      const u=el("button","link muted-link",t("undo")); u.type="button"; u.onclick=()=>decide(a,"pending");
+      li.append(el("span","d-title",a.title), s, el("time",null,fmtDate(a.decidedAt)), u); ul.appendChild(li);
+    });
+    box.appendChild(ul);
+  }
+}
+
+/* ============ legal pages: Terms, Conditions, Privacy (GDPR / RGPD) ============ */
+const LEGAL_VERSION = "2026-10-05";
+const LUI = {
+en:{agree:"I agree to the {terms} and {conditions}.",linkTerms:"Terms",linkConditions:"Conditions",linkPrivacy:"Privacy & GDPR",errAgree:"Accept the Terms and Conditions to create your account.",updated:"Last updated {date}",draft:"Template for this demo. Have it reviewed by a lawyer before launch.",backReg:"Back to registration"},
+fr:{agree:"J’accepte les {terms} et les {conditions}.",linkTerms:"Conditions générales d’utilisation",linkConditions:"Conditions de service",linkPrivacy:"Confidentialité et RGPD",errAgree:"Acceptez les conditions pour créer votre compte.",updated:"Dernière mise à jour : {date}",draft:"Modèle pour cette démo. Faites-le relire par un avocat avant le lancement.",backReg:"Retour à l’inscription"},
+zh:{agree:"我已阅读并同意{terms}和{conditions}。",linkTerms:"使用条款",linkConditions:"服务条件",linkPrivacy:"隐私与 GDPR",errAgree:"请同意条款和条件以创建账户。",updated:"最后更新：{date}",draft:"本文为演示模板，正式上线前请交由律师审核。",backReg:"返回注册"},
+ar:{agree:"أوافق على {terms} و{conditions}.",linkTerms:"الشروط",linkConditions:"الأحكام",linkPrivacy:"الخصوصية وGDPR",errAgree:"وافق على الشروط والأحكام لإنشاء حسابك.",updated:"آخر تحديث: {date}",draft:"نموذج لهذا العرض التجريبي. اعرضه على محامٍ قبل الإطلاق.",backReg:"العودة إلى التسجيل"}
+};
+for(const l in LUI) Object.assign(T[l], LUI[l]);
+
+const LEGAL = {
+terms:{
+ en:{title:"Terms of Use",intro:"These terms explain how you may use Apacom, a personal AI agent that learns about your social and economic situation and looks for ways to help you. By creating an account, you accept them.",s:[
+  ["The service","Apacom builds a profile from what you tell it, searches for resources around the world and starts small helper agents for specific tasks. It is a demonstration prototype, and some features are simulated."],
+  ["Your account","You must give accurate information and keep your password secret. One email address can hold only one account. You are responsible for activity on your account."],
+  ["Acceptable use","Do not use the service to break the law, harm others, send spam, or try to access other people's data or the system's code."],
+  ["AI suggestions are not professional advice","Suggestions are generated automatically and can be wrong or out of date. They are not financial, legal, medical or immigration advice. Check important decisions with a qualified professional."],
+  ["Helper agents act only with your approval","Helper agents can search and prepare actions, but they never apply, pay, sign or contact anyone on your behalf without your explicit confirmation."],
+  ["Intellectual property","The software and the brand belong to Apacom. What you write stays yours; you allow us to use it only to provide the service to you."],
+  ["Liability","The service is provided as is. To the extent the law allows, Apacom is not liable for indirect losses resulting from decisions you make based on suggestions."],
+  ["Changes and termination","We may update these terms and will tell you about significant changes by email. You can close your account at any time. We may suspend accounts that break these terms."],
+  ["Governing law","These terms are governed by the law of [country to be completed]. Mandatory consumer protections of your country of residence still apply."]]},
+ fr:{title:"Conditions générales d’utilisation",intro:"Ces conditions expliquent comment utiliser Apacom, un agent IA personnel qui apprend votre situation sociale et économique et cherche des moyens de vous aider. En créant un compte, vous les acceptez.",s:[
+  ["Le service","Apacom construit un profil à partir de ce que vous lui dites, recherche des ressources dans le monde entier et lance de petits agents pour des tâches précises. C’est un prototype de démonstration ; certaines fonctions sont simulées."],
+  ["Votre compte","Vous devez fournir des informations exactes et garder votre mot de passe secret. Une adresse e-mail correspond à un seul compte. Vous êtes responsable de l’activité de votre compte."],
+  ["Usage acceptable","N’utilisez pas le service pour enfreindre la loi, nuire à autrui, envoyer du spam ou tenter d’accéder aux données d’autres personnes ou au code du système."],
+  ["Les suggestions de l’IA ne sont pas des conseils professionnels","Les suggestions sont générées automatiquement et peuvent être erronées ou dépassées. Elles ne constituent pas un conseil financier, juridique, médical ou en immigration. Vérifiez les décisions importantes auprès d’un professionnel qualifié."],
+  ["Les agents n’agissent qu’avec votre accord","Les agents peuvent rechercher et préparer des actions, mais ils ne postulent, ne paient, ne signent et ne contactent jamais personne en votre nom sans votre confirmation explicite."],
+  ["Propriété intellectuelle","Le logiciel et la marque appartiennent à Apacom. Ce que vous écrivez reste à vous ; vous nous autorisez à l’utiliser uniquement pour vous fournir le service."],
+  ["Responsabilité","Le service est fourni en l’état. Dans les limites permises par la loi, Apacom n’est pas responsable des pertes indirectes liées aux décisions que vous prenez sur la base des suggestions."],
+  ["Modifications et résiliation","Nous pouvons mettre à jour ces conditions et vous informerons par e-mail des changements importants. Vous pouvez fermer votre compte à tout moment. Nous pouvons suspendre les comptes qui ne respectent pas ces conditions."],
+  ["Droit applicable","Ces conditions sont régies par le droit de [pays à compléter]. Les protections impératives des consommateurs de votre pays de résidence continuent de s’appliquer."]]},
+ zh:{title:"使用条款",intro:"本条款说明您如何使用 Apacom。Apacom 是一款个人 AI 智能体，会了解您的社会和经济状况，并寻找帮助您的方法。创建账户即表示您接受本条款。",s:[
+  ["服务内容","Apacom 根据您提供的信息建立个人资料，在全球范围内搜索资源，并为具体任务启动小型助手智能体。本服务为演示原型，部分功能为模拟。"],
+  ["您的账户","您必须提供真实信息并妥善保管密码。每个电子邮箱只能对应一个账户。您需对账户中的活动负责。"],
+  ["合理使用","不得利用本服务违反法律、伤害他人、发送垃圾信息，或试图获取他人数据或系统代码。"],
+  ["AI 建议不构成专业意见","建议由系统自动生成，可能有误或已过时，不构成财务、法律、医疗或移民方面的专业意见。重要决定请咨询合格的专业人士。"],
+  ["助手智能体仅在您同意后行动","助手智能体可以搜索并准备操作，但未经您明确确认，绝不会代表您提交申请、付款、签署或联系任何人。"],
+  ["知识产权","软件和品牌归 Apacom 所有。您撰写的内容仍归您所有，您仅授权我们为向您提供服务而使用。"],
+  ["责任","本服务按“现状”提供。在法律允许的范围内，对于您依据建议作出决定所导致的间接损失，Apacom 不承担责任。"],
+  ["变更与终止","我们可能更新本条款，重大变更将通过电子邮件通知您。您可随时注销账户；对违反本条款的账户，我们可暂停其使用。"],
+  ["适用法律","本条款受[待填写国家]法律管辖。您居住国的强制性消费者保护规定仍然适用。"]]},
+ ar:{title:"شروط الاستخدام",intro:"توضّح هذه الشروط كيفية استخدامك لـ Apacom، وهو وكيل ذكاء اصطناعي شخصي يتعرّف على وضعك الاجتماعي والاقتصادي ويبحث عن سبل لمساعدتك. بإنشائك حسابًا فإنك توافق عليها.",s:[
+  ["الخدمة","يبني Apacom ملفًا شخصيًا مما تخبره به، ويبحث عن موارد حول العالم، ويُطلق وكلاء مساعدين صغارًا لمهام محددة. إنه نموذج تجريبي، وبعض ميزاته محاكاة."],
+  ["حسابك","يجب أن تقدّم معلومات صحيحة وأن تحافظ على سرية كلمة مرورك. لكل بريد إلكتروني حساب واحد فقط. وأنت مسؤول عن النشاط الذي يجري في حسابك."],
+  ["الاستخدام المقبول","لا تستخدم الخدمة لمخالفة القانون أو إيذاء الآخرين أو إرسال رسائل مزعجة أو محاولة الوصول إلى بيانات الآخرين أو إلى شيفرة النظام."],
+  ["اقتراحات الذكاء الاصطناعي ليست استشارة مهنية","تُنشأ الاقتراحات آليًا وقد تكون خاطئة أو قديمة، وهي ليست استشارة مالية أو قانونية أو طبية أو استشارة في الهجرة. راجع القرارات المهمة مع مختص مؤهَّل."],
+  ["الوكلاء المساعدون لا يتصرفون إلا بموافقتك","يمكن للوكلاء البحث وتحضير الإجراءات، لكنهم لا يقدّمون طلبات ولا يدفعون ولا يوقّعون ولا يتواصلون مع أي جهة نيابةً عنك دون تأكيد صريح منك."],
+  ["الملكية الفكرية","البرنامج والعلامة التجارية ملك لـ Apacom. وما تكتبه يبقى ملكًا لك، وتسمح لنا باستخدامه فقط لتقديم الخدمة لك."],
+  ["المسؤولية","تُقدَّم الخدمة كما هي. وفي الحدود التي يسمح بها القانون، لا يتحمّل Apacom مسؤولية الخسائر غير المباشرة الناتجة عن قرارات تتخذها بناءً على الاقتراحات."],
+  ["التعديلات وإنهاء الحساب","قد نحدّث هذه الشروط، وسنُعلمك بالتغييرات الجوهرية عبر البريد الإلكتروني. يمكنك إغلاق حسابك في أي وقت، وقد نعلّق الحسابات التي تخالف هذه الشروط."],
+  ["القانون الواجب التطبيق","تخضع هذه الشروط لقانون [يُستكمل اسم البلد]. وتظل الحمايات الإلزامية للمستهلك في بلد إقامتك سارية."]]}
+},
+conditions:{
+ en:{title:"Conditions of Service",intro:"These conditions describe who can register and how the service works day to day.",s:[
+  ["Who can register","You must be at least 18 years old, or have reached the age of digital consent in your country with permission from a parent or guardian."],
+  ["Email verification","Your account becomes active only after you confirm your email with a 6-digit code. The code is valid for 10 minutes and allows 5 attempts."],
+  ["One person, one email","Each email address can register only once. Duplicate or fake accounts may be removed."],
+  ["Price","The demo is free. If paid plans are introduced, prices will be shown clearly before you pay, and nothing will be charged without your agreement."],
+  ["Availability","We aim for the agent to run around the clock, but maintenance or outages can interrupt it. We do not guarantee uninterrupted service."],
+  ["Your information","Keep your profile up to date so suggestions stay relevant. You can edit or delete your answers at any time, and all situation questions are optional."],
+  ["Communications","We send service emails such as verification codes and important notices. Marketing messages are sent only if you opt in."],
+  ["Contact","Questions about these conditions: [contact email to be completed]."]]},
+ fr:{title:"Conditions de service",intro:"Ces conditions précisent qui peut s’inscrire et comment le service fonctionne au quotidien.",s:[
+  ["Qui peut s’inscrire","Vous devez avoir au moins 18 ans, ou l’âge de la majorité numérique dans votre pays avec l’autorisation d’un parent ou d’un tuteur."],
+  ["Vérification de l’e-mail","Votre compte n’est activé qu’après la confirmation de votre e-mail par un code à 6 chiffres. Le code est valable 10 minutes et permet 5 essais."],
+  ["Une personne, un e-mail","Chaque adresse e-mail ne peut s’inscrire qu’une seule fois. Les comptes en double ou faux peuvent être supprimés."],
+  ["Prix","La démo est gratuite. Si des offres payantes sont proposées, les prix seront affichés clairement avant le paiement et rien ne sera prélevé sans votre accord."],
+  ["Disponibilité","Nous visons un fonctionnement 24 h/24, mais la maintenance ou des pannes peuvent l’interrompre. Nous ne garantissons pas un service sans interruption."],
+  ["Vos informations","Tenez votre profil à jour pour que les suggestions restent pertinentes. Vous pouvez modifier ou supprimer vos réponses à tout moment ; toutes les questions sur votre situation sont facultatives."],
+  ["Communications","Nous envoyons des e-mails de service, comme les codes de vérification et les avis importants. Les messages marketing ne sont envoyés qu’avec votre accord."],
+  ["Contact","Questions sur ces conditions : [e-mail de contact à compléter]."]]},
+ zh:{title:"服务条件",intro:"本条件说明谁可以注册，以及服务的日常运作方式。",s:[
+  ["注册资格","您必须年满 18 周岁，或已达到您所在国家规定的数字同意年龄并获得父母或监护人的许可。"],
+  ["邮箱验证","您需通过 6 位验证码确认邮箱后，账户方可激活。验证码有效期为 10 分钟，最多可尝试 5 次。"],
+  ["一人一邮箱","每个电子邮箱只能注册一次。重复或虚假账户可能会被删除。"],
+  ["价格","演示版免费。若将来推出付费方案，价格会在付款前清楚显示，未经您同意不会收取任何费用。"],
+  ["服务可用性","我们力求智能体全天候运行，但维护或故障可能导致中断。我们不保证服务永不中断。"],
+  ["您的信息","请及时更新个人资料，以保持建议的相关性。您可随时修改或删除回答，所有关于现状的问题均为选填。"],
+  ["通知","我们会发送服务类邮件，如验证码和重要通知。仅在您同意后才会发送营销信息。"],
+  ["联系方式","如对本条件有疑问，请联系：[待填写联系邮箱]。"]]},
+ ar:{title:"أحكام الخدمة",intro:"تبيّن هذه الأحكام مَن يحق له التسجيل وكيف تعمل الخدمة يومًا بيوم.",s:[
+  ["مَن يحق له التسجيل","يجب أن يكون عمرك ١٨ عامًا على الأقل، أو أن تكون قد بلغت سن الموافقة الرقمية في بلدك مع إذن من أحد الوالدين أو الوصي."],
+  ["التحقق من البريد","لا يُفعَّل حسابك إلا بعد تأكيد بريدك برمز من ٦ أرقام. الرمز صالح لمدة ١٠ دقائق ويسمح بـ ٥ محاولات."],
+  ["شخص واحد، بريد واحد","يمكن لكل عنوان بريد التسجيل مرة واحدة فقط، وقد تُحذف الحسابات المكررة أو المزيفة."],
+  ["السعر","النسخة التجريبية مجانية. وإذا أُضيفت خطط مدفوعة، فستُعرض الأسعار بوضوح قبل الدفع، ولن يُخصم أي مبلغ دون موافقتك."],
+  ["توفّر الخدمة","نسعى إلى أن يعمل الوكيل على مدار الساعة، لكن الصيانة أو الأعطال قد توقفه، ولا نضمن خدمة دون انقطاع."],
+  ["معلوماتك","حدّث ملفك باستمرار لتبقى الاقتراحات مناسبة. يمكنك تعديل إجاباتك أو حذفها في أي وقت، وجميع أسئلة الوضع الحالي اختيارية."],
+  ["المراسلات","نرسل رسائل خدمية مثل رموز التحقق والإشعارات المهمة، ولا نرسل رسائل تسويقية إلا إذا وافقت على ذلك."],
+  ["التواصل","للاستفسار عن هذه الأحكام: [يُستكمل البريد الإلكتروني للتواصل]."]]}
+},
+privacy:{
+ en:{title:"Privacy and GDPR notice",intro:"This notice explains what personal data we collect, why we collect it, and the rights you have under the EU General Data Protection Regulation (GDPR, called RGPD in French) and similar laws.",s:[
+  ["Who is responsible","[Company name, address and registration number to be completed]. Data protection contact: [privacy email to be completed]."],
+  ["Data we collect","Identity and account: first name, surname, email, country and a hashed password. Profile: your answers about work, income range, household, housing, education, difficulties and goals. Technical: your language preference, stored in your browser."],
+  ["Why, and on what legal basis","To create and run your account (contract, Art. 6(1)(b)); to personalise suggestions and helper agents (consent, Art. 6(1)(a)); to keep the service secure (legitimate interest, Art. 6(1)(f)). Some goals, such as health, may reveal sensitive data; we process it only with your explicit consent (Art. 9(2)(a))."],
+  ["Automated suggestions","Suggestions are produced automatically, but they never lead to decisions with legal or similarly significant effects on you without human review and your approval (Art. 22)."],
+  ["Sharing and transfers","We do not sell your data. Service providers (hosting, email, AI processing) handle it on our instructions. Transfers outside the European Economic Area are protected by adequacy decisions or Standard Contractual Clauses."],
+  ["How long we keep data","As long as your account is active. After you close it, your data is deleted within 30 days, except what the law requires us to keep."],
+  ["Your rights","You can access, correct, delete or export your data, restrict or object to its processing, and withdraw consent at any time without affecting earlier processing. Write to [privacy email]. You can also complain to your supervisory authority, for example the CNIL in France."],
+  ["Security","Data is encrypted in transit, passwords are hashed, and access is limited to people who need it."]]},
+ fr:{title:"Politique de confidentialité et RGPD",intro:"Cette politique explique quelles données personnelles nous collectons, pourquoi, et quels droits vous avez au titre du Règlement général sur la protection des données (RGPD) et des lois similaires.",s:[
+  ["Responsable du traitement","[Nom, adresse et numéro d’immatriculation de la société à compléter]. Contact protection des données : [e-mail à compléter]."],
+  ["Données collectées","Identité et compte : prénom, nom, e-mail, pays et mot de passe haché. Profil : vos réponses sur le travail, la tranche de revenus, le foyer, le logement, les études, les difficultés et les objectifs. Technique : votre préférence de langue, enregistrée dans votre navigateur."],
+  ["Finalités et bases légales","Créer et gérer votre compte (exécution du contrat, art. 6.1.b) ; personnaliser les suggestions et les agents (consentement, art. 6.1.a) ; assurer la sécurité du service (intérêt légitime, art. 6.1.f). Certains objectifs, comme la santé, peuvent révéler des données sensibles ; nous ne les traitons qu’avec votre consentement explicite (art. 9.2.a)."],
+  ["Suggestions automatisées","Les suggestions sont produites automatiquement, mais n’entraînent jamais de décision produisant des effets juridiques ou similaires à votre égard sans intervention humaine ni votre accord (art. 22)."],
+  ["Partage et transferts","Nous ne vendons pas vos données. Nos prestataires (hébergement, e-mail, traitement IA) les traitent selon nos instructions. Les transferts hors de l’Espace économique européen sont encadrés par des décisions d’adéquation ou des clauses contractuelles types."],
+  ["Durée de conservation","Tant que votre compte est actif. Après sa fermeture, vos données sont supprimées sous 30 jours, sauf obligation légale de conservation."],
+  ["Vos droits","Vous pouvez accéder à vos données, les rectifier, les effacer ou les récupérer, limiter leur traitement ou vous y opposer, et retirer votre consentement à tout moment sans effet sur les traitements antérieurs. Écrivez à [e-mail à compléter]. Vous pouvez aussi saisir la CNIL ou l’autorité de contrôle de votre pays."],
+  ["Sécurité","Les données sont chiffrées en transit, les mots de passe sont hachés et l’accès est limité aux personnes qui en ont besoin."]]},
+ zh:{title:"隐私声明与 GDPR",intro:"本声明说明我们收集哪些个人数据、收集原因，以及您依据欧盟《通用数据保护条例》（GDPR，法语称 RGPD）及类似法律享有的权利。",s:[
+  ["数据控制者","[待填写公司名称、地址和注册号]。数据保护联系方式：[待填写隐私邮箱]。"],
+  ["我们收集的数据","身份与账户：名、姓、电子邮箱、国家/地区和经哈希处理的密码。个人资料：您关于工作、收入区间、家庭、住房、教育、困难和目标的回答。技术数据：保存在浏览器中的语言偏好。"],
+  ["目的与法律依据","创建和运营您的账户（履行合同，第 6(1)(b) 条）；个性化建议和助手智能体（同意，第 6(1)(a) 条）；保障服务安全（正当利益，第 6(1)(f) 条）。部分目标（如健康）可能涉及敏感数据，我们仅在您明确同意后处理（第 9(2)(a) 条）。"],
+  ["自动化建议","建议由系统自动生成，但未经人工审核和您的同意，绝不会产生对您具有法律效力或类似重大影响的决定（第 22 条）。"],
+  ["共享与跨境传输","我们不会出售您的数据。服务提供商（托管、邮件、AI 处理）按照我们的指示处理数据。向欧洲经济区以外的传输受充分性认定或标准合同条款保护。"],
+  ["保存期限","在您的账户有效期间保存。账户注销后，数据将在 30 天内删除，法律要求保留的除外。"],
+  ["您的权利","您可以访问、更正、删除或导出您的数据，限制或反对处理，并可随时撤回同意，且不影响此前的处理。请发送邮件至[隐私邮箱]。您也可以向所在国的监管机构投诉，例如法国的 CNIL。"],
+  ["安全","数据在传输过程中加密，密码经哈希处理，仅有需要的人员才能访问。"]]},
+ ar:{title:"إشعار الخصوصية واللائحة العامة لحماية البيانات (GDPR)",intro:"يشرح هذا الإشعار البيانات الشخصية التي نجمعها وسبب جمعها، والحقوق التي تمنحك إياها اللائحة العامة لحماية البيانات في الاتحاد الأوروبي (GDPR، وتُعرف بالفرنسية باسم RGPD) والقوانين المماثلة.",s:[
+  ["المسؤول عن المعالجة","[يُستكمل اسم الشركة وعنوانها ورقم تسجيلها]. جهة التواصل لحماية البيانات: [يُستكمل بريد الخصوصية]."],
+  ["البيانات التي نجمعها","الهوية والحساب: الاسم واسم العائلة والبريد الإلكتروني والبلد وكلمة مرور مُجزّأة (hashed). الملف الشخصي: إجاباتك عن العمل وشريحة الدخل والأسرة والسكن والتعليم والصعوبات والأهداف. بيانات تقنية: تفضيل اللغة المحفوظ في متصفحك."],
+  ["الغرض والأساس القانوني","إنشاء حسابك وتشغيله (تنفيذ العقد، المادة ٦(١)(ب))؛ وتخصيص الاقتراحات والوكلاء المساعدين (الموافقة، المادة ٦(١)(أ))؛ والحفاظ على أمن الخدمة (المصلحة المشروعة، المادة ٦(١)(و)). قد تكشف بعض الأهداف، مثل الصحة، عن بيانات حساسة، ولا نعالجها إلا بموافقتك الصريحة (المادة ٩(٢)(أ))."],
+  ["الاقتراحات الآلية","تُنتَج الاقتراحات آليًا، لكنها لا تؤدي أبدًا إلى قرارات ذات أثر قانوني أو أثر مماثل في أهميته عليك دون مراجعة بشرية وموافقتك (المادة ٢٢)."],
+  ["المشاركة والنقل","لا نبيع بياناتك. يتعامل معها مزوّدو الخدمات (الاستضافة والبريد ومعالجة الذكاء الاصطناعي) وفق تعليماتنا. ويُحمى نقلها خارج المنطقة الاقتصادية الأوروبية بقرارات الكفاية أو بالبنود التعاقدية القياسية."],
+  ["مدة الاحتفاظ","طوال مدة نشاط حسابك. وبعد إغلاقه تُحذف بياناتك خلال ٣٠ يومًا، باستثناء ما يُلزمنا القانون بالاحتفاظ به."],
+  ["حقوقك","يحق لك الاطلاع على بياناتك وتصحيحها وحذفها ونقلها، وتقييد معالجتها أو الاعتراض عليها، وسحب موافقتك في أي وقت دون أن يؤثر ذلك في المعالجة السابقة. راسلنا على [بريد الخصوصية]. ويمكنك أيضًا تقديم شكوى إلى سلطة الرقابة في بلدك، مثل CNIL في فرنسا."],
+  ["الأمان","تُشفَّر البيانات أثناء نقلها، وتُخزَّن كلمات المرور بعد تجزئتها، ويقتصر الوصول على الأشخاص الذين يحتاجون إليه."]]}
+}};
+
+function docLink(doc, key){
+  const a=document.createElement("a"); a.href="#"+doc+"-"+lang; a.target="_blank"; a.rel="noopener"; a.textContent=t(key);
+  a.addEventListener("click", e=>{ e.preventDefault(); e.stopPropagation(); openDoc(doc); });
+  return a;
+}
+/* each document opens in its own new tab; if the browser blocks the new tab, it opens on this page */
+function openDoc(doc){
+  const url = location.href.split("#")[0] + "#" + doc + "-" + lang;
+  let w=null; try{ w = window.open(url, "_blank"); }catch(e){}
+  if(w){ try{ w.opener=null; }catch(e){} } else { location.hash = doc + "-" + lang; }
+}
+function renderAgree(){
+  const box=$("agreeTxt"); box.textContent="";
+  const parts = t("agree").split(/(\{terms\}|\{conditions\})/);
+  for(const p of parts){
+    if(p==="{terms}") box.appendChild(docLink("terms","linkTerms"));
+    else if(p==="{conditions}") box.appendChild(docLink("conditions","linkConditions"));
+    else if(p) box.appendChild(document.createTextNode(p));
+  }
+}
+function renderFooter(){
+  const f=$("footer"); f.textContent="";
+  const nav=document.createElement("nav"); nav.className="legal-links";
+  nav.append(docLink("terms","linkTerms"), docLink("conditions","linkConditions"), docLink("privacy","linkPrivacy"));
+  const p=document.createElement("p"); p.textContent=t("footer");
+  f.append(nav,p);
+}
+let currentDoc=null;
+function parseHash(){ const m=/^#(terms|conditions|privacy)(?:-(en|fr|zh|ar))?$/.exec(location.hash); return m?{doc:m[1], lang:m[2]}:null; }
+function renderDoc(){
+  const d = LEGAL[currentDoc][lang]; const art=$("docBody"); art.textContent="";
+  const h=document.createElement("h1"); h.className="doc-title"; h.textContent=d.title;
+  const date = fmtDate(LEGAL_VERSION+"T12:00:00");
+  const up=document.createElement("p"); up.className="doc-meta"; up.textContent=t("updated",{date});
+  const dr=document.createElement("p"); dr.className="note"; dr.textContent=t("draft");
+  const intro=document.createElement("p"); intro.className="doc-intro"; intro.textContent=d.intro;
+  art.append(h,up,dr,intro);
+  d.s.forEach(([title,body],i)=>{ const h2=document.createElement("h2"); h2.textContent=(i+1)+". "+title; const p=document.createElement("p"); p.textContent=body; art.append(h2,p); });
+  document.title = d.title + " | Apacom";
+  $("docBack").textContent = t("backReg");
+  try{ const want="#"+currentDoc+"-"+lang; if(location.hash!==want) history.replaceState(null,"",want); }catch(e){}
+}
+function route(){
+  const r=parseHash();
+  if(r){
+    currentDoc=r.doc;
+    if(r.lang && r.lang!==lang){ setLang(r.lang); }
+    $("app").hidden=true; $("cab").hidden=true; $("topUser").hidden=true; $("docView").hidden=false; renderDoc(); window.scrollTo(0,0);
+  } else if(currentDoc){
+    currentDoc=null; $("docView").hidden=true; document.title="Apacom | Personal Agent"; showView(st.view);
+  }
+}
+window.addEventListener("hashchange", route);
+
+$("agree").addEventListener("change", ()=>{ setErr("agreeErr"); $("agree").removeAttribute("aria-invalid"); });
+$("docBack").onclick = ()=>{ if(history.length<=1){ try{ window.close(); }catch(e){} } location.hash=""; };
+
+/* ============ boot ============ */
+buildIndex();
+Store.init();
+let saved=null; try{ saved=localStorage.getItem("apa_lang"); }catch(e){}
+const navLang = (navigator.language||"en").slice(0,2);
+setLang(saved && T[saved] ? saved : (T[navLang] ? navLang : "en"));
+showView("s1");
+route();
+// restore a signed-in session
+Store.ready.then(async ()=>{
+  const uid = Store.getSession(); if(!uid) return;
+  try{
+    const p = await Store.getProfile(uid); if(!p){ Store.clearSession(); return; }
+    st.profile = p;
+    if(!p.goals || !p.goals.length){ loadChoices(p); go(3); } else openCabinet("today");
+    if(currentDoc) route();
+  }catch(e){}
+});
+detectCountry().then(d=>{ if(d){ st.detected=d; if(!st.country){ st.country=d.code; } renderCountryValue(); } });
+</script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apacom | Live sources test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#fff;--ink:#15171c;--muted:#5d6472;--line:#e3e5ea;--soft:#f5f6f8;--accent:#2a3fe0;--accent-ink:#fff;--accent-soft:#eef0fd;--ok:#0f7d55;--err:#c0322b;--warn:#a26a00;
+  --font:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root{--paper:#121318;--ink:#eceef3;--muted:#a1a7b4;--line:#2b2e37;--soft:#1b1d24;--accent:#7d8cff;--accent-ink:#0d0f1a;--accent-soft:#232848;--ok:#4fd1a0;--err:#ff8a80;--warn:#f2c14e}}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 var(--font)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+.wrap{max-width:980px;margin:0 auto;padding:22px 20px 60px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-bottom:8px}
+.mark{font-weight:800;font-size:1.15rem;display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit}
+.mark i{width:22px;height:22px;border-radius:50%;border:3px solid var(--accent);display:inline-block;position:relative}
+.mark i::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--accent)}
+h1{font-size:clamp(1.7rem,4vw,2.3rem);letter-spacing:-.03em;margin:18px 0 4px}
+.lead{color:var(--muted);margin:0 0 22px;max-width:64ch}
+.scope{display:inline-flex;border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.scope button{border:0;background:none;padding:9px 16px;border-radius:9px;font:inherit;font-weight:600;cursor:pointer;color:var(--muted)}
+.scope button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.status{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 26px;padding:0;list-style:none}
+.status li{font-size:.84rem;border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+.status .on{border-color:var(--ok);color:var(--ok)}
+.status .off{border-color:var(--warn);color:var(--warn)}
+section.src{border-top:1px solid var(--line);padding:24px 0}
+.src h2{font-size:1.15rem;margin:0}
+.src .what{color:var(--muted);margin:2px 0 14px;font-size:.93rem;max-width:70ch}
+form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+label{display:flex;flex-direction:column;font-size:.8rem;font-weight:600;gap:4px}
+input,select,textarea{font:inherit;color:inherit;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.grow{flex:1 1 260px}
+.grow input,.grow textarea{width:100%}
+.btn{border:0;border-radius:10px;padding:11px 20px;font:inherit;font-weight:600;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn[disabled]{opacity:.55;cursor:default}
+.meta{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.84rem;color:var(--muted);margin:14px 0 4px}
+.meta b{color:var(--ink);font-weight:600}
+.note{font-size:.88rem;color:var(--muted);margin:2px 0 8px}
+.error{color:var(--err);font-weight:600;margin:12px 0 0}
+.hint{color:var(--muted);font-size:.88rem;margin:4px 0 0}
+.answer{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding:14px 16px;margin:10px 0;max-width:75ch}
+ul.items{list-style:none;padding:0;margin:8px 0 0}
+ul.items li{padding:12px 0;border-top:1px solid var(--line)}
+ul.items li:first-child{border-top:0}
+.it-title{font-weight:600}
+.it-sub{color:var(--muted);font-size:.9rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chips span{font-size:.78rem;background:var(--soft);border-radius:999px;padding:2px 10px}
+.it-sum{font-size:.88rem;color:var(--muted);margin:6px 0 0;max-width:80ch}
+details{margin-top:10px}
+summary{cursor:pointer;font-size:.86rem;color:var(--muted)}
+pre{background:var(--soft);border-radius:10px;padding:12px;overflow:auto;max-height:340px;font-size:.78rem}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="mark" href="./"><i aria-hidden="true"></i><span>Apacom</span></a>
+    <div class="scope" role="group" aria-label="Test area">
+      <button type="button" data-scope="lyon" aria-pressed="true">Lyon</button>
+      <button type="button" data-scope="france" aria-pressed="false">France</button>
+    </div>
+  </header>
+
+  <h1>Live sources test</h1>
+  <p class="lead">Run each data source APA will use, for a user in Lyon or anywhere in France. Every result shows which area the source could really apply, how long it took, and the raw answer.</p>
+  <ul class="status" id="status" aria-live="polite"><li>Checking keys…</li></ul>
+
+  <section class="src" data-src="search-claude">
+    <h2>Claude web search</h2>
+    <p class="what">The catch-all: searches the live web and answers with sources. Covers what no database has, such as associations, language exchanges and local events.</p>
+    <form>
+      <label class="grow">Question<textarea name="q" rows="2">Où trouver une aide alimentaire et des cours de français gratuits à Lyon ?</textarea></label>
+      <label>Answer language<select name="lang"><option value="fr">Français</option><option value="en">English</option><option value="zh">中文</option><option value="ar">العربية</option></select></label>
+      <button class="btn">Run</button>
+    </form>
+    <div class="out"></div>
+  </section>
+
+  <section class="src" data-src="jobs-francetravail">
+    <h2>France Travail job offers</h2>
+    <p class="what">Official French job offers. Lyon: commune of Lyon plus 10 km, or the Rhône département if the commune filter is refused.</p>
+    <form><label class="grow">Keywords<input name="q" value="chauffeur"></label><button class="btn">Run</button></form>
+    <div class="out"></div>
+  </section>
+
+  <section class="src" data-src="jobs-adzuna">
+    <h2>Adzuna job offers</h2>
+    <p class="what">Job offers aggregated from many sites, with salaries. Lyon: within 20 km.</p>
+    <form><label class="grow">Keywords<input name="q" value="développeur"></label><button class="btn">Run</button></form>
+    <div class="out"></div>
+  </section>
+
+  <section class="src" data-src="benefits-openfisca">
+    <h2>Social benefits estimate (OpenFisca)</h2>
+    <p class="what">Estimates RSA, prime d'activité, family allowances and, for Lyon, housing aid. Estimates only; the CAF decides the real amount.</p>
+    <form>
+      <label>Age<input name="age" type="number" value="30" min="18" max="99" style="width:90px"></label>
+      <label>Net salary / month (€)<input name="salary" type="number" value="1200" min="0" style="width:150px"></label>
+      <label>Rent / month (€)<input name="rent" type="number" value="650" min="0" style="width:130px"></label>
+      <label>Household<select name="household"><option value="alone">Alone</option><option value="couple">Couple</option></select></label>
+      <label>Partner salary (€)<input name="partnerSalary" type="number" value="0" min="0" style="width:130px"></label>
+      <label>Children<input name="children" type="number" value="0" min="0" max="6" style="width:90px"></label>
+      <button class="btn">Run</button>
+    </form>
+    <div class="out"></div>
+  </section>
+
+  <section class="src" data-src="places-osm">
+    <h2>Useful places nearby (OpenStreetMap)</h2>
+    <p class="what">Libraries, community centres, social services, job agencies, language schools, health centres. France-wide needs a city name.</p>
+    <form>
+      <label>Category<select name="category">
+        <option value="library">Libraries</option><option value="community_centre">Community centres</option>
+        <option value="social_services">Social services and associations</option><option value="employment_agency">Employment agencies</option>
+        <option value="language_school">Language schools</option><option value="training">Training centres</option>
+        <option value="coworking">Coworking spaces</option><option value="sports">Sports centres</option>
+        <option value="health">Health centres and doctors</option><option value="townhall">Town halls</option>
+      </select></label>
+      <label class="city-only" hidden>City (France scope)<input name="city" value="Marseille"></label>
+      <button class="btn">Run</button>
+    </form>
+    <div class="out"></div>
+  </section>
+
+  <section class="src" data-src="stats-worldbank">
+    <h2>Country comparison (World Bank)</h2>
+    <p class="what">National indicators, so Lyon uses France. Compares France with countries a user may move to.</p>
+    <form>
+      <label>Indicator<select name="indicator">
+        <option value="unemployment">Unemployment</option><option value="youth_unemployment">Youth unemployment</option>
+        <option value="inflation">Inflation</option><option value="gdp_per_capita">GDP per person</option><option value="life_expectancy">Life expectancy</option>
+      </select></label>
+      <label class="grow">Compare with (country codes)<input name="compare" value="CA,DE,ES,GB"></label>
+      <button class="btn">Run</button>
+    </form>
+    <div class="out"></div>
+  </section>
+</div>
+
+<script>
+"use strict";
+const FN = "/.netlify/functions/";
+let scope = "lyon";
+const pad = n => String(n).padStart(2, "0");
+// French date format everywhere: DD/MM/YYYY
+function fmtDate(v){
+  if(!v) return "";
+  if(/^\d{4}-\d{2}$/.test(v)) { const [y,m]=v.split("-"); return `${m}/${y}`; }
+  if(/^\d{4}$/.test(v)) return v;
+  const d = new Date(v); if(isNaN(d)) return String(v);
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+}
+const el = (tag, cls, text) => { const x=document.createElement(tag); if(cls) x.className=cls; if(text!=null) x.textContent=text; return x; };
+
+document.querySelectorAll(".scope button").forEach(b => b.onclick = () => {
+  scope = b.dataset.scope;
+  document.querySelectorAll(".scope button").forEach(x => x.setAttribute("aria-pressed", String(x===b)));
+  document.querySelectorAll(".city-only").forEach(x => x.hidden = scope !== "france");
+});
+
+async function loadStatus(){
+  const ul = document.getElementById("status");
+  try{
+    const r = await fetch(FN+"status"); const j = await r.json(); ul.textContent="";
+    for(const [k,v] of Object.entries(j.sources)){
+      const li = el("li", v.configured ? "on" : "off", `${k}: ${v.needsKey ? (v.configured ? "key set" : "key missing") : "no key needed"}`);
+      ul.appendChild(li);
+    }
+  }catch(e){ ul.textContent=""; ul.appendChild(el("li","off","Functions not reachable. Run with 'netlify dev' or deploy to Netlify.")); }
+}
+
+function render(out, j, httpStatus){
+  out.textContent="";
+  if(!j.ok){
+    out.appendChild(el("p","error", `${httpStatus}: ${j.error}`));
+    if(j.hint) out.appendChild(el("p","hint", j.hint));
+  } else {
+    const meta = el("div","meta");
+    const add = (label, val) => { const s=el("span"); s.append(label+" "); s.appendChild(el("b",null,val)); meta.appendChild(s); };
+    add("Area applied:", j.scope_applied); add("Results:", String(j.count)); add("Time:", `${j.ms} ms`);
+    out.appendChild(meta);
+    if(j.note) out.appendChild(el("p","note", j.note));
+    if(j.answer) out.appendChild(el("div","answer", j.answer));
+    const ul = el("ul","items");
+    for(const it of j.items){
+      const li = el("li");
+      const t = it.url ? el("a","it-title",it.title) : el("span","it-title",it.title);
+      if(it.url){ t.href=it.url; t.target="_blank"; t.rel="noopener"; }
+      li.appendChild(t);
+      const sub = [it.subtitle, it.location, fmtDate(it.date)].filter(Boolean).join("  |  ");
+      if(sub) li.appendChild(el("div","it-sub",sub));
+      const ex = it.extra || {}; const chips = el("div","chips");
+      ["salary","contract","experience","category","opening_hours","phone"].forEach(k => { if(ex[k]) chips.appendChild(el("span",null,ex[k])); });
+      if(chips.children.length) li.appendChild(chips);
+      if(ex.summary) li.appendChild(el("p","it-sum",ex.summary));
+      ul.appendChild(li);
+    }
+    if(j.items.length) out.appendChild(ul);
+  }
+  const d = el("details"); d.appendChild(el("summary",null,"Raw response"));
+  d.appendChild(el("pre",null,JSON.stringify(j.raw ?? j, null, 2))); out.appendChild(d);
+}
+
+document.querySelectorAll("section.src").forEach(sec => {
+  const form = sec.querySelector("form"), out = sec.querySelector(".out"), btn = form.querySelector(".btn"), src = sec.dataset.src;
+  form.addEventListener("submit", async e => {
+    e.preventDefault(); btn.disabled = true; const label = btn.textContent; btn.textContent = "Running…";
+    out.textContent = "";
+    try{
+      const data = Object.fromEntries(new FormData(form));
+      let r;
+      if(src === "search-claude"){
+        r = await fetch(FN+src, {method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify({...data, scope, raw:true})});
+      } else {
+        const p = new URLSearchParams({...data, scope, raw:"1"});
+        r = await fetch(FN+src+"?"+p);
+      }
+      let j; try{ j = await r.json(); }catch{ j = {ok:false, error:"The function did not return JSON", hint:"Check the function log in Netlify."}; }
+      render(out, j, r.status);
+    }catch(err){ render(out, {ok:false, error:err.message, hint:"Is the site running on Netlify or with 'netlify dev'?"}, "Network"); }
+    finally{ btn.disabled=false; btn.textContent=label; }
+  });
+});
+loadStatus();
+</script>
+</body>
+</html>

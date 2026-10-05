@@ -1,0 +1,7 @@
+{
+  "name": "apacom-live",
+  "private": true,
+  "type": "module",
+  "description": "Apacom personal agent with live data sources (Lyon first, then France and international)",
+  "engines": { "node": ">=18" }
+}
