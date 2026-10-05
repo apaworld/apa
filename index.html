@@ -166,6 +166,15 @@ html[lang="ar"] .doc .doc-title,html[lang="zh"] .doc .doc-title{letter-spacing:0
 .doc h2{font-size:1.06rem;margin:26px 0 6px;letter-spacing:0}
 .doc p{margin:0 0 6px;max-width:66ch}
 #docBack{margin-top:30px}
+/* clickable avatar */
+.avatar-edit{position:relative;flex:none}
+.avatar-pick{position:relative;display:block;border-radius:50%;cursor:pointer}
+.avatar-pick:focus-within{outline:2px solid var(--accent);outline-offset:3px}
+.avatar-cam{position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;background:rgba(15,18,30,.55);color:#fff;opacity:0;transition:opacity .15s}
+.avatar-pick:hover .avatar-cam,.avatar-pick:focus-within .avatar-cam{opacity:1}
+@media (hover:none){.avatar-cam{opacity:0}}
+.avatar-del{position:absolute;inset-inline-end:-4px;top:-4px;width:26px;height:26px;border-radius:50%;border:2px solid var(--paper);background:var(--ink);color:var(--paper);display:grid;place-items:center;cursor:pointer;padding:0}
+.avatar-del:hover{background:var(--err)}
 /* top bar user */
 body.wide footer{max-width:880px}
 .top-r{display:flex;align-items:center;gap:10px}
@@ -422,8 +431,16 @@ html[lang="ar"] .cab-hello,html[lang="zh"] .cab-hello{letter-spacing:0}
 <!-- PERSONAL CABINET -->
 <main id="cab" hidden>
   <div class="cab-head">
-    <span class="avatar lg" id="cabAvatar" aria-hidden="true"></span>
-    <div><h1 class="cab-hello" id="cabHello"></h1><p class="cab-meta" id="cabMeta"></p></div>
+    <div class="avatar-edit">
+      <label class="avatar-pick" id="headPhotoPick">
+        <input type="file" id="photoIn2" accept="image/*" class="sr">
+        <span class="avatar lg" id="cabAvatar" aria-hidden="true"></span>
+        <span class="avatar-cam" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+        <span class="sr" id="headPhotoLbl"></span>
+      </label>
+      <button type="button" class="avatar-del" id="headPhotoDel" hidden><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span class="sr" id="headPhotoDelLbl"></span></button>
+    </div>
+    <div><h1 class="cab-hello" id="cabHello"></h1><p class="cab-meta" id="cabMeta"></p><p class="err" id="headPhotoErr"></p></div>
   </div>
   <div class="tabs" role="tablist" id="cabTabs"></div>
 
@@ -982,8 +999,10 @@ function renderSteps(){
   });
 }
 function setOk(id, key, vars){ const el=$(id); if(!key){ el.textContent=""; delete el.dataset.k; return; } el.dataset.k=key; el.dataset.v=JSON.stringify(vars||null); el.textContent=t(key,vars); clearTimeout(el._t); el._t=setTimeout(()=>setOk(id),6000); }
-function fmtDate(iso){ try{ return new Intl.DateTimeFormat(lang,{dateStyle:"long"}).format(new Date(iso)); }catch(e){ return (iso||"").slice(0,10); } }
-function fmtTime(iso){ try{ return new Intl.DateTimeFormat(lang,{dateStyle:"medium",timeStyle:"short"}).format(new Date(iso)); }catch(e){ return iso; } }
+/* all dates use the French standard DD/MM/YYYY and 24-hour time, in every language */
+const pad2 = n => String(n).padStart(2,"0");
+function fmtDate(iso){ const d=new Date(iso); if(isNaN(d)) return ""; return pad2(d.getDate())+"/"+pad2(d.getMonth()+1)+"/"+d.getFullYear(); }
+function fmtTime(iso){ const d=new Date(iso); if(isNaN(d)) return ""; return fmtDate(iso)+" "+pad2(d.getHours())+":"+pad2(d.getMinutes()); }
 function genCode(){ const n=crypto.getRandomValues(new Uint32Array(1))[0]; return {code:String(n%1000000).padStart(6,"0"), expires:Date.now()+600000, tries:5}; }
 function checkCode(v, c){ if(Date.now()>v.expires) return "errExpired"; if(v.tries<=0) return "errLocked"; if(c!==v.code){ v.tries--; return v.tries>0?"errCode":"errLocked"; } return null; }
 const pwOk = p => p.length>=8 && /[a-z]/i.test(p) && /\d/.test(p);
@@ -1152,6 +1171,9 @@ function renderCabinet(){
   if(!st.profile) return;
   const p = st.profile;
   paintAvatar($("cabAvatar"), p); paintAvatar($("accAvatar"), p);
+  $("headPhotoLbl").textContent = p.photo ? t("photoChange") : t("photoAdd");
+  $("headPhotoPick").title = p.photo ? t("photoChange") : t("photoAdd");
+  $("headPhotoDel").hidden = !p.photo; $("headPhotoDelLbl").textContent = t("photoRemove"); $("headPhotoDel").title = t("photoRemove");
   $("cabHello").textContent = t("hello",{name:p.firstName});
   const meta=$("cabMeta"); meta.textContent="";
   const c=document.createElement("span"); const f=document.createElement("span"); f.className="flag"; f.textContent=flagOf(p.country);
@@ -1288,9 +1310,9 @@ function renderAccountTab(){
   const ci=$("ciGroup"); ci.textContent="";
   ci.appendChild(chipGroup("checkinSub","ci",["ci_daily","ci_weekly","ci_news"],false,o=>t(o),"ci_"+((p.settings||{}).checkin||"weekly")));
 }
-$("photoIn").addEventListener("change", async ()=>{
-  const file=$("photoIn").files[0]; $("photoIn").value=""; setErr("photoErr");
-  if(!file) return; if(!/^image\//.test(file.type)) return setErr("photoErr","photoErr");
+async function handlePhoto(input, errId){
+  const file=input.files[0]; input.value=""; setErr("photoErr"); setErr("headPhotoErr");
+  if(!file) return; if(!/^image\//.test(file.type)) return setErr(errId,"photoErr");
   try{
     const url = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
     const img = await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
@@ -1298,9 +1320,13 @@ $("photoIn").addEventListener("change", async ()=>{
     const side=Math.min(img.width,img.height); cx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,S,S);
     st.profile.photo = cv.toDataURL("image/jpeg",0.85);
     await Store.saveProfile(st.profile); renderCabinet(); renderTopUser(); setOk("photoOk","saved");
-  }catch(e){ setErr("photoErr","photoErr"); }
-});
-$("photoRemove").onclick = async ()=>{ st.profile.photo=null; await Store.saveProfile(st.profile); renderCabinet(); renderTopUser(); $("photoIn").focus(); };
+  }catch(e){ setErr(errId,"photoErr"); }
+}
+async function removePhoto(){ st.profile.photo=null; await Store.saveProfile(st.profile); renderCabinet(); renderTopUser(); }
+$("photoIn").addEventListener("change", ()=>handlePhoto($("photoIn"),"photoErr"));
+$("photoIn2").addEventListener("change", ()=>handlePhoto($("photoIn2"),"headPhotoErr"));
+$("headPhotoDel").onclick = async ()=>{ await removePhoto(); $("photoIn2").focus(); };
+$("photoRemove").onclick = async ()=>{ await removePhoto(); $("photoIn").focus(); };
 $("fName").addEventListener("submit", async e=>{
   e.preventDefault(); const a=$("fn2").value.trim(), b=$("ln2").value.trim();
   setErr("nameErr"); if(!a||!b) return setErr("nameErr","errRequired");
@@ -1672,7 +1698,7 @@ function parseHash(){ const m=/^#(terms|conditions|privacy)(?:-(en|fr|zh|ar))?$/
 function renderDoc(){
   const d = LEGAL[currentDoc][lang]; const art=$("docBody"); art.textContent="";
   const h=document.createElement("h1"); h.className="doc-title"; h.textContent=d.title;
-  let date; try{ date=new Intl.DateTimeFormat(lang,{dateStyle:"long"}).format(new Date(LEGAL_VERSION+"T12:00:00")); }catch(e){ date=LEGAL_VERSION; }
+  const date = fmtDate(LEGAL_VERSION+"T12:00:00");
   const up=document.createElement("p"); up.className="doc-meta"; up.textContent=t("updated",{date});
   const dr=document.createElement("p"); dr.className="note"; dr.textContent=t("draft");
   const intro=document.createElement("p"); intro.className="doc-intro"; intro.textContent=d.intro;
