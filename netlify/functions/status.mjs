@@ -11,6 +11,7 @@ export default async () => json({
     "benefits-openfisca": { needsKey: false, configured: true },
     "places-osm":         { needsKey: false, configured: true },
     "stats-worldbank":    { needsKey: false, configured: true },
+    "geocode-fr":         { needsKey: false, configured: true },
     "francetravail-explorer": { needsKey: true, configured: !!(env("FT_CLIENT_ID") && env("FT_CLIENT_SECRET") && env("FT_EXPLORER") === "1") }
   }
 });

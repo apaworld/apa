@@ -73,13 +73,14 @@ export default async (req) => {
     household: url.searchParams.get("household") === "couple" ? "couple" : "alone",
     children: num("children", 0, 0, 6)
   };
-  const withHousing = scope.key === "lyon";
+  const withHousing = scope.key === "lyon" && input.rent > 0;   // no rent, no housing aid to estimate
   let month = url.searchParams.get("period") || monthStr(new Date());
 
   try {
     let r = await calculate(buildSituation(input, month, withHousing));
     let note = withHousing ? "Housing aid estimated for a rented flat in Lyon." :
-      "France-wide: housing aid depends on the commune and is not estimated. Use scope=lyon to include it.";
+      (scope.key === "lyon" ? "No rent given, so housing aid is not estimated." :
+      "France-wide: housing aid depends on the commune and is not estimated. Use scope=lyon to include it.");
     if (!r.ok) {
       // The public API may not have next year's rules yet: retry with the same month one year earlier.
       const d = new Date(month + "-15"); d.setFullYear(d.getFullYear() - 1); const older = monthStr(d);
@@ -93,13 +94,13 @@ export default async (req) => {
       return {
         title: LABELS[k][0],
         subtitle: amount > 0 ? `≈ ${amount.toFixed(2)} € / month` : "Probably not eligible with these figures",
-        location: withHousing ? "Lyon" : "France",
+        location: scope.key === "lyon" ? "Lyon" : "France",
         date: month, url: LABELS[k][1],
         extra: { amount_eur_per_month: amount, variable: k }
       };
     });
     return result({
-      source: SOURCE, scopeRequested: scope.key, scopeApplied: withHousing ? "Lyon (commune 69123)" : "France (national rules)",
+      source: SOURCE, scopeRequested: scope.key, scopeApplied: scope.key === "lyon" ? "Lyon (commune 69123)" : "France (national rules)",
       note: note + " Estimates only; the CAF decides the real amount.", items,
       raw: { input, month, response: r.data }, started, wantRaw: url.searchParams.has("raw")
     });
