@@ -166,6 +166,92 @@ html[lang="ar"] .doc .doc-title,html[lang="zh"] .doc .doc-title{letter-spacing:0
 .doc h2{font-size:1.06rem;margin:26px 0 6px;letter-spacing:0}
 .doc p{margin:0 0 6px;max-width:66ch}
 #docBack{margin-top:30px}
+/* top bar user */
+body.wide footer{max-width:880px}
+.top-r{display:flex;align-items:center;gap:10px}
+.top-user{display:flex;align-items:center;gap:8px}
+.avatar-btn{display:flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;padding:4px 6px;border-radius:999px;font-weight:600}
+.avatar-btn:hover{background:var(--soft)}
+@media (max-width:560px){#topName{display:none}}
+.btn.sm{padding:7px 14px;font-size:.88rem;border-radius:999px}
+.avatar{display:inline-grid;place-items:center;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:700;overflow:hidden;flex:none}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar.sm{width:30px;height:30px;font-size:.78rem}
+.avatar.lg{width:64px;height:64px;font-size:1.35rem}
+.avatar.xl{width:96px;height:96px;font-size:1.9rem}
+.switch{margin:18px 0 0;color:var(--muted);font-size:.93rem;text-align:center}
+.flash{background:var(--accent-soft);border-radius:10px;padding:12px 14px;margin:0 0 18px;font-weight:600}
+
+/* cabinet */
+#cab{max-width:880px;margin:0 auto;padding:24px 20px 60px}
+.cab-head{display:flex;align-items:center;gap:18px;margin:8px 0 22px}
+.cab-hello{font-size:clamp(1.6rem,4vw,2.2rem);letter-spacing:-.03em;line-height:1.15;margin:0 0 4px}
+html[lang="ar"] .cab-hello,html[lang="zh"] .cab-hello{letter-spacing:0}
+.cab-meta{margin:0;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.93rem}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:26px;overflow-x:auto;scrollbar-width:none}
+.tabs button{background:none;border:0;padding:12px 14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs button:hover{color:var(--ink)}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.pill{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 16px;font-weight:600;cursor:pointer}
+.pill[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.pill small{font-weight:600;font-size:.74rem;border-radius:999px;padding:1px 8px}
+.pill .count{background:var(--accent);color:var(--accent-ink)}
+.pill .soon{background:var(--soft);color:var(--muted)}
+.domain h2{font-size:1.5rem;margin:0 0 6px}
+.sec-h{font-size:.95rem;margin:26px 0 8px;color:var(--muted);font-weight:600}
+.ask{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;margin-bottom:18px}
+.ask .err{grid-column:1/-1;margin:0}
+@media (max-width:560px){.ask{grid-template-columns:1fr}}
+.answer{border-inline-start:3px solid var(--accent);padding:4px 0 4px 18px;margin:0 0 22px}
+[dir="rtl"] .answer{padding:4px 18px 4px 0}
+.answer-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px;align-items:baseline}
+.answer h4{margin:0;font-size:1.06rem}
+.answer time{color:var(--muted);font-size:.8rem}
+.answer p{margin:6px 0}
+.answer .asked{color:var(--muted);font-style:italic;font-size:.92rem}
+.answer ol,.answer ul{margin:4px 0 8px;padding-inline-start:20px}
+.answer .rh{font-size:.8rem;color:var(--muted);font-weight:600;margin-top:10px}
+.muted-link{color:var(--muted);font-weight:500;font-size:.85rem}
+.facts{display:grid;grid-template-columns:minmax(140px,max-content) 1fr;gap:10px 24px;margin:0 0 24px}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0}
+.facts dd.muted{color:var(--muted)}
+@media (max-width:520px){.facts{grid-template-columns:1fr;gap:2px}.facts dd{margin-bottom:10px}}
+.sec{border-top:1px solid var(--line);padding:24px 0;max-width:640px}
+.sec:first-child{border-top:0;padding-top:0}
+.sec h2{font-size:1.1rem;margin:0 0 10px}
+.photo-row{display:flex;gap:20px;align-items:center}
+.file-btn{cursor:pointer;display:inline-block}
+.file-btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.link.danger{color:var(--err)}
+.okmsg{color:var(--ok);font-weight:600;font-size:.9rem}
+.okmsg:empty{display:none}
+.verify-box{margin-top:18px;padding-top:18px;border-top:1px dashed var(--line)}
+.danger-zone h2{color:var(--err)}
+.danger-btn{background:var(--err);color:#fff}
+.flash-wrap{max-width:880px;margin:0 auto;padding:0 20px}
+.tabs .count{display:inline-block;margin-inline-start:6px;background:var(--accent);color:var(--accent-ink);border-radius:999px;font-size:.72rem;padding:1px 7px;vertical-align:1px}
+.tab-h{font-size:1.5rem;margin:0 0 6px}
+.pending-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;background:var(--accent-soft);border-radius:10px;padding:10px 14px;margin:0 0 20px;font-weight:600}
+.brief{margin:6px 0 20px}
+.brief-greet{font-size:1.15rem;margin:0 0 16px;max-width:60ch}
+.brief-item{padding:14px 0;border-top:1px solid var(--line)}
+.brief-item h3{font-size:1.04rem;margin:6px 0 4px}
+.brief-item p{margin:0;color:var(--muted);max-width:66ch}
+.area-tag{display:inline-block;font-size:.76rem;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:2px 10px}
+.old-brief{border-top:1px solid var(--line);padding:10px 0}
+.old-brief summary{cursor:pointer;font-weight:600}
+.proposal{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 14px;max-width:680px}
+.proposal-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;color:var(--muted);font-size:.84rem}
+.proposal h3{margin:10px 0 4px;font-size:1.06rem}
+.proposal p{margin:0 0 4px;color:var(--muted)}
+.decided{list-style:none;padding:0;margin:0;max-width:680px}
+.decided li{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding:10px 0;border-top:1px solid var(--line);font-size:.93rem}
+.decided .d-title{flex:1 1 240px}
+.decided time{color:var(--muted);font-size:.82rem}
+.status-approved{color:var(--ok);font-weight:600}
+.status-declined{color:var(--muted);font-weight:600}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -173,19 +259,59 @@ html[lang="ar"] .doc .doc-title,html[lang="zh"] .doc .doc-title{letter-spacing:0
 <body>
 <header class="top">
   <div class="mark"><i aria-hidden="true"></i><span>Apacom</span></div>
+  <div class="top-r">
+  <div class="top-user" id="topUser" hidden>
+    <button type="button" class="avatar-btn" id="topAvatarBtn"><span class="avatar sm" id="topAvatar"></span><span id="topName"></span></button>
+    <button type="button" class="btn ghost sm" id="logoutBtn" data-t="logout"></button>
+  </div>
   <div class="lang">
     <button class="lang-btn" id="langBtn" aria-haspopup="menu" aria-expanded="false">
       <span class="flag" id="langFlag"></span><span id="langName"></span><span aria-hidden="true">▾</span>
     </button>
     <div class="lang-menu" id="langMenu" role="menu"></div>
   </div>
+  </div>
 </header>
+<div class="flash-wrap"><p class="flash" id="flash" role="status" hidden></p></div>
 
 <main id="app">
-  <h1 id="heroTitle"></h1>
-  <p class="lead" id="heroSub"></p>
+  <div id="hero">
+    <h1 id="heroTitle"></h1>
+    <p class="lead" id="heroSub"></p>
+  </div>
 
   <ol class="steps" id="steps" aria-label="Progress"></ol>
+
+  <!-- SIGN IN -->
+  <section id="login" hidden>
+    <h2 data-t="signInTitle"></h2>
+    <form id="fL" novalidate>
+      <div class="field"><label class="lbl" for="liEm" data-t="email"></label><input class="inp" id="liEm" type="email" autocomplete="email" dir="ltr"></div>
+      <div class="field"><label class="lbl" for="liPw" data-t="password"></label><input class="inp" id="liPw" type="password" autocomplete="current-password" dir="ltr"><div class="err" id="liErr"></div></div>
+      <button class="btn full" id="liBtn" type="submit" data-t="signInBtn"></button>
+    </form>
+    <p class="switch"><button type="button" class="link" id="toReset" data-t="forgotLink"></button></p>
+    <p class="switch"><span data-t="noAccount"></span> <button type="button" class="link" id="toRegister" data-t="createLink"></button></p>
+  </section>
+
+  <!-- FORGOT PASSWORD -->
+  <section id="reset" hidden>
+    <h2 data-t="resetTitle"></h2>
+    <form id="fR1" novalidate>
+      <p class="sub" data-t="resetSub"></p>
+      <div class="field"><label class="lbl" for="rEm" data-t="email"></label><input class="inp" id="rEm" type="email" autocomplete="email" dir="ltr"><div class="err" id="rEmErr"></div></div>
+      <button class="btn full" type="submit" data-t="sendResetBtn"></button>
+    </form>
+    <form id="fR2" novalidate hidden>
+      <p class="sub" id="rSent"></p>
+      <p class="note" id="rDemo" role="status" hidden></p>
+      <div class="field"><label class="lbl" for="rCode" data-t="codeLabel"></label><input class="inp code-inp" id="rCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr"></div>
+      <div class="field"><label class="lbl" for="rPw" data-t="newPw"></label><input class="inp" id="rPw" type="password" autocomplete="new-password" dir="ltr"><div class="hint" data-t="pwHint"></div></div>
+      <div class="err" id="rErr"></div>
+      <button class="btn full" type="submit" data-t="setNewPw"></button>
+    </form>
+    <p class="switch"><button type="button" class="link" id="resetBack" data-t="backToLogin"></button></p>
+  </section>
 
   <!-- STEP 1: account -->
   <section id="s1">
@@ -235,6 +361,7 @@ html[lang="ar"] .doc .doc-title,html[lang="zh"] .doc .doc-title{letter-spacing:0
       </div>
       <button class="btn full" id="createBtn" type="submit" data-t="createAccount"></button>
     </form>
+    <p class="switch"><span data-t="haveAccount"></span> <button type="button" class="link" id="toLogin" data-t="signInLink"></button></p>
   </section>
 
   <!-- STEP 2: verify -->
@@ -258,7 +385,7 @@ html[lang="ar"] .doc .doc-title,html[lang="zh"] .doc .doc-title{letter-spacing:0
 
   <!-- STEP 3: situation -->
   <section id="s3" hidden>
-    <p class="ok" data-t="verified"></p>
+    <p class="ok" id="verifiedMsg" data-t="verified"></p>
     <h2 data-t="sitTitle"></h2>
     <p class="sub" data-t="sitSub"></p>
     <form id="f3" novalidate>
@@ -267,7 +394,7 @@ html[lang="ar"] .doc .doc-title,html[lang="zh"] .doc .doc-title{letter-spacing:0
         <label class="lbl" for="challenge" data-t="challenge"></label>
         <textarea class="inp" id="challenge" data-tph="challengePh"></textarea>
       </div>
-      <div class="actions"><button class="btn" type="submit" data-t="next"></button></div>
+      <div class="actions"><button class="btn ghost" type="button" id="cancelEdit" data-t="cancel" hidden></button><button class="btn" type="submit" data-t="next"></button></div>
     </form>
   </section>
 
@@ -290,18 +417,96 @@ html[lang="ar"] .doc .doc-title,html[lang="zh"] .doc .doc-title{letter-spacing:0
     </form>
   </section>
 
-  <!-- DONE -->
-  <section id="s5" hidden>
-    <h2 id="doneTitle"></h2>
-    <p class="status" id="savedNote"></p>
-    <div class="summary"><dl id="summary"></dl></div>
-    <p class="sub" data-t="doneSub"></p>
-    <ul class="agents" id="agents"></ul>
-    <div class="actions">
-      <button class="btn" id="planBtn" type="button" hidden data-t="planBtn"></button>
-      <button class="btn ghost" id="restart" type="button" data-t="startOver"></button>
+</main>
+
+<!-- PERSONAL CABINET -->
+<main id="cab" hidden>
+  <div class="cab-head">
+    <span class="avatar lg" id="cabAvatar" aria-hidden="true"></span>
+    <div><h1 class="cab-hello" id="cabHello"></h1><p class="cab-meta" id="cabMeta"></p></div>
+  </div>
+  <div class="tabs" role="tablist" id="cabTabs"></div>
+
+  <section id="tab-today" role="tabpanel" aria-labelledby="tabbtn-today"></section>
+  <section id="tab-agent" role="tabpanel" aria-labelledby="tabbtn-agent" hidden></section>
+  <section id="tab-inbox" role="tabpanel" aria-labelledby="tabbtn-inbox" hidden></section>
+  <section id="tab-profile" role="tabpanel" aria-labelledby="tabbtn-profile" hidden></section>
+
+  <section id="tab-account" role="tabpanel" aria-labelledby="tabbtn-account" hidden>
+    <div class="sec">
+      <h2 data-t="photo"></h2>
+      <div class="photo-row">
+        <span class="avatar xl" id="accAvatar" aria-hidden="true"></span>
+        <div>
+          <div class="actions" style="margin:0">
+            <label class="btn ghost file-btn"><input type="file" id="photoIn" accept="image/*" class="sr"><span id="photoBtnTxt"></span></label>
+            <button type="button" class="link danger" id="photoRemove" data-t="photoRemove"></button>
+          </div>
+          <p class="hint" data-t="photoHint"></p><p class="err" id="photoErr"></p><p class="okmsg" id="photoOk" role="status"></p>
+        </div>
+      </div>
     </div>
-    <p class="err" id="planErr" style="margin-top:12px"></p>
+    <form class="sec" id="fName" novalidate>
+      <h2 data-t="nameTitle"></h2>
+      <div class="row">
+        <div class="field"><label class="lbl" for="fn2" data-t="firstName"></label><input class="inp" id="fn2" autocomplete="given-name"></div>
+        <div class="field"><label class="lbl" for="ln2" data-t="lastName"></label><input class="inp" id="ln2" autocomplete="family-name"></div>
+      </div>
+      <p class="err" id="nameErr"></p>
+      <div class="actions"><button class="btn" type="submit" data-t="save"></button><span class="okmsg" id="nameOk" role="status"></span></div>
+    </form>
+    <form class="sec" id="fEmail" novalidate>
+      <h2 data-t="emailTitle"></h2>
+      <p class="sub" id="curEmail"></p>
+      <div class="row">
+        <div class="field"><label class="lbl" for="ne" data-t="newEmail"></label><input class="inp" id="ne" type="email" autocomplete="email" dir="ltr"></div>
+        <div class="field"><label class="lbl" for="nePw" data-t="currentPw"></label><input class="inp" id="nePw" type="password" autocomplete="current-password" dir="ltr"></div>
+      </div>
+      <p class="err" id="neErr"></p>
+      <div class="actions"><button class="btn" type="submit" data-t="sendCodeBtn"></button><span class="okmsg" id="neOk" role="status"></span></div>
+      <div id="neVerify" class="verify-box" hidden>
+        <p class="sub" id="neSent"></p>
+        <p class="note" id="neDemo" role="status"></p>
+        <div class="field"><label class="lbl" for="neCode" data-t="codeLabel"></label><input class="inp code-inp" id="neCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr"><div class="err" id="neCodeErr"></div></div>
+        <div class="actions"><button class="btn" type="button" id="neVerifyBtn" data-t="verify"></button><button class="btn ghost" type="button" id="neCancel" data-t="cancel"></button></div>
+      </div>
+    </form>
+    <form class="sec" id="fPw" novalidate>
+      <h2 data-t="pwTitle"></h2>
+      <div class="row">
+        <div class="field"><label class="lbl" for="cpw" data-t="currentPw"></label><input class="inp" id="cpw" type="password" autocomplete="current-password" dir="ltr"></div>
+        <div class="field"><label class="lbl" for="npw" data-t="newPw"></label><input class="inp" id="npw" type="password" autocomplete="new-password" dir="ltr"></div>
+      </div>
+      <p class="hint" data-t="pwHint"></p><p class="err" id="npwErr"></p>
+      <div class="actions"><button class="btn" type="submit" data-t="save"></button><span class="okmsg" id="pwOk" role="status"></span></div>
+    </form>
+    <div class="sec">
+      <h2 data-t="checkinTitle"></h2>
+      <div id="ciGroup"></div><span class="okmsg" id="ciOk" role="status"></span>
+    </div>
+  </section>
+
+  <section id="tab-privacy" role="tabpanel" aria-labelledby="tabbtn-privacy" hidden>
+    <div class="sec">
+      <h2 data-t="consentTitle"></h2>
+      <p class="sub" id="consentTxt"></p>
+      <nav class="legal-links" id="consentLinks"></nav>
+    </div>
+    <div class="sec">
+      <h2 data-t="exportTitle"></h2>
+      <p class="sub" data-t="exportSub"></p>
+      <button class="btn ghost" type="button" id="exportBtn" data-t="exportBtn"></button>
+      <p class="err" id="exportErr"></p>
+    </div>
+    <div class="sec danger-zone">
+      <h2 data-t="deleteTitle"></h2>
+      <p class="sub" data-t="deleteSub"></p>
+      <button class="btn danger-btn" type="button" id="delStart" data-t="deleteBtn"></button>
+      <div id="delBlock" hidden>
+        <div class="field" style="max-width:320px"><label class="lbl" for="delPw" data-t="deleteConfirm"></label><input class="inp" id="delPw" type="password" autocomplete="current-password" dir="ltr"><div class="err" id="delErr"></div></div>
+        <div class="actions"><button class="btn danger-btn" type="button" id="delFinal" data-t="deleteFinal"></button><button class="btn ghost" type="button" id="delCancel" data-t="cancel"></button></div>
+      </div>
+    </div>
   </section>
 </main>
 <main id="docView" hidden>
@@ -428,6 +633,68 @@ invest:{en:["Investment explainer","Explains low-cost options in plain words. It
 skills:{en:["Course finder","Finds free and certified courses worldwide that employers value."],fr:["Chercheur de formations","Trouve dans le monde entier des formations gratuites et certifiantes reconnues par les employeurs."],zh:["课程搜索助手","在全球寻找雇主认可的免费和认证课程。"],ar:["باحث الدورات","يجد دورات مجانية ومعتمدة حول العالم يقدّرها أصحاب العمل."]}
 };
 
+/* ============ cabinet strings ============ */
+const CUI = {
+en:{signInTitle:"Sign in",signInBtn:"Sign in",noAccount:"New to Apacom?",createLink:"Create an account",haveAccount:"Already have an account?",signInLink:"Sign in",errLogin:"Email or password is incorrect.",logout:"Log out",cancel:"Cancel",save:"Save",saved:"Saved.",
+tabAgent:"My agent",tabProfile:"Situation and goals",tabAccount:"Account",tabPrivacy:"Privacy and data",hello:"Hello, {name}",memberSince:"Member since {date}",
+d_social:"Social life",d_economic:"Money and work",d_health:"Health",d_learning:"Education",soon:"Coming soon",soonText:"APA will cover this area in a future version. Your profile is already ready for it.",
+domainAgents:"Helper agents on this",noGoalsDomain:"You haven't picked any goals in this area yet.",addGoals:"Add goals",answersTitle:"Answers from APA",askLabel:"Ask APA",askPh:"Ask a question about this area, or leave it empty for a general update.",askBtn:"Ask APA",asking:"APA is thinking…",noAnswers:"No answers yet. Ask APA to get your first one.",askUnavailable:"Answers will appear here once APA's server is connected.",askErr:"APA couldn't answer right now. Try again in a minute.",youAsked:"You asked: {q}",whatToDo:"What to do",removeAnswer:"Remove",
+editSit:"Edit situation and goals",notAnswered:"Not answered",sumChallenge:"Hardest right now",sumDream:"Happier this year",sumHorizon:"When",
+photo:"Photo",photoAdd:"Add photo",photoChange:"Change photo",photoRemove:"Remove photo",photoHint:"Optional. Any image works; it's cropped to a square and shrunk to 256 px.",photoErr:"Choose an image file.",
+nameTitle:"Name",emailTitle:"Email",currentEmail:"Current email: {email}",newEmail:"New email",currentPw:"Current password",sendCodeBtn:"Send verification code",errPwWrong:"That password is incorrect.",errSameEmail:"This is already your email.",emailChanged:"Your email is now {email}.",
+pwTitle:"Password",newPw:"New password",pwChanged:"Password changed.",checkinTitle:"Check-ins",checkinSub:"How often APA reports back to you.",ci_daily:"Every day",ci_weekly:"Every week",ci_news:"Only when there's news",
+consentTitle:"Your consent",consentText:"You accepted the Terms and Conditions (version {v}) on {date}.",exportTitle:"Download my data",exportSub:"Get a copy of everything APA stores about you, as a JSON file.",exportBtn:"Download my data",exportErr:"The download didn't start. Try again.",
+deleteTitle:"Delete account",deleteSub:"This permanently deletes your profile, answers and photo. Your email becomes free to register again.",deleteBtn:"Delete my account",deleteConfirm:"Enter your password to confirm",deleteFinal:"Delete permanently",deleted:"Your account was deleted."},
+fr:{signInTitle:"Se connecter",signInBtn:"Se connecter",noAccount:"Nouveau sur Apacom ?",createLink:"Créer un compte",haveAccount:"Vous avez déjà un compte ?",signInLink:"Se connecter",errLogin:"E-mail ou mot de passe incorrect.",logout:"Se déconnecter",cancel:"Annuler",save:"Enregistrer",saved:"Enregistré.",
+tabAgent:"Mon agent",tabProfile:"Situation et objectifs",tabAccount:"Compte",tabPrivacy:"Confidentialité et données",hello:"Bonjour, {name}",memberSince:"Membre depuis le {date}",
+d_social:"Vie sociale",d_economic:"Argent et travail",d_health:"Santé",d_learning:"Éducation",soon:"Bientôt",soonText:"APA couvrira ce domaine dans une prochaine version. Votre profil est déjà prêt.",
+domainAgents:"Agents à l’œuvre",noGoalsDomain:"Vous n’avez encore choisi aucun objectif dans ce domaine.",addGoals:"Ajouter des objectifs",answersTitle:"Réponses d’APA",askLabel:"Demander à APA",askPh:"Posez une question sur ce domaine, ou laissez vide pour un point général.",askBtn:"Demander à APA",asking:"APA réfléchit…",noAnswers:"Aucune réponse pour l’instant. Demandez à APA pour obtenir la première.",askUnavailable:"Les réponses apparaîtront ici dès que le serveur d’APA sera connecté.",askErr:"APA n’a pas pu répondre. Réessayez dans une minute.",youAsked:"Votre question : {q}",whatToDo:"À faire",removeAnswer:"Supprimer",
+editSit:"Modifier ma situation et mes objectifs",notAnswered:"Non renseigné",sumChallenge:"Le plus difficile",sumDream:"Plus heureux cette année",sumHorizon:"Quand",
+photo:"Photo",photoAdd:"Ajouter une photo",photoChange:"Changer de photo",photoRemove:"Supprimer la photo",photoHint:"Facultatif. N’importe quelle image ; elle est recadrée en carré et réduite à 256 px.",photoErr:"Choisissez un fichier image.",
+nameTitle:"Nom",emailTitle:"E-mail",currentEmail:"E-mail actuel : {email}",newEmail:"Nouvel e-mail",currentPw:"Mot de passe actuel",sendCodeBtn:"Envoyer le code de vérification",errPwWrong:"Ce mot de passe est incorrect.",errSameEmail:"C’est déjà votre e-mail.",emailChanged:"Votre e-mail est maintenant {email}.",
+pwTitle:"Mot de passe",newPw:"Nouveau mot de passe",pwChanged:"Mot de passe modifié.",checkinTitle:"Points de suivi",checkinSub:"À quelle fréquence APA vous fait un retour.",ci_daily:"Chaque jour",ci_weekly:"Chaque semaine",ci_news:"Seulement s’il y a du nouveau",
+consentTitle:"Votre consentement",consentText:"Vous avez accepté les conditions (version {v}) le {date}.",exportTitle:"Télécharger mes données",exportSub:"Obtenez une copie de tout ce qu’APA conserve sur vous, au format JSON.",exportBtn:"Télécharger mes données",exportErr:"Le téléchargement n’a pas démarré. Réessayez.",
+deleteTitle:"Supprimer le compte",deleteSub:"Cette action supprime définitivement votre profil, vos réponses et votre photo. Votre e-mail pourra de nouveau être utilisé.",deleteBtn:"Supprimer mon compte",deleteConfirm:"Saisissez votre mot de passe pour confirmer",deleteFinal:"Supprimer définitivement",deleted:"Votre compte a été supprimé."},
+zh:{signInTitle:"登录",signInBtn:"登录",noAccount:"第一次使用 Apacom？",createLink:"创建账户",haveAccount:"已有账户？",signInLink:"登录",errLogin:"邮箱或密码不正确。",logout:"退出登录",cancel:"取消",save:"保存",saved:"已保存。",
+tabAgent:"我的智能体",tabProfile:"现状与目标",tabAccount:"账户",tabPrivacy:"隐私与数据",hello:"您好，{name}",memberSince:"注册于 {date}",
+d_social:"社交生活",d_economic:"财务与工作",d_health:"健康",d_learning:"教育",soon:"即将推出",soonText:"APA 将在后续版本中覆盖这一领域，您的资料已为此做好准备。",
+domainAgents:"负责此领域的助手智能体",noGoalsDomain:"您还没有在此领域选择目标。",addGoals:"添加目标",answersTitle:"APA 的回答",askLabel:"问 APA",askPh:"就此领域提问，或留空以获取总体建议。",askBtn:"问 APA",asking:"APA 正在思考…",noAnswers:"还没有回答。向 APA 提问，获取第一条建议。",askUnavailable:"连接 APA 服务器后，回答会显示在这里。",askErr:"APA 暂时无法回答，请稍后再试。",youAsked:"您的问题：{q}",whatToDo:"行动步骤",removeAnswer:"删除",
+editSit:"修改现状与目标",notAnswered:"未填写",sumChallenge:"目前最困难的",sumDream:"今年的幸福愿望",sumHorizon:"时间",
+photo:"照片",photoAdd:"添加照片",photoChange:"更换照片",photoRemove:"删除照片",photoHint:"选填。任意图片均可，将裁剪为正方形并缩小至 256 像素。",photoErr:"请选择图片文件。",
+nameTitle:"姓名",emailTitle:"电子邮箱",currentEmail:"当前邮箱：{email}",newEmail:"新邮箱",currentPw:"当前密码",sendCodeBtn:"发送验证码",errPwWrong:"密码不正确。",errSameEmail:"这已经是您的邮箱。",emailChanged:"您的邮箱已更改为 {email}。",
+pwTitle:"密码",newPw:"新密码",pwChanged:"密码已更改。",checkinTitle:"定期反馈",checkinSub:"APA 向您汇报的频率。",ci_daily:"每天",ci_weekly:"每周",ci_news:"仅在有新消息时",
+consentTitle:"您的同意记录",consentText:"您已于 {date} 同意条款和条件（版本 {v}）。",exportTitle:"下载我的数据",exportSub:"以 JSON 文件形式获取 APA 保存的关于您的全部数据。",exportBtn:"下载我的数据",exportErr:"下载未开始，请重试。",
+deleteTitle:"删除账户",deleteSub:"这将永久删除您的资料、回答和照片，您的邮箱可以重新注册。",deleteBtn:"删除我的账户",deleteConfirm:"请输入密码以确认",deleteFinal:"永久删除",deleted:"您的账户已删除。"},
+ar:{signInTitle:"تسجيل الدخول",signInBtn:"تسجيل الدخول",noAccount:"جديد على Apacom؟",createLink:"إنشاء حساب",haveAccount:"لديك حساب بالفعل؟",signInLink:"تسجيل الدخول",errLogin:"البريد الإلكتروني أو كلمة المرور غير صحيحة.",logout:"تسجيل الخروج",cancel:"إلغاء",save:"حفظ",saved:"تم الحفظ.",
+tabAgent:"وكيلي",tabProfile:"الوضع والأهداف",tabAccount:"الحساب",tabPrivacy:"الخصوصية والبيانات",hello:"مرحبًا، {name}",memberSince:"عضو منذ {date}",
+d_social:"الحياة الاجتماعية",d_economic:"المال والعمل",d_health:"الصحة",d_learning:"التعليم",soon:"قريبًا",soonText:"سيغطي APA هذا المجال في إصدار قادم، وملفك جاهز له بالفعل.",
+domainAgents:"الوكلاء المساعدون في هذا المجال",noGoalsDomain:"لم تختر أي هدف في هذا المجال بعد.",addGoals:"إضافة أهداف",answersTitle:"إجابات APA",askLabel:"اسأل APA",askPh:"اطرح سؤالًا عن هذا المجال، أو اتركه فارغًا للحصول على تحديث عام.",askBtn:"اسأل APA",asking:"APA يفكّر…",noAnswers:"لا توجد إجابات بعد. اسأل APA لتحصل على أول إجابة.",askUnavailable:"ستظهر الإجابات هنا بعد ربط خادم APA.",askErr:"تعذّر على APA الإجابة الآن. حاول مجددًا بعد دقيقة.",youAsked:"سؤالك: {q}",whatToDo:"ما يجب فعله",removeAnswer:"حذف",
+editSit:"تعديل الوضع والأهداف",notAnswered:"لم تتم الإجابة",sumChallenge:"الأصعب الآن",sumDream:"ما يسعدك هذا العام",sumHorizon:"متى",
+photo:"الصورة",photoAdd:"إضافة صورة",photoChange:"تغيير الصورة",photoRemove:"حذف الصورة",photoHint:"اختياري. أي صورة؛ تُقصّ بشكل مربع وتُصغَّر إلى ٢٥٦ بكسل.",photoErr:"اختر ملف صورة.",
+nameTitle:"الاسم",emailTitle:"البريد الإلكتروني",currentEmail:"البريد الحالي: {email}",newEmail:"البريد الجديد",currentPw:"كلمة المرور الحالية",sendCodeBtn:"إرسال رمز التحقق",errPwWrong:"كلمة المرور غير صحيحة.",errSameEmail:"هذا هو بريدك الحالي بالفعل.",emailChanged:"أصبح بريدك الآن {email}.",
+pwTitle:"كلمة المرور",newPw:"كلمة المرور الجديدة",pwChanged:"تم تغيير كلمة المرور.",checkinTitle:"المتابعات",checkinSub:"عدد مرات تواصل APA معك.",ci_daily:"كل يوم",ci_weekly:"كل أسبوع",ci_news:"فقط عند وجود جديد",
+consentTitle:"موافقتك",consentText:"وافقت على الشروط والأحكام (الإصدار {v}) بتاريخ {date}.",exportTitle:"تنزيل بياناتي",exportSub:"احصل على نسخة من كل ما يحفظه APA عنك في ملف JSON.",exportBtn:"تنزيل بياناتي",exportErr:"لم يبدأ التنزيل. حاول مجددًا.",
+deleteTitle:"حذف الحساب",deleteSub:"يؤدي هذا إلى حذف ملفك وإجاباتك وصورتك نهائيًا، ويصبح بريدك متاحًا للتسجيل من جديد.",deleteBtn:"حذف حسابي",deleteConfirm:"أدخل كلمة المرور للتأكيد",deleteFinal:"حذف نهائي",deleted:"تم حذف حسابك."}
+};
+for(const l in CUI) Object.assign(T[l], CUI[l]);
+
+/* ============ v4 strings: password reset, daily brief, approvals ============ */
+const V4 = {
+en:{forgotLink:"Forgot password?",resetTitle:"Reset your password",resetSub:"Enter your account email. We'll send a code to set a new password.",sendResetBtn:"Send code",resetSent:"If an account exists for {email}, we sent a 6-digit code.",setNewPw:"Set new password",resetDone:"Password reset. You're signed in.",backToLogin:"Back to sign in",
+tabToday:"Today",tabInbox:"Approvals",briefTitle:"Your brief for {date}",briefSub:"What APA found across your life areas.",briefBtn:"Prepare today's brief",briefing:"APA is preparing your brief…",briefNone:"Your brief for today isn't ready yet.",briefErr:"The brief couldn't be prepared. Try again in a minute.",briefRefresh:"Refresh brief",earlierBriefs:"Earlier briefs",pendingNote:"Waiting for your approval: {n}",openInbox:"Review them",
+inboxTitle:"Waiting for your approval",inboxSub:"APA never acts for you without a yes. Approve or decline each proposal.",inboxEmpty:"Nothing is waiting. New proposals arrive with your daily brief.",approve:"Approve",decline:"Decline",approvedNote:"Approved. In this demo nothing is sent; the full version carries it out and reports back here.",history:"Decided",st_approved:"Approved",st_declined:"Declined",proposedBy:"Proposed by {agent}",undo:"Undo"},
+fr:{forgotLink:"Mot de passe oublié ?",resetTitle:"Réinitialiser votre mot de passe",resetSub:"Saisissez l’e-mail de votre compte. Nous vous enverrons un code pour définir un nouveau mot de passe.",sendResetBtn:"Envoyer le code",resetSent:"Si un compte existe pour {email}, nous avons envoyé un code à 6 chiffres.",setNewPw:"Définir le nouveau mot de passe",resetDone:"Mot de passe réinitialisé. Vous êtes connecté(e).",backToLogin:"Retour à la connexion",
+tabToday:"Aujourd’hui",tabInbox:"Validations",briefTitle:"Votre point du {date}",briefSub:"Ce qu’APA a trouvé dans vos domaines de vie.",briefBtn:"Préparer le point du jour",briefing:"APA prépare votre point…",briefNone:"Votre point du jour n’est pas encore prêt.",briefErr:"Le point n’a pas pu être préparé. Réessayez dans une minute.",briefRefresh:"Actualiser le point",earlierBriefs:"Points précédents",pendingNote:"En attente de votre accord : {n}",openInbox:"Les examiner",
+inboxTitle:"En attente de votre accord",inboxSub:"APA n’agit jamais pour vous sans votre oui. Acceptez ou refusez chaque proposition.",inboxEmpty:"Rien en attente. Les nouvelles propositions arrivent avec votre point du jour.",approve:"Accepter",decline:"Refuser",approvedNote:"Accepté. Dans cette démo, rien n’est envoyé ; la version complète l’exécute et vous en rend compte ici.",history:"Décisions",st_approved:"Accepté",st_declined:"Refusé",proposedBy:"Proposé par {agent}",undo:"Annuler"},
+zh:{forgotLink:"忘记密码？",resetTitle:"重置密码",resetSub:"请输入账户邮箱，我们将发送验证码以设置新密码。",sendResetBtn:"发送验证码",resetSent:"如果 {email} 已注册，我们已发送 6 位验证码。",setNewPw:"设置新密码",resetDone:"密码已重置，您已登录。",backToLogin:"返回登录",
+tabToday:"今日",tabInbox:"待批准",briefTitle:"{date} 的简报",briefSub:"APA 在您各个生活领域中的发现。",briefBtn:"生成今日简报",briefing:"APA 正在准备简报…",briefNone:"今日简报尚未生成。",briefErr:"无法生成简报，请稍后再试。",briefRefresh:"刷新简报",earlierBriefs:"往日简报",pendingNote:"等待您批准：{n} 项",openInbox:"去查看",
+inboxTitle:"等待您批准",inboxSub:"未经您同意，APA 绝不会代您行动。请逐项批准或拒绝。",inboxEmpty:"暂无待批准事项。新的建议会随每日简报一起送达。",approve:"批准",decline:"拒绝",approvedNote:"已批准。演示版不会真正执行；完整版将执行并在此汇报结果。",history:"已处理",st_approved:"已批准",st_declined:"已拒绝",proposedBy:"由{agent}提议",undo:"撤销"},
+ar:{forgotLink:"نسيت كلمة المرور؟",resetTitle:"إعادة تعيين كلمة المرور",resetSub:"أدخل البريد الإلكتروني لحسابك، وسنرسل رمزًا لتعيين كلمة مرور جديدة.",sendResetBtn:"إرسال الرمز",resetSent:"إذا كان هناك حساب مرتبط بـ {email} فقد أرسلنا رمزًا من ٦ أرقام.",setNewPw:"تعيين كلمة المرور الجديدة",resetDone:"تمت إعادة تعيين كلمة المرور، وقد سجّلت الدخول.",backToLogin:"العودة إلى تسجيل الدخول",
+tabToday:"اليوم",tabInbox:"الموافقات",briefTitle:"موجزك ليوم {date}",briefSub:"ما وجده APA في مجالات حياتك.",briefBtn:"إعداد موجز اليوم",briefing:"APA يُعدّ موجزك…",briefNone:"موجز اليوم لم يُعدّ بعد.",briefErr:"تعذّر إعداد الموجز. حاول مجددًا بعد دقيقة.",briefRefresh:"تحديث الموجز",earlierBriefs:"الموجزات السابقة",pendingNote:"بانتظار موافقتك: {n}",openInbox:"مراجعتها",
+inboxTitle:"بانتظار موافقتك",inboxSub:"لا يتصرف APA نيابةً عنك أبدًا دون موافقتك. وافق على كل اقتراح أو ارفضه.",inboxEmpty:"لا شيء بانتظارك. تصل الاقتراحات الجديدة مع موجزك اليومي.",approve:"موافقة",decline:"رفض",approvedNote:"تمت الموافقة. في هذا العرض التجريبي لا يُرسَل شيء؛ أما النسخة الكاملة فتنفّذه وتبلغك بالنتيجة هنا.",history:"تم البتّ فيها",st_approved:"تمت الموافقة",st_declined:"مرفوض",proposedBy:"اقترحه {agent}",undo:"تراجع"}
+};
+for(const l in V4) Object.assign(T[l], V4[l]);
+
 const SIT = [
   {key:"employment", opts:["employed","self","student","seeking","retired","caregiver"]},
   {key:"incomeQ",    opts:["hard","basic","comfortable","saving","na"]},
@@ -483,10 +750,12 @@ async function detectCountry(){
   return null;
 }
 
-/* ============ storage: claude.ai db → localStorage → memory ============ */
+/* ============ storage: claude.ai db → localStorage → memory ============
+   registry/<sha256(email)> = {uid}       shared, holds no personal data, enforces one account per email
+   data/users/me/<uid>      = profile     private to the signed-in claude.ai viewer
+   Production: replace with a real backend (auth server + database). */
 const Store = {
-  mode:"memory", db:null, mem:{reg:{}, prof:{}},
-  ready:null,
+  mode:"memory", db:null, mem:{reg:{}, prof:{}, session:null}, ready:null,
   init(){
     this.ready = (async ()=>{
       try{
@@ -501,33 +770,67 @@ const Store = {
   },
   _lget(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(e){ return null; } },
   _lset(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
-  async emailTaken(h){
+  _lmap(k, fn){ const m = this._lget(k)||{}; fn(m); this._lset(k, m); },
+  async getReg(h){
     await this.ready;
-    if(this.mode==="db"){ try{ const s = await this.db.doc("registry/"+h).get(); return s.exists; }catch(e){ return false; } }
-    if(this.mode==="local") return !!(this._lget("apa_registry")||{})[h];
-    return !!this.mem.reg[h];
+    if(this.mode==="db"){ const s = await this.db.doc("registry/"+h).get(); return s.exists ? (s.data()||{}) : null; }
+    if(this.mode==="local") return (this._lget("apa_registry")||{})[h] || null;
+    return this.mem.reg[h] || null;
   },
-  async register(h){
-    // only a hash of the email goes into the shared registry, never the address itself
-    if(this.mode==="db"){ await this.db.doc("registry/"+h).set({at: Date.now()}); return; }
-    if(this.mode==="local"){ const r = this._lget("apa_registry")||{}; r[h] = Date.now(); this._lset("apa_registry", r); return; }
-    this.mem.reg[h] = Date.now();
+  async setReg(h, uid){
+    const v = {uid, at:Date.now()};
+    if(this.mode==="db") return this.db.doc("registry/"+h).set(v);
+    if(this.mode==="local") return this._lmap("apa_registry", m=>{ m[h]=v; });
+    this.mem.reg[h]=v;
   },
-  async saveProfile(h, data){
-    if(this.mode==="db"){ await this.db.collection("data/users/me").doc(h).set(data); return; }
-    if(this.mode==="local"){ const p = this._lget("apa_profiles")||{}; p[h] = data; this._lset("apa_profiles", p); return; }
-    this.mem.prof[h] = data;
-  }
+  async delReg(h){
+    if(this.mode==="db") return this.db.doc("registry/"+h).delete();
+    if(this.mode==="local") return this._lmap("apa_registry", m=>{ delete m[h]; });
+    delete this.mem.reg[h];
+  },
+  async getProfile(uid){
+    await this.ready;
+    if(this.mode==="db"){ const s = await this.db.collection("data/users/me").doc(uid).get(); return s.exists ? s.data() : null; }
+    if(this.mode==="local") return (this._lget("apa_profiles")||{})[uid] || null;
+    return this.mem.prof[uid] || null;
+  },
+  async saveProfile(p){
+    p.updatedAt = new Date().toISOString();
+    const data = JSON.parse(JSON.stringify(p));
+    if(this.mode==="db") return this.db.collection("data/users/me").doc(p.uid).set(data);
+    if(this.mode==="local") return this._lmap("apa_profiles", m=>{ m[p.uid]=data; });
+    this.mem.prof[p.uid]=data;
+  },
+  async delProfile(uid){
+    if(this.mode==="db") return this.db.collection("data/users/me").doc(uid).delete();
+    if(this.mode==="local") return this._lmap("apa_profiles", m=>{ delete m[uid]; });
+    delete this.mem.prof[uid];
+  },
+  getSession(){ try{ return localStorage.getItem("apa_session"); }catch(e){ return this.mem.session; } },
+  setSession(uid){ try{ localStorage.setItem("apa_session", uid); }catch(e){} this.mem.session=uid; },
+  clearSession(){ try{ localStorage.removeItem("apa_session"); }catch(e){} this.mem.session=null; }
 };
 async function sha256(s){
   try{ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
   catch(e){ let h=0; for(const ch of s){ h=(h*31+ch.charCodeAt(0))|0; } return "h"+(h>>>0).toString(16); }
 }
+const hex = b => [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+function randomId(n=16){ const a=new Uint8Array(n); crypto.getRandomValues(a); return hex(a); }
+/* password: salted PBKDF2 in this demo. A real backend must hash on the server (argon2/bcrypt). */
+async function hashPw(pw, salt, iter=150000){
+  salt = salt || randomId(16);
+  try{
+    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveBits"]);
+    const bits = await crypto.subtle.deriveBits({name:"PBKDF2", hash:"SHA-256", salt:new TextEncoder().encode(salt), iterations:iter}, key, 256);
+    return {alg:"PBKDF2-SHA256", iter, salt, hash:hex(bits)};
+  }catch(e){ return {alg:"SHA256", iter:1, salt, hash:await sha256(salt+pw)}; }
+}
+async function checkPw(pw, rec){ if(!rec || !pw) return false; const r = await hashPw(pw, rec.salt, rec.iter); return r.hash===rec.hash; }
 
 /* ============ state + helpers ============ */
 const $ = id => document.getElementById(id);
 let lang = "en";
-const st = {step:1, country:null, detected:null, user:null, verify:null, sit:{}, goals:[], horizon:null, dream:"", challenge:""};
+const st = {view:"s1", country:null, detected:null, user:null, verify:null, sit:{}, goals:[], horizon:null, dream:"", challenge:"", profile:null, editing:false, tab:"agent", domain:"social"};
 function t(k, vars){ let s = (T[lang][k] ?? T.en[k] ?? k); if(vars) for(const v in vars) s = s.split("{"+v+"}").join(vars[v]); return s; }
 
 /* ============ language switcher ============ */
@@ -558,6 +861,7 @@ function setLang(code){
   $("langFlag").textContent = flagOf(L.flag); $("langName").textContent = L.native;
   try{ localStorage.setItem("apa_lang", code); }catch(e){}
   renderLangMenu(); applyText();
+  if(st.profile && st.profile.uiLanguage!==code){ st.profile.uiLanguage=code; Store.saveProfile(st.profile).catch(()=>{}); }
 }
 
 function applyText(){
@@ -572,26 +876,13 @@ function applyText(){
   renderSteps(); renderCountryValue(); updateMeter(); renderCountryList();
   renderChoiceGroups();
   if(st.verify) { $("verifySent").textContent = t("verifySent",{email:st.user.email}); renderDemoCode(); tickResend(); }
-  if(st.step===5) renderDone();
+  if(st.view==="cab") renderCabinet();
+  if(st.emailChange) renderNeDemo();
+  document.querySelectorAll(".okmsg[data-k],.flash[data-k]").forEach(el => { el.textContent = t(el.dataset.k, JSON.parse(el.dataset.v||"null")); });
   // re-translate any visible error
   document.querySelectorAll(".err[data-k]").forEach(el => { el.textContent = t(el.dataset.k, JSON.parse(el.dataset.v||"null")); });
 }
 function setErr(id, key, vars){ const el=$(id); if(!key){ el.textContent=""; delete el.dataset.k; return; } el.dataset.k=key; el.dataset.v=JSON.stringify(vars||null); el.textContent=t(key,vars); }
-
-/* ============ steps ============ */
-function renderSteps(){
-  const ol = $("steps"); ol.textContent=""; ol.hidden = st.step===5;
-  t("steps").forEach((name,i)=>{
-    const li = document.createElement("li"); const n=i+1;
-    if(n===st.step){ li.className="on"; li.setAttribute("aria-current","step"); } else if(n<st.step) li.className="done";
-    const b=document.createElement("b"); b.textContent=n; li.append(b, document.createTextNode(name)); ol.appendChild(li);
-  });
-}
-function go(n){
-  st.step=n; for(let i=1;i<=5;i++) $("s"+i).hidden = i!==n;
-  renderSteps(); window.scrollTo({top: n===1?0:$("steps").offsetTop-20, behavior:"smooth"});
-  const first = $("s"+n).querySelector("input,textarea,button"); if(first && n!==1) setTimeout(()=>first.focus({preventScroll:true}), 50);
-}
 
 /* ============ password ============ */
 function pwScore(p){ if(!p) return 0; let s=0; if(p.length>=8) s++; if(/[a-z]/i.test(p)&&/\d/.test(p)) s++; if(p.length>=12 || (/[A-Z]/.test(p)&&/[a-z]/.test(p)&&/[^A-Za-z0-9]/.test(p))) s++; return Math.max(1,s); }
@@ -664,6 +955,39 @@ document.addEventListener("click", e=>{
 });
 function toggleLangSafe(){ if($("langMenu").classList.contains("open")){ $("langMenu").classList.remove("open"); $("langBtn").setAttribute("aria-expanded","false"); } }
 
+/* ============ views ============ */
+const VIEWS = ["login","reset","s1","s2","s3","s4"];
+function showView(v){
+  st.view = v;
+  const inCab = v==="cab";
+  $("app").hidden = inCab; $("cab").hidden = !inCab; document.body.classList.toggle("wide", inCab);
+  VIEWS.forEach(id => $(id).hidden = id!==v);
+  $("hero").hidden = inCab || st.editing;
+  $("verifiedMsg").hidden = !!st.editing; $("cancelEdit").hidden = !st.editing;
+  $("topUser").hidden = !st.profile;
+  renderSteps(); renderTopUser();
+  window.scrollTo({top:0, behavior:"smooth"});
+  if(v==="s3"||v==="s4"){ const first=$(v).querySelector("input,textarea"); if(first) setTimeout(()=>first.focus({preventScroll:true}),50); }
+}
+function go(n){ showView("s"+n); }
+function renderSteps(){
+  const ol=$("steps"); ol.textContent="";
+  const n = {s1:1,s2:2,s3:3,s4:4}[st.view];
+  ol.hidden = !n || st.editing;
+  if(!n) return;
+  t("steps").forEach((name,i)=>{
+    const li=document.createElement("li"); const k=i+1;
+    if(k===n){ li.className="on"; li.setAttribute("aria-current","step"); } else if(k<n) li.className="done";
+    const b=document.createElement("b"); b.textContent=k; li.append(b, document.createTextNode(name)); ol.appendChild(li);
+  });
+}
+function setOk(id, key, vars){ const el=$(id); if(!key){ el.textContent=""; delete el.dataset.k; return; } el.dataset.k=key; el.dataset.v=JSON.stringify(vars||null); el.textContent=t(key,vars); clearTimeout(el._t); el._t=setTimeout(()=>setOk(id),6000); }
+function fmtDate(iso){ try{ return new Intl.DateTimeFormat(lang,{dateStyle:"long"}).format(new Date(iso)); }catch(e){ return (iso||"").slice(0,10); } }
+function fmtTime(iso){ try{ return new Intl.DateTimeFormat(lang,{dateStyle:"medium",timeStyle:"short"}).format(new Date(iso)); }catch(e){ return iso; } }
+function genCode(){ const n=crypto.getRandomValues(new Uint32Array(1))[0]; return {code:String(n%1000000).padStart(6,"0"), expires:Date.now()+600000, tries:5}; }
+function checkCode(v, c){ if(Date.now()>v.expires) return "errExpired"; if(v.tries<=0) return "errLocked"; if(c!==v.code){ v.tries--; return v.tries>0?"errCode":"errLocked"; } return null; }
+const pwOk = p => p.length>=8 && /[a-z]/i.test(p) && /\d/.test(p);
+
 /* ============ step 1: account ============ */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 ["fn","ln","em"].forEach(id=>$(id).addEventListener("input",()=>{ setErr(id+"Err"); $(id).removeAttribute("aria-invalid"); }));
@@ -674,29 +998,26 @@ $("f1").addEventListener("submit", async e=>{
   if(!fn) bad("fn","fnErr","errRequired");
   if(!ln) bad("ln","lnErr","errRequired");
   if(!em) bad("em","emErr","errRequired"); else if(!EMAIL_RE.test(em)) bad("em","emErr","errEmail");
-  if(pw.length<8 || !/[a-z]/i.test(pw) || !/\d/.test(pw)) bad("pw","pwErr","errPw");
+  if(!pwOk(pw)) bad("pw","pwErr","errPw");
   if(!st.country) bad("cbBtn","cbErr","errCountry");
   if(!$("agree").checked) bad("agree","agreeErr","errAgree");
   if(firstBad){ firstBad.focus(); return; }
   const btn=$("createBtn"); btn.disabled=true; btn.textContent=t("checking");
   try{
     const h = await sha256(em);
-    if(await Store.emailTaken(h)){ bad("em","emErr","errTaken"); firstBad.focus(); return; }
-    // never keep the password: a real backend hashes it (bcrypt/argon2) server-side
-    st.user = {first:fn, last:ln, email:em, hash:h, country:st.country, consent:{termsAndConditions:true, version:LEGAL_VERSION, acceptedAt:new Date().toISOString()}};
+    if(await Store.getReg(h)){ bad("em","emErr","errTaken"); firstBad.focus(); return; }
+    st.user = {first:fn, last:ln, email:em, hash:h, country:st.country, pw:await hashPw(pw),
+               consent:{termsAndConditions:true, version:LEGAL_VERSION, acceptedAt:new Date().toISOString()}};
     $("pw").value=""; updateMeter();
     sendCode(); $("verifySent").textContent = t("verifySent",{email:em}); $("code").value=""; setErr("codeErr");
     go(2);
-  } finally { btn.disabled=false; btn.textContent=t("createAccount"); }
+  }catch(err){ setErr("emErr","askErr"); }
+  finally{ btn.disabled=false; btn.textContent=t("createAccount"); }
 });
 
 /* ============ step 2: email verification (simulated) ============ */
 let resendTimer=null;
-function sendCode(){
-  const n = crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] : Math.floor(Math.random()*1e9);
-  st.verify = {code:String(n%1000000).padStart(6,"0"), expires:Date.now()+10*60*1000, tries:5, resendAt:Date.now()+30000};
-  renderDemoCode(); tickResend();
-}
+function sendCode(){ st.verify = Object.assign(genCode(), {resendAt:Date.now()+30000}); renderDemoCode(); tickResend(); }
 function renderDemoCode(){ const p=$("demoCode"); p.textContent=t("demoCode",{code:""}); const b=document.createElement("b"); b.textContent=st.verify.code; p.appendChild(b); }
 function tickResend(){
   clearInterval(resendTimer);
@@ -708,18 +1029,22 @@ $("resendBtn").onclick = ()=>{ sendCode(); setErr("codeErr"); $("code").value=""
 $("changeEmail").onclick = ()=>{ clearInterval(resendTimer); st.verify=null; go(1); $("em").focus(); $("em").select(); };
 $("code").addEventListener("input", ()=>{ $("code").value=$("code").value.replace(/\D/g,"").slice(0,6); setErr("codeErr"); });
 $("f2").addEventListener("submit", async e=>{
-  e.preventDefault(); const v=st.verify, c=$("code").value;
-  if(Date.now()>v.expires) return setErr("codeErr","errExpired");
-  if(v.tries<=0) return setErr("codeErr","errLocked");
-  if(c!==v.code){ v.tries--; return setErr("codeErr", v.tries>0?"errCode":"errLocked", {n:v.tries}); }
-  // re-check right before claiming the email (another tab may have registered it)
-  if(await Store.emailTaken(st.user.hash)){ go(1); setErr("emErr","errTaken"); $("em").setAttribute("aria-invalid","true"); return; }
-  await Store.register(st.user.hash);
-  clearInterval(resendTimer); st.user.verifiedAt = new Date().toISOString();
+  e.preventDefault();
+  const bad = checkCode(st.verify, $("code").value); if(bad) return setErr("codeErr", bad, {n:st.verify.tries});
+  const u = st.user;
+  if(await Store.getReg(u.hash)){ go(1); setErr("emErr","errTaken"); $("em").setAttribute("aria-invalid","true"); return; }
+  const now = new Date().toISOString();
+  const p = {uid:randomId(), emailHash:u.hash, firstName:u.first, lastName:u.last, email:u.email, country:u.country, uiLanguage:lang,
+             pw:u.pw, consent:u.consent, emailVerifiedAt:now, createdAt:now, photo:null,
+             situation:{}, challenge:"", goals:[], dream:"", horizon:null, answers:{}, settings:{checkin:"weekly"}};
+  await Store.setReg(u.hash, p.uid);
+  await Store.saveProfile(p);
+  clearInterval(resendTimer); st.verify=null; st.user=null;
+  st.profile = p; Store.setSession(p.uid);
   go(3);
 });
 
-/* ============ steps 3 & 4: situation and goals ============ */
+/* ============ steps 3 & 4: situation and goals (sign-up and edit) ============ */
 function chipGroup(legendKey, name, opts, multi, labelFn, selected){
   const fs=document.createElement("fieldset"); const lg=document.createElement("legend"); lg.textContent=t(legendKey); fs.appendChild(lg);
   const wrap=document.createElement("div"); wrap.className="chips";
@@ -748,76 +1073,442 @@ function renderChoiceGroups(){
   gg.appendChild(chipGroup("economic","g_economic",GOALS.economic,true,o=>t("g_"+o),st.goals));
   const hz=$("hzGroup"); hz.textContent=""; hz.appendChild(chipGroup("horizon","hz",["m3","y1","y3"],false,o=>t(o),st.horizon));
 }
+function loadChoices(p){
+  st.sit = JSON.parse(JSON.stringify(p.situation||{})); st.goals=[...(p.goals||[])]; st.horizon=p.horizon||null;
+  $("challenge").value=p.challenge||""; $("dream").value=p.dream||"";
+  $("sitGroups").textContent=""; renderChoiceGroups();
+}
 $("goalGroups").addEventListener("change", ()=>setErr("goalErr"));
 $("f3").addEventListener("submit", e=>{ e.preventDefault(); captureChoices(); st.challenge=$("challenge").value.trim(); go(4); });
 $("back4").onclick = ()=>{ captureChoices(); st.dream=$("dream").value.trim(); go(3); };
+$("cancelEdit").onclick = ()=>{ st.editing=false; openCabinet("profile"); };
 $("f4").addEventListener("submit", async e=>{
-  e.preventDefault(); captureChoices(); st.dream=$("dream").value.trim(); st.challenge=$("challenge").value.trim();
+  e.preventDefault(); captureChoices();
   if(!st.goals.length){ setErr("goalErr","errGoal"); $("goalGroups").querySelector("input").focus(); return; }
-  const profile = {
-    firstName:st.user.first, lastName:st.user.last, email:st.user.email, country:st.user.country, uiLanguage:lang,
-    emailVerifiedAt:st.user.verifiedAt, consent:st.user.consent, situation:st.sit, challenge:st.challenge, goals:st.goals, dream:st.dream, horizon:st.horizon,
-    updatedAt:new Date().toISOString()
-  };
-  try{ await Store.saveProfile(st.user.hash, profile); }catch(err){ Store.mode="memory"; Store.mem.prof[st.user.hash]=profile; }
-  go(5); renderDone();
+  const p = st.profile;
+  Object.assign(p, {situation:st.sit, challenge:$("challenge").value.trim(), goals:st.goals, dream:$("dream").value.trim(), horizon:st.horizon});
+  await Store.saveProfile(p);
+  const wasEditing = st.editing; st.editing=false;
+  openCabinet(wasEditing ? "profile" : "today");
 });
 
-/* ============ done ============ */
-let plan=null;
-function renderDone(){
-  $("doneTitle").textContent = t("doneTitle",{name:st.user.first});
-  $("savedNote").textContent = t(Store.mode==="db"?"savedDb":Store.mode==="local"?"savedLocal":"savedMemory");
-  const dl=$("summary"); dl.textContent="";
-  const row=(k,v)=>{ if(!v) return; const dt=document.createElement("dt"); dt.textContent=t(k); const dd=document.createElement("dd"); dd.textContent=v; dl.append(dt,dd); };
-  row("sumName", st.user.first+" "+st.user.last);
-  row("sumEmail", st.user.email+"  ✓");
-  row("sumCountry", flagOf(st.user.country)+"  "+countryName(st.user.country,lang));
-  const sit = SIT.map(g=>{ const v=st.sit[g.key]; return Array.isArray(v)? v.map(x=>t(x)).join(", ") : (v?t(v):""); }).filter(Boolean).join("; ");
-  row("sumSituation", sit);
-  row("sumGoals", st.goals.map(g=>t("g_"+g)).join(", "));
-  dl.querySelectorAll("dd").forEach((d,i)=>{ if(i===2){ d.innerHTML=""; const f=document.createElement("span"); f.className="flag"; f.textContent=flagOf(st.user.country); d.append(f, document.createTextNode("  "+countryName(st.user.country,lang))); } });
-  renderAgents();
+/* ============ sign in / out ============ */
+$("toLogin").onclick = ()=>{ showView("login"); $("liEm").focus(); };
+$("toRegister").onclick = ()=>{ showView("s1"); $("fn").focus(); };
+["liEm","liPw"].forEach(id=>$(id).addEventListener("input",()=>setErr("liErr")));
+$("fL").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const em=$("liEm").value.trim().toLowerCase(), pw=$("liPw").value;
+  const btn=$("liBtn"); btn.disabled=true;
+  try{
+    const reg = EMAIL_RE.test(em) ? await Store.getReg(await sha256(em)) : null;
+    const p = reg && reg.uid ? await Store.getProfile(reg.uid) : null;
+    if(!p || !(await checkPw(pw, p.pw))){ setErr("liErr","errLogin"); $("liPw").select(); return; }
+    $("liPw").value=""; st.profile=p; Store.setSession(p.uid);
+    if(!p.goals || !p.goals.length){ loadChoices(p); go(3); } else openCabinet("today");
+  } finally { btn.disabled=false; }
+});
+function logout(){
+  Store.clearSession(); st.profile=null; st.editing=false; st.emailChange=null;
+  document.querySelectorAll("#cab input").forEach(i=>{ if(i.type!=="radio") i.value=""; });
+  ["fn","ln","em","pw","challenge","dream","code"].forEach(id=>$(id).value=""); $("agree").checked=false;
+  st.sit={}; st.goals=[]; st.horizon=null; $("sitGroups").textContent=""; renderChoiceGroups();
+  showView("login");
 }
-function renderAgents(){
-  const ul=$("agents"); ul.textContent="";
-  const list = plan ? plan.agents : st.goals.map(g=>({name:AGENTS[g][lang][0], mission:AGENTS[g][lang][1]}));
-  for(const a of list){
-    const li=document.createElement("li"); const dot=document.createElement("span"); dot.className="dot"; dot.setAttribute("aria-hidden","true");
-    const h=document.createElement("h3"); h.textContent=a.name; const p=document.createElement("p"); p.textContent=a.mission;
-    li.append(dot,h,p);
-    if(a.steps && a.steps.length){ const rh=document.createElement("div"); rh.className="rh"; rh.textContent=t("firstSteps"); const s=document.createElement("ul"); a.steps.forEach(x=>{const i=document.createElement("li");i.textContent=x;s.appendChild(i);}); li.append(rh,s); }
-    if(a.resources && a.resources.length){ const rh=document.createElement("div"); rh.className="rh"; rh.textContent=t("resources"); const s=document.createElement("ul"); a.resources.forEach(x=>{const i=document.createElement("li");i.textContent=x;s.appendChild(i);}); li.append(rh,s); }
-    ul.appendChild(li);
+$("logoutBtn").onclick = logout;
+function flash(key){ const f=$("flash"); f.hidden=false; f.dataset.k=key; f.textContent=t(key); setTimeout(()=>{ f.hidden=true; delete f.dataset.k; }, 8000); }
+
+/* ============ avatar ============ */
+function initials(p){ return ((p.firstName||"")[0]||"").toUpperCase() + ((p.lastName||"")[0]||"").toUpperCase(); }
+function paintAvatar(el, p){
+  el.textContent="";
+  if(p && p.photo){ const img=document.createElement("img"); img.src=p.photo; img.alt=""; el.appendChild(img); }
+  else el.textContent = p ? initials(p) : "";
+}
+function renderTopUser(){ if(st.profile){ paintAvatar($("topAvatar"), st.profile); $("topName").textContent = st.profile.firstName; } }
+$("topAvatarBtn").onclick = ()=>{ if(st.profile) openCabinet(st.tab||"today"); };
+
+/* ============ cabinet ============ */
+const DOMAINS = [
+  {key:"social",   goals:GOALS.social,   about:"relationships, friendships, family, community, wellbeing, languages, moving abroad"},
+  {key:"economic", goals:GOALS.economic, about:"work, income, business, savings, debt, housing, investing, skills"},
+  {key:"health",   soon:true},
+  {key:"learning", soon:true}
+];
+const TABS = ["today","agent","inbox","profile","account","privacy"];
+let sampleNs=null, downloadsNs=null;
+(async()=>{ try{ if(window.claude && window.claude.use){
+  [sampleNs, downloadsNs] = await Promise.all([claude.use("sample"), claude.use("downloads")]);
+  if(st.view==="cab") renderCabinet();
+} }catch(e){} })();
+
+function openCabinet(tab){
+  st.tab = tab || st.tab || "today"; st.domain = st.domain || "social";
+  const p = st.profile;
+  $("fn2").value=p.firstName; $("ln2").value=p.lastName;
+  showView("cab"); renderCabinet();
+}
+function renderCabinet(){
+  if(!st.profile) return;
+  const p = st.profile;
+  paintAvatar($("cabAvatar"), p); paintAvatar($("accAvatar"), p);
+  $("cabHello").textContent = t("hello",{name:p.firstName});
+  const meta=$("cabMeta"); meta.textContent="";
+  const c=document.createElement("span"); const f=document.createElement("span"); f.className="flag"; f.textContent=flagOf(p.country);
+  c.append(f, document.createTextNode(" "+countryName(p.country,lang)));
+  const m=document.createElement("span"); m.textContent=t("memberSince",{date:fmtDate(p.createdAt)});
+  meta.append(c,m);
+  const tabs=$("cabTabs"); tabs.textContent="";
+  TABS.forEach(k=>{
+    const b=document.createElement("button"); b.type="button"; b.setAttribute("role","tab"); b.id="tabbtn-"+k;
+    b.setAttribute("aria-controls","tab-"+k); b.setAttribute("aria-selected", String(k===st.tab)); b.tabIndex = k===st.tab?0:-1;
+    b.textContent=t("tab"+k[0].toUpperCase()+k.slice(1)); b.onclick=()=>selectTab(k); tabs.appendChild(b);
+    if(k==="inbox"){ const n=(p.actions||[]).filter(a=>a.status==="pending").length; if(n){ const c=el("span","count",String(n)); c.setAttribute("aria-label",t("pendingNote",{n})); b.appendChild(c); } }
+  });
+  TABS.forEach(k=>$("tab-"+k).hidden = k!==st.tab);
+  renderTodayTab(); renderAgentTab(); renderInboxTab(); renderProfileTab(); renderAccountTab(); renderPrivacyTab();
+}
+function selectTab(k){ st.tab=k; renderCabinet(); $("tabbtn-"+k).focus(); }
+$("cabTabs").addEventListener("keydown", e=>{
+  const i=TABS.indexOf(st.tab); const rtl=document.documentElement.dir==="rtl";
+  const next = {ArrowRight: rtl?-1:1, ArrowLeft: rtl?1:-1}[e.key];
+  if(next){ e.preventDefault(); selectTab(TABS[(i+next+TABS.length)%TABS.length]); }
+});
+
+/* --- My agent: one part per life area --- */
+function el(tag, cls, text){ const x=document.createElement(tag); if(cls) x.className=cls; if(text!=null) x.textContent=text; return x; }
+function renderAgentTab(){
+  const box=$("tab-agent"); if(!box || !st.profile) return; box.textContent="";
+  const p=st.profile;
+  const pills=el("div","pills"); pills.setAttribute("role","group");
+  DOMAINS.forEach(d=>{
+    const b=el("button","pill"); b.type="button"; b.setAttribute("aria-pressed", String(d.key===st.domain));
+    b.append(document.createTextNode(t("d_"+d.key)));
+    if(d.soon) b.appendChild(el("small","soon",t("soon")));
+    else { const n=(p.goals||[]).filter(g=>d.goals.includes(g)).length; if(n) b.appendChild(el("small","count",String(n))); }
+    b.onclick=()=>{ st.domain=d.key; renderAgentTab(); box.querySelector('.pill[aria-pressed="true"]').focus(); };
+    pills.appendChild(b);
+  });
+  box.appendChild(pills);
+  const d=DOMAINS.find(x=>x.key===st.domain);
+  const panel=el("div","domain");
+  panel.appendChild(el("h2",null,t("d_"+d.key)));
+  if(d.soon){ panel.appendChild(el("p","sub",t("soonText"))); box.appendChild(panel); return; }
+
+  const mine=(p.goals||[]).filter(g=>d.goals.includes(g));
+  panel.appendChild(el("h3","sec-h",t("domainAgents")));
+  if(!mine.length){
+    panel.appendChild(el("p","sub",t("noGoalsDomain")));
+    const add=el("button","btn ghost",t("addGoals")); add.type="button"; add.onclick=startEdit; panel.appendChild(add);
+  } else {
+    const ul=el("ul","agents");
+    mine.forEach(g=>{ const li=el("li"); const dot=el("span","dot"); dot.setAttribute("aria-hidden","true");
+      li.append(dot, el("h3",null,AGENTS[g][lang][0]), el("p",null,AGENTS[g][lang][1])); ul.appendChild(li); });
+    panel.appendChild(ul);
+  }
+
+  panel.appendChild(el("h3","sec-h",t("answersTitle")));
+  if(sampleNs){
+    const f=document.createElement("form"); f.className="ask"; f.noValidate=true;
+    const lab=el("label","sr",t("askLabel")); lab.htmlFor="askQ";
+    const ta=el("textarea","inp"); ta.id="askQ"; ta.placeholder=t("askPh"); ta.rows=2; ta.value=st.askDraft||""; ta.oninput=()=>st.askDraft=ta.value;
+    const btn=el("button","btn",st.asking?t("asking"):t("askBtn")); btn.type="submit"; btn.disabled=!!st.asking;
+    const er=el("p","err"); er.id="askErr";
+    f.append(lab,ta,btn,er); f.onsubmit=ev=>{ ev.preventDefault(); askApa(d); };
+    panel.appendChild(f);
+  } else panel.appendChild(el("p","note",t("askUnavailable")));
+
+  const list=(p.answers||{})[d.key]||[];
+  if(!list.length) panel.appendChild(el("p","sub",t("noAnswers")));
+  list.forEach((a,idx)=>{
+    const art=el("article","answer");
+    const head=el("div","answer-head"); head.append(el("h4",null,a.title), el("time",null,fmtTime(a.at)));
+    art.appendChild(head);
+    if(a.q) art.appendChild(el("p","asked",t("youAsked",{q:a.q})));
+    art.appendChild(el("p",null,a.summary));
+    if(a.actions && a.actions.length){ art.appendChild(el("div","rh",t("whatToDo"))); const ol=el("ol"); a.actions.forEach(x=>ol.appendChild(el("li",null,x))); art.appendChild(ol); }
+    if(a.resources && a.resources.length){ art.appendChild(el("div","rh",t("resources"))); const ul=el("ul"); a.resources.forEach(x=>ul.appendChild(el("li",null,x))); art.appendChild(ul); }
+    const rm=el("button","link muted-link",t("removeAnswer")); rm.type="button";
+    rm.onclick=async()=>{ p.answers[d.key].splice(idx,1); await Store.saveProfile(p); renderAgentTab(); };
+    art.appendChild(rm);
+    panel.appendChild(art);
+  });
+  box.appendChild(panel);
+}
+const LANG_NAME = {en:"English",fr:"French",zh:"Simplified Chinese (Mandarin)",ar:"Modern Standard Arabic"};
+async function askApa(d){
+  if(st.asking) return;
+  const p=st.profile, q=(st.askDraft||"").trim();
+  st.asking=true; renderAgentTab();
+  const prev=((p.answers||{})[d.key]||[]).slice(0,5).map(a=>a.title);
+  const ctx={country:countryName(p.country,"en"), situation:p.situation, hardest_now:p.challenge,
+             goals_in_this_area:(p.goals||[]).filter(g=>d.goals.includes(g)).map(g=>T.en["g_"+g]), happier_this_year:p.dream, horizon:p.horizon};
+  const prompt=`You are APA, a personal agent that helps one person with the "${T.en["d_"+d.key]}" part of their life (${d.about}).
+Person (JSON): ${JSON.stringify(ctx)}
+Titles of earlier answers, do not repeat them: ${JSON.stringify(prev)}
+${q ? `The person asks: """${q}"""` : "No specific question: give the most useful next update for this area."}
+Write everything in ${LANG_NAME[lang]}. Return ONLY a JSON object, no markdown:
+{"title":"short title","summary":"2-3 sentences","actions":["3 to 5 concrete steps"],"resources":["2 to 4 real, well-known organizations, programs or websites, international or in the person's country"]}
+Be practical and kind. You are not a financial, legal or medical professional; say so when it matters.`;
+  try{
+    const r = await sampleNs.json(prompt, {modelTier:"default"});
+    if(!r || !r.title) throw new Error("bad");
+    const a={at:new Date().toISOString(), lang, q, title:String(r.title), summary:String(r.summary||""),
+             actions:(r.actions||[]).map(String).slice(0,6), resources:(r.resources||[]).map(String).slice(0,5)};
+    p.answers = p.answers||{}; p.answers[d.key] = [a, ...(p.answers[d.key]||[])].slice(0,20);
+    await Store.saveProfile(p); st.askDraft="";
+    st.asking=false; renderAgentTab();
+  }catch(err){
+    st.asking=false;
+    if(err && err.code==="not_granted"){ sampleNs=null; }
+    renderAgentTab(); if($("askErr")) setErr("askErr","askErr");
   }
 }
-/* optional: ask Claude for a real first plan (only inside the claude.ai viewer) */
-let sampleNs=null;
-(async()=>{ try{ if(window.claude && window.claude.use){ sampleNs = await claude.use("sample"); if(sampleNs) $("planBtn").hidden=false; } }catch(e){} })();
-$("planBtn").onclick = async ()=>{
-  const b=$("planBtn"); b.disabled=true; b.textContent=t("planning"); setErr("planErr");
-  const langName = {en:"English",fr:"French",zh:"Simplified Chinese (Mandarin)",ar:"Modern Standard Arabic"}[lang];
-  const profile = {country: countryName(st.user.country,"en"), situation: st.sit, hardest_now: st.challenge, goals: st.goals, happier_this_year: st.dream, horizon: st.horizon};
-  const prompt = `You plan helper agents for a personal AI agent that supports one person's social and economic wellbeing.
-Person profile (JSON): ${JSON.stringify(profile)}
-Write everything in ${langName}. Return ONLY a JSON object, no markdown, with this shape:
-{"agents":[{"name":"short agent name","mission":"one sentence","steps":["3 concrete first steps for this week"],"resources":["2-3 real, well-known organizations, programs or websites, international or in the person's country"]}]}
-Create one agent per goal (max 6). Be practical and kind; never give individual financial or legal advice as certainty.`;
+
+/* --- Situation and goals --- */
+function startEdit(){ st.editing=true; loadChoices(st.profile); go(3); }
+function renderProfileTab(){
+  const box=$("tab-profile"); box.textContent=""; const p=st.profile;
+  const dl=el("dl","facts");
+  const row=(k,v)=>{ dl.append(el("dt",null,t(k)), el("dd",v?null:"muted",v||t("notAnswered"))); };
+  SIT.forEach(g=>{ const v=(p.situation||{})[g.key]; row(g.key, Array.isArray(v)? v.map(x=>t(x)).join(", ") : (v?t(v):"")); });
+  row("sumChallenge", p.challenge);
+  DOMAINS.filter(d=>!d.soon).forEach(d=>row(d.key, (p.goals||[]).filter(g=>d.goals.includes(g)).map(g=>t("g_"+g)).join(", ")));
+  row("sumDream", p.dream); row("sumHorizon", p.horizon?t(p.horizon):"");
+  const b=el("button","btn",t("editSit")); b.type="button"; b.onclick=startEdit;
+  box.append(dl,b);
+}
+
+/* --- Account --- */
+function renderAccountTab(){
+  const p=st.profile;
+  $("photoBtnTxt").textContent = p.photo ? t("photoChange") : t("photoAdd");
+  $("photoRemove").hidden = !p.photo;
+  $("curEmail").textContent = t("currentEmail",{email:p.email});
+  const ci=$("ciGroup"); ci.textContent="";
+  ci.appendChild(chipGroup("checkinSub","ci",["ci_daily","ci_weekly","ci_news"],false,o=>t(o),"ci_"+((p.settings||{}).checkin||"weekly")));
+}
+$("photoIn").addEventListener("change", async ()=>{
+  const file=$("photoIn").files[0]; $("photoIn").value=""; setErr("photoErr");
+  if(!file) return; if(!/^image\//.test(file.type)) return setErr("photoErr","photoErr");
   try{
-    const res = await sampleNs.json(prompt, {modelTier:"default"});
-    if(!res || !Array.isArray(res.agents)) throw new Error("bad");
-    plan = {agents: res.agents.slice(0,6).map(a=>({name:String(a.name||""), mission:String(a.mission||""), steps:(a.steps||[]).map(String).slice(0,4), resources:(a.resources||[]).map(String).slice(0,4)}))};
-    renderAgents(); b.hidden=true;
+    const url = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+    const img = await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
+    const S=256, cv=document.createElement("canvas"); cv.width=cv.height=S; const cx=cv.getContext("2d");
+    const side=Math.min(img.width,img.height); cx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,S,S);
+    st.profile.photo = cv.toDataURL("image/jpeg",0.85);
+    await Store.saveProfile(st.profile); renderCabinet(); renderTopUser(); setOk("photoOk","saved");
+  }catch(e){ setErr("photoErr","photoErr"); }
+});
+$("photoRemove").onclick = async ()=>{ st.profile.photo=null; await Store.saveProfile(st.profile); renderCabinet(); renderTopUser(); $("photoIn").focus(); };
+$("fName").addEventListener("submit", async e=>{
+  e.preventDefault(); const a=$("fn2").value.trim(), b=$("ln2").value.trim();
+  setErr("nameErr"); if(!a||!b) return setErr("nameErr","errRequired");
+  st.profile.firstName=a; st.profile.lastName=b; await Store.saveProfile(st.profile);
+  renderCabinet(); renderTopUser(); setOk("nameOk","saved");
+});
+$("fEmail").addEventListener("submit", async e=>{
+  e.preventDefault(); setErr("neErr");
+  const em=$("ne").value.trim().toLowerCase(), pw=$("nePw").value, p=st.profile;
+  if(!EMAIL_RE.test(em)) return setErr("neErr","errEmail");
+  if(em===p.email) return setErr("neErr","errSameEmail");
+  if(!(await checkPw(pw,p.pw))) return setErr("neErr","errPwWrong");
+  const h=await sha256(em);
+  if(await Store.getReg(h)) return setErr("neErr","errTaken");
+  st.emailChange = Object.assign(genCode(), {email:em, hash:h});
+  $("nePw").value=""; $("neVerify").hidden=false; renderNeDemo(); $("neCode").value=""; $("neCode").focus();
+});
+function renderNeDemo(){ const n=$("neDemo"); n.textContent=t("demoCode",{code:""}); n.appendChild(el("b",null,st.emailChange.code)); $("neSent").textContent=t("verifySent",{email:st.emailChange.email}); }
+$("neCode").addEventListener("input", ()=>{ $("neCode").value=$("neCode").value.replace(/\D/g,"").slice(0,6); setErr("neCodeErr"); });
+$("neCancel").onclick = ()=>{ st.emailChange=null; $("neVerify").hidden=true; $("ne").value=""; };
+$("neVerifyBtn").onclick = async ()=>{
+  const v=st.emailChange, p=st.profile; const bad=checkCode(v,$("neCode").value);
+  if(bad) return setErr("neCodeErr",bad,{n:v.tries});
+  if(await Store.getReg(v.hash)){ $("neVerify").hidden=true; return setErr("neErr","errTaken"); }
+  await Store.setReg(v.hash, p.uid); await Store.delReg(p.emailHash);
+  Object.assign(p,{email:v.email, emailHash:v.hash, emailVerifiedAt:new Date().toISOString()});
+  await Store.saveProfile(p); st.emailChange=null;
+  $("neVerify").hidden=true; $("ne").value=""; renderAccountTab(); setOk("neOk","emailChanged",{email:p.email});
+};
+$("fPw").addEventListener("submit", async e=>{
+  e.preventDefault(); setErr("npwErr");
+  const cur=$("cpw").value, nw=$("npw").value, p=st.profile;
+  if(!(await checkPw(cur,p.pw))) return setErr("npwErr","errPwWrong");
+  if(!pwOk(nw)) return setErr("npwErr","errPw");
+  p.pw = await hashPw(nw); await Store.saveProfile(p);
+  $("cpw").value=""; $("npw").value=""; setOk("pwOk","pwChanged");
+});
+$("ciGroup").addEventListener("change", async e=>{
+  const v=e.target.value.replace("ci_",""); st.profile.settings=Object.assign({},st.profile.settings,{checkin:v});
+  await Store.saveProfile(st.profile); setOk("ciOk","saved");
+});
+
+/* --- Privacy and data --- */
+function renderPrivacyTab(){
+  const p=st.profile, c=p.consent||{};
+  $("consentTxt").textContent = t("consentText",{v:c.version||"-", date:fmtDate(c.acceptedAt)});
+  const links=$("consentLinks"); links.textContent="";
+  links.append(docLink("terms","linkTerms"), docLink("conditions","linkConditions"), docLink("privacy","linkPrivacy"));
+}
+$("exportBtn").onclick = async ()=>{
+  setErr("exportErr");
+  const p=Object.assign({}, st.profile); delete p.pw;
+  const json = JSON.stringify({exportedAt:new Date().toISOString(), service:"Apacom", profile:p}, null, 2);
+  const filename = "apacom-my-data.json";
+  try{
+    if(downloadsNs){ await downloadsNs.save({filename, data:json}); return; }
+    const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([json],{type:"application/json"})); a.download=filename;
+    document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }catch(err){ if(!err || err.code!=="cancelled") setErr("exportErr","exportErr"); }
+};
+$("delStart").onclick = ()=>{ $("delBlock").hidden=false; $("delStart").hidden=true; $("delPw").focus(); };
+$("delCancel").onclick = ()=>{ $("delBlock").hidden=true; $("delStart").hidden=false; $("delPw").value=""; setErr("delErr"); };
+$("delFinal").onclick = async ()=>{
+  const p=st.profile;
+  if(!(await checkPw($("delPw").value, p.pw))) return setErr("delErr","errPwWrong");
+  await Store.delReg(p.emailHash); await Store.delProfile(p.uid);
+  $("delPw").value=""; $("delBlock").hidden=true; $("delStart").hidden=false;
+  logout(); showView("s1"); flash("deleted");
+};
+
+/* ============ forgot password ============ */
+$("toReset").onclick = ()=>{ $("fR1").hidden=false; $("fR2").hidden=true; $("rEm").value=$("liEm").value; showView("reset"); $("rEm").focus(); };
+$("resetBack").onclick = ()=>{ st.reset=null; showView("login"); };
+$("fR1").addEventListener("submit", async e=>{
+  e.preventDefault(); setErr("rEmErr");
+  const em=$("rEm").value.trim().toLowerCase(); if(!EMAIL_RE.test(em)) return setErr("rEmErr","errEmail");
+  const reg = await Store.getReg(await sha256(em));
+  const p = reg && reg.uid ? await Store.getProfile(reg.uid) : null;
+  st.reset = Object.assign(genCode(), {email:em, uid: p ? p.uid : null});
+  $("rSent").textContent = t("resetSent",{email:em});
+  // same message whether or not the account exists, so the form can't be used to probe emails.
+  // the demo shows the code only when an account exists, standing in for the real email.
+  const d=$("rDemo"); d.hidden=!p; if(p){ d.textContent=t("demoCode",{code:""}); d.appendChild(el("b",null,st.reset.code)); }
+  $("fR1").hidden=true; $("fR2").hidden=false; $("rCode").value=""; $("rPw").value=""; setErr("rErr"); $("rCode").focus();
+});
+$("rCode").addEventListener("input", ()=>{ $("rCode").value=$("rCode").value.replace(/\D/g,"").slice(0,6); setErr("rErr"); });
+$("fR2").addEventListener("submit", async e=>{
+  e.preventDefault(); const r=st.reset;
+  if(!r.uid){ r.tries--; return setErr("rErr", r.tries>0?"errCode":"errLocked", {n:Math.max(0,r.tries)}); }
+  const bad=checkCode(r, $("rCode").value); if(bad) return setErr("rErr",bad,{n:r.tries});
+  if(!pwOk($("rPw").value)) return setErr("rErr","errPw");
+  const p = await Store.getProfile(r.uid); if(!p) return setErr("rErr","errExpired");
+  p.pw = await hashPw($("rPw").value); await Store.saveProfile(p);
+  $("rPw").value=""; st.reset=null; st.profile=p; Store.setSession(p.uid);
+  if(!p.goals || !p.goals.length){ loadChoices(p); go(3); } else openCabinet("today");
+  flash("resetDone");
+});
+
+/* ============ daily brief ============ */
+const todayKey = () => new Date().toLocaleDateString("en-CA");
+function areaTag(area){ return el("span","area-tag",t("d_"+area)); }
+function briefItems(b){
+  const wrap=el("div","brief");
+  if(b.greeting) wrap.appendChild(el("p","brief-greet",b.greeting));
+  (b.items||[]).forEach(it=>{ const a=el("article","brief-item"); a.append(areaTag(it.area), el("h3",null,it.headline), el("p",null,it.detail)); wrap.appendChild(a); });
+  return wrap;
+}
+function renderTodayTab(){
+  const box=$("tab-today"); if(!box || !st.profile) return; box.textContent="";
+  const p=st.profile;
+  box.appendChild(el("h2","tab-h",t("briefTitle",{date:fmtDate(new Date().toISOString())})));
+  box.appendChild(el("p","sub",t("briefSub")));
+  const pending=(p.actions||[]).filter(a=>a.status==="pending");
+  if(pending.length){
+    const bar=el("div","pending-bar"); bar.appendChild(el("span",null,t("pendingNote",{n:pending.length})));
+    const rv=el("button","link",t("openInbox")); rv.type="button"; rv.onclick=()=>selectTab("inbox"); bar.appendChild(rv);
+    box.appendChild(bar);
+  }
+  const today=(p.briefs||[]).find(b=>b.date===todayKey());
+  if(today) box.appendChild(briefItems(today));
+  else box.appendChild(el("p","sub",t("briefNone")));
+  if(sampleNs){
+    const b=el("button", today?"btn ghost":"btn", st.briefing?t("briefing"):(today?t("briefRefresh"):t("briefBtn")));
+    b.type="button"; b.disabled=!!st.briefing; b.onclick=makeBrief; box.appendChild(b);
+  } else box.appendChild(el("p","note",t("askUnavailable")));
+  const er=el("p","err"); er.id="briefErr"; box.appendChild(er);
+  const older=(p.briefs||[]).filter(b=>b.date!==todayKey());
+  if(older.length){
+    box.appendChild(el("h3","sec-h",t("earlierBriefs")));
+    older.forEach(b=>{ const d=document.createElement("details"); d.className="old-brief"; d.appendChild(el("summary",null,fmtDate(b.at))); d.appendChild(briefItems(b)); box.appendChild(d); });
+  }
+}
+async function makeBrief(){
+  if(st.briefing || !sampleNs) return;
+  const p=st.profile; st.briefing=true; renderTodayTab();
+  const areas = DOMAINS.filter(d=>!d.soon).map(d=>({area:d.key, goals:(p.goals||[]).filter(g=>d.goals.includes(g))}));
+  const ctx={country:countryName(p.country,"en"), situation:p.situation, hardest_now:p.challenge, happier_this_year:p.dream, horizon:p.horizon,
+             areas:areas.map(a=>({area:a.area, goals:a.goals.map(g=>({key:g, label:T.en["g_"+g]}))}))};
+  const recent=(p.briefs||[]).slice(0,3).flatMap(b=>(b.items||[]).map(i=>i.headline));
+  const pendingTitles=(p.actions||[]).filter(a=>a.status==="pending").map(a=>a.title);
+  const prompt=`You are APA, a personal agent that works around the clock for one person. Prepare their daily brief for ${todayKey()}.
+Person (JSON): ${JSON.stringify(ctx)}
+Recent headlines, do not repeat: ${JSON.stringify(recent)}
+Proposals already waiting for approval, do not repeat: ${JSON.stringify(pendingTitles)}
+Write everything in ${LANG_NAME[lang]}. Return ONLY a JSON object, no markdown:
+{"greeting":"one warm, specific sentence",
+ "items":[{"area":"social or economic","headline":"short","detail":"1-2 sentences: a concrete finding, tip or opportunity"}],
+ "proposals":[{"area":"social or economic","goal":"one of the goal keys above","kind":"apply, contact, enroll, book or other","title":"short action APA could take for the person","detail":"exactly what APA would do and why it helps"}]}
+Give 2 to 4 items covering the areas that have goals, and 1 to 3 proposals. Proposals must be things that need the person's permission. Be practical and kind; never present financial, legal or medical guidance as certain.`;
+  try{
+    const r = await sampleNs.json(prompt, {modelTier:"default"});
+    if(!r || !Array.isArray(r.items)) throw new Error("bad");
+    const okArea = a => a==="social"||a==="economic" ? a : "social";
+    const brief={date:todayKey(), at:new Date().toISOString(), lang, greeting:String(r.greeting||""),
+      items:r.items.slice(0,5).map(i=>({area:okArea(i.area), headline:String(i.headline||""), detail:String(i.detail||"")}))};
+    p.briefs=[brief, ...(p.briefs||[]).filter(b=>b.date!==brief.date)].slice(0,7);
+    const allGoals=[...GOALS.social, ...GOALS.economic];
+    (Array.isArray(r.proposals)?r.proposals:[]).slice(0,3).forEach(x=>{
+      p.actions=p.actions||[];
+      p.actions.unshift({id:randomId(8), area:okArea(x.area), goal:allGoals.includes(x.goal)?x.goal:null, kind:String(x.kind||"other"),
+        title:String(x.title||""), detail:String(x.detail||""), status:"pending", createdAt:new Date().toISOString(), lang});
+    });
+    p.actions=(p.actions||[]).slice(0,50);
+    await Store.saveProfile(p);
+    st.briefing=false; renderCabinet();
   }catch(err){
-    if(err && err.code==="not_granted"){ b.hidden=true; } else setErr("planErr","planErr");
-  }finally{ b.disabled=false; b.textContent=t("planBtn"); }
-};
-$("restart").onclick = ()=>{
-  Object.assign(st,{user:null, verify:null, sit:{}, goals:[], horizon:null, dream:"", challenge:""}); plan=null;
-  ["fn","ln","em","pw","challenge","dream","code"].forEach(id=>$(id).value=""); $("agree").checked=false;
-  st.country = st.detected ? st.detected.code : null; renderChoiceGroups(); renderCountryValue(); updateMeter();
-  if(sampleNs) $("planBtn").hidden=false; go(1); $("fn").focus();
-};
+    st.briefing=false; if(err && err.code==="not_granted") sampleNs=null;
+    renderTodayTab(); if($("briefErr")) setErr("briefErr","briefErr");
+  }
+}
+
+/* ============ approvals inbox ============ */
+function agentName(a){ return a.goal && AGENTS[a.goal] ? AGENTS[a.goal][lang][0] : t("d_"+a.area); }
+async function decide(a, status){
+  a.status=status; a.decidedAt = status==="pending" ? null : new Date().toISOString();
+  await Store.saveProfile(st.profile); renderCabinet();
+  if(status==="approved") setOk("inboxOk","approvedNote");
+}
+function renderInboxTab(){
+  const box=$("tab-inbox"); if(!box || !st.profile) return; box.textContent="";
+  const list=st.profile.actions||[];
+  box.appendChild(el("h2","tab-h",t("inboxTitle")));
+  box.appendChild(el("p","sub",t("inboxSub")));
+  const ok=el("p","okmsg"); ok.id="inboxOk"; ok.setAttribute("role","status"); box.appendChild(ok);
+  const pending=list.filter(a=>a.status==="pending");
+  if(!pending.length) box.appendChild(el("p","sub",t("inboxEmpty")));
+  pending.forEach(a=>{
+    const art=el("article","proposal");
+    const meta=el("div","proposal-meta"); meta.append(areaTag(a.area), el("span",null,t("proposedBy",{agent:agentName(a)})));
+    const acts=el("div","actions");
+    const yes=el("button","btn",t("approve")); yes.type="button"; yes.onclick=()=>decide(a,"approved");
+    const no=el("button","btn ghost",t("decline")); no.type="button"; no.onclick=()=>decide(a,"declined");
+    acts.append(yes,no);
+    art.append(meta, el("h3",null,a.title), el("p",null,a.detail), acts);
+    box.appendChild(art);
+  });
+  const done=list.filter(a=>a.status!=="pending");
+  if(done.length){
+    box.appendChild(el("h3","sec-h",t("history")));
+    const ul=el("ul","decided");
+    done.forEach(a=>{
+      const li=el("li"); const s=el("span","status-"+a.status, t("st_"+a.status));
+      const u=el("button","link muted-link",t("undo")); u.type="button"; u.onclick=()=>decide(a,"pending");
+      li.append(el("span","d-title",a.title), s, el("time",null,fmtDate(a.decidedAt)), u); ul.appendChild(li);
+    });
+    box.appendChild(ul);
+  }
+}
 
 /* ============ legal pages: Terms, Conditions, Privacy (GDPR / RGPD) ============ */
 const LEGAL_VERSION = "2026-10-05";
@@ -996,9 +1687,9 @@ function route(){
   if(r){
     currentDoc=r.doc;
     if(r.lang && r.lang!==lang){ setLang(r.lang); }
-    $("app").hidden=true; $("docView").hidden=false; renderDoc(); window.scrollTo(0,0);
+    $("app").hidden=true; $("cab").hidden=true; $("topUser").hidden=true; $("docView").hidden=false; renderDoc(); window.scrollTo(0,0);
   } else if(currentDoc){
-    currentDoc=null; $("docView").hidden=true; $("app").hidden=false; document.title="Apacom | Personal Agent";
+    currentDoc=null; $("docView").hidden=true; document.title="Apacom | Personal Agent"; showView(st.view);
   }
 }
 window.addEventListener("hashchange", route);
@@ -1012,8 +1703,18 @@ Store.init();
 let saved=null; try{ saved=localStorage.getItem("apa_lang"); }catch(e){}
 const navLang = (navigator.language||"en").slice(0,2);
 setLang(saved && T[saved] ? saved : (T[navLang] ? navLang : "en"));
-go(1);
+showView("s1");
 route();
+// restore a signed-in session
+Store.ready.then(async ()=>{
+  const uid = Store.getSession(); if(!uid) return;
+  try{
+    const p = await Store.getProfile(uid); if(!p){ Store.clearSession(); return; }
+    st.profile = p;
+    if(!p.goals || !p.goals.length){ loadChoices(p); go(3); } else openCabinet("today");
+    if(currentDoc) route();
+  }catch(e){}
+});
 detectCountry().then(d=>{ if(d){ st.detected=d; if(!st.country){ st.country=d.code; } renderCountryValue(); } });
 </script>
 </body>
