@@ -115,6 +115,14 @@ pre{background:var(--soft);border-radius:10px;padding:12px;overflow:auto;max-hei
   </section>
 
 
+
+  <section class="src" data-src="agencies-ft">
+    <h2>France Travail agency for a postal code</h2>
+    <p class="what">The user types the postal code they know, such as 69001 to 69009 for Lyon. It is converted to the INSEE code in the background, and the agency is found.</p>
+    <form><label class="grow">Postal code<input name="postcode" value="69002" inputmode="numeric" maxlength="5"></label><button class="btn">Run</button></form>
+    <div class="out"></div>
+  </section>
+
   <section class="src" id="ftx">
     <h2>France Travail explorer</h2>
     <p class="what">Test any France Travail API added to your application. The presets are starting points from memory and may be out of date: open the API's documentation on francetravail.io (eye icon), compare the <b>scope</b> and the <b>path</b>, and correct them here before running. Needs the secret <code>FT_EXPLORER=1</code>.</p>
@@ -265,7 +273,7 @@ function render(out, j, httpStatus){
       if(sub) li.appendChild(el("div","it-sub",sub));
       const ex = it.extra || {}; const chips = el("div","chips");
       if(ex.distance_m!=null) chips.appendChild(el("span",null, ex.distance_m<1000? ex.distance_m+" m" : (ex.distance_m/1000).toFixed(1)+" km"));
-      ["salary","contract","experience","category","opening_hours","phone"].forEach(k => { if(ex[k]) chips.appendChild(el("span",null,ex[k])); });
+      ["salary","contract","experience","category","opening_hours","phone","email"].forEach(k => { if(ex[k]) chips.appendChild(el("span",null,ex[k])); });
       if(chips.children.length) li.appendChild(chips);
       if(ex.summary) li.appendChild(el("p","it-sum",ex.summary));
       ul.appendChild(li);
@@ -301,14 +309,15 @@ document.querySelectorAll("section.src[data-src]").forEach(sec => {
 // Starting points only: verify every scope and path in the francetravail.io documentation.
 const FTX = {
   agences: {label:"Référentiel des agences", method:"GET", scope:"api_referentielagencesv1 organisationpe",
-    path:"/partenaire/referentielagences/v1/agences", query:"commune=69123"},
+    path:"/partenaire/referentielagences/v1/agences", query:"commune=69382"},
   romeo: {label:"ROMEO v2 (free text to job code)", method:"POST", scope:"api_romeov2",
     path:"/partenaire/romeo/v2/predictionMetiers", query:"",
     body:{appellations:[{intitule:"je conduis des camions de livraison", identifiant:"1"}], options:{nomAppelant:"apacom", nbResultats:3, seuilScorePrediction:0.7}}},
   lbb: {label:"La Bonne Boite v2", method:"GET", scope:"api_labonneboitev2 search office",
     path:"/partenaire/labonneboite/v2/recherche", query:"rome=N4105&citycode=69123&distance=10"},
-  events: {label:"Mes évènements emploi", method:"GET", scope:"api_mesevenementsemploiv1 evenements",
-    path:"/partenaire/evenements/v1/mee/evenements", query:""},
+  events: {label:"Mes évènements emploi", method:"POST", scope:"api_evenementsv1 evenements",
+    path:"/partenaire/evenements/v1/mee/evenements", query:"size=10",
+    body:{dateDebut:new Date().toISOString().slice(0,10), dateFin:new Date(Date.now()+30*864e5).toISOString().slice(0,10), codePostal:["69002"]}},
   metiers: {label:"ROME 4.0 - Métiers", method:"GET", scope:"api_rome-metiersv1 nomenclatureRome",
     path:"/partenaire/rome-metiers/v1/metiers/appellation/requete", query:"q=chauffeur"},
   offres: {label:"Offres d'emploi (if access is granted)", method:"GET", scope:"api_offresdemploiv2 o2dsoffre",
