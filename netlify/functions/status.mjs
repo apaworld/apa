@@ -10,6 +10,7 @@ export default async () => json({
     "search-claude":      { needsKey: true,  configured: !!env("ANTHROPIC_API_KEY") },
     "benefits-openfisca": { needsKey: false, configured: true },
     "places-osm":         { needsKey: false, configured: true },
-    "stats-worldbank":    { needsKey: false, configured: true }
+    "stats-worldbank":    { needsKey: false, configured: true },
+    "francetravail-explorer": { needsKey: true, configured: !!(env("FT_CLIENT_ID") && env("FT_CLIENT_SECRET") && env("FT_EXPLORER") === "1") }
   }
 });
