@@ -349,7 +349,17 @@ const FTX = {
   function ensureMap(){
     if(map || !window.L) return;
     map=L.map("nearMap",{scrollWheelZoom:false});
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+    // OpenStreetMap's own tiles refuse requests that arrive without a referrer (error 403, "Access blocked"),
+    // which happens on some hosts such as Codespaces. Send the page's origin, and if tiles still fail,
+    // switch to CARTO's free basemap, drawn from the same OpenStreetMap data.
+    const osm=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,referrerPolicy:"strict-origin-when-cross-origin",
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+    let tileErrors=0;
+    osm.on("tileerror",()=>{ if(++tileErrors!==3) return;
+      map.removeLayer(osm);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:20,
+        attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);
+    });
     layer=L.layerGroup().addTo(map);
   }
   function select(i){
