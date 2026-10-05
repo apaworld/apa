@@ -21,7 +21,8 @@ export default async (req) => {
   const scope = SCOPES[body.scope] || SCOPES.lyon;
   const lang = LANGS[body.lang] || "French";
 
-  const tool = { type: env("CLAUDE_WEB_SEARCH_TOOL") || "web_search_20250305", name: "web_search", max_uses: 5 };
+  const maxSearches = Math.max(1, Math.min(10, Number(env("CLAUDE_MAX_SEARCHES")) || 3));
+  const tool = { type: env("CLAUDE_WEB_SEARCH_TOOL") || "web_search_20250305", name: "web_search", max_uses: maxSearches };
   if (scope.key === "lyon") tool.user_location = { type: "approximate", city: "Lyon", region: "Auvergne-Rhône-Alpes", country: "FR", timezone: "Europe/Paris" };
   else tool.user_location = { type: "approximate", country: "FR", timezone: "Europe/Paris" };
 
@@ -31,20 +32,32 @@ Search the web and answer for someone living in ${place}. Prefer official servic
 Métropole de Lyon, Ville de Lyon), recognised associations and well-known platforms. Give concrete names, addresses or links,
 and say when something needs to be checked. Answer in ${lang}, in short paragraphs or a short list, with no preamble.`;
 
-  try {
-    const res = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({
-        model: env("CLAUDE_MODEL") || "claude-sonnet-5-5",
-        max_tokens: 1500, system, tools: [tool],
-        messages: [{ role: "user", content: q }]
-      })
-    }, 60000);
-    const { data, text } = await readBody(res);
-    if (!res.ok || !data) return fail(SOURCE, `Claude API answered ${res.status}`, clip(text, 600));
+  // Room for thinking + search results + the written answer. 1500 was too small (stop_reason "max_tokens").
+  const maxTokens = Math.max(1000, Number(env("CLAUDE_MAX_TOKENS")) || 8000);
+  const messages = [{ role: "user", content: q }];
+  const blocks = [];
+  let data, stop = null, rounds = 0;
+  const usage = { input_tokens: 0, output_tokens: 0, web_search_requests: 0 };
 
-    const blocks = data.content || [];
+  try {
+    // A long web search can return stop_reason "pause_turn": send the partial turn back and let Claude continue.
+    do {
+      rounds++;
+      const res = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({ model: env("CLAUDE_MODEL") || "claude-sonnet-5-5", max_tokens: maxTokens, system, tools: [tool], messages })
+      }, 90000);
+      const r = await readBody(res);
+      if (!res.ok || !r.data) return fail(SOURCE, `Claude API answered ${res.status}`, clip(r.text, 600));
+      data = r.data; stop = data.stop_reason;
+      blocks.push(...(data.content || []));
+      usage.input_tokens += data.usage?.input_tokens || 0;
+      usage.output_tokens += data.usage?.output_tokens || 0;
+      usage.web_search_requests += data.usage?.server_tool_use?.web_search_requests || 0;
+      if (stop === "pause_turn") messages.push({ role: "assistant", content: data.content });
+    } while (stop === "pause_turn" && rounds < 3);
+
     const answer = blocks.filter(b => b.type === "text").map(b => b.text).join("").trim();
     const sources = new Map();
     for (const b of blocks) {
@@ -53,10 +66,13 @@ and say when something needs to be checked. Answer in ${lang}, in short paragrap
         for (const r of b.content) if (r.url && !sources.has(r.url)) sources.set(r.url, r.title || r.url);
     }
     const items = [...sources].slice(0, 12).map(([u, title]) => ({ title, subtitle: new URL(u).hostname, location: null, date: null, url: u, extra: {} }));
+    const note = !answer && stop === "max_tokens"
+      ? `Claude ran out of room before writing (stop_reason max_tokens, limit ${maxTokens}). Raise CLAUDE_MAX_TOKENS.`
+      : (stop === "max_tokens" ? "The answer was cut short: raise CLAUDE_MAX_TOKENS." : null);
     return json({
-      ok: true, source: SOURCE, scope_requested: scope.key, scope_applied: place, note: null,
+      ok: true, source: SOURCE, scope_requested: scope.key, scope_applied: place, note,
       answer, count: items.length, ms: Date.now() - started, items,
-      usage: data.usage || null,
+      stop_reason: stop, rounds, usage,
       raw: body.raw ? data : undefined
     });
   } catch (e) {
