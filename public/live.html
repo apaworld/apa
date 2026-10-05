@@ -92,6 +92,22 @@ pre{background:var(--soft);border-radius:10px;padding:12px;overflow:auto;max-hei
     <div class="out"></div>
   </section>
 
+
+  <section class="src" id="ftx">
+    <h2>France Travail explorer</h2>
+    <p class="what">Test any France Travail API added to your application. The presets are starting points from memory and may be out of date: open the API's documentation on francetravail.io (eye icon), compare the <b>scope</b> and the <b>path</b>, and correct them here before running. Needs the secret <code>FT_EXPLORER=1</code>.</p>
+    <form id="ftxForm">
+      <label>API<select name="preset" id="ftxPreset"></select></label>
+      <label>Method<select name="method"><option>GET</option><option>POST</option></select></label>
+      <label class="grow">Scope<input name="scope" autocomplete="off" spellcheck="false"></label>
+      <label class="grow" style="flex-basis:100%">Path (after https://api.francetravail.io)<input name="path" autocomplete="off" spellcheck="false"></label>
+      <label class="grow" style="flex-basis:100%">Query (for GET, e.g. commune=69123)<input name="query" autocomplete="off" spellcheck="false"></label>
+      <label class="grow" style="flex-basis:100%">JSON body (for POST)<textarea name="body" rows="5" spellcheck="false" style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem"></textarea></label>
+      <button class="btn">Run</button>
+    </form>
+    <div class="out" id="ftxOut"></div>
+  </section>
+
   <section class="src" data-src="jobs-adzuna">
     <h2>Adzuna job offers</h2>
     <p class="what">Job offers aggregated from many sites, with salaries. Lyon: within 20 km.</p>
@@ -210,7 +226,7 @@ function render(out, j, httpStatus){
   d.appendChild(el("pre",null,JSON.stringify(j.raw ?? j, null, 2))); out.appendChild(d);
 }
 
-document.querySelectorAll("section.src").forEach(sec => {
+document.querySelectorAll("section.src[data-src]").forEach(sec => {
   const form = sec.querySelector("form"), out = sec.querySelector(".out"), btn = form.querySelector(".btn"), src = sec.dataset.src;
   form.addEventListener("submit", async e => {
     e.preventDefault(); btn.disabled = true; const label = btn.textContent; btn.textContent = "Running…";
@@ -230,6 +246,49 @@ document.querySelectorAll("section.src").forEach(sec => {
     finally{ btn.disabled=false; btn.textContent=label; }
   });
 });
+
+// ---- France Travail explorer ----
+// Starting points only: verify every scope and path in the francetravail.io documentation.
+const FTX = {
+  agences: {label:"Référentiel des agences", method:"GET", scope:"api_referentielagencesv1 organisationpe",
+    path:"/partenaire/referentielagences/v1/agences", query:"commune=69123"},
+  romeo: {label:"ROMEO v2 (free text to job code)", method:"POST", scope:"api_romeov2",
+    path:"/partenaire/romeo/v2/predictionMetiers", query:"",
+    body:{appellations:[{intitule:"je conduis des camions de livraison", identifiant:"1"}], options:{nomAppelant:"apacom", nbResultats:3, seuilScorePrediction:0.7}}},
+  lbb: {label:"La Bonne Boite v2", method:"GET", scope:"api_labonneboitev2 search office",
+    path:"/partenaire/labonneboite/v2/recherche", query:"rome=N4105&citycode=69123&distance=10"},
+  events: {label:"Mes évènements emploi", method:"GET", scope:"api_mesevenementsemploiv1 evenements",
+    path:"/partenaire/evenements/v1/mee/evenements", query:""},
+  metiers: {label:"ROME 4.0 - Métiers", method:"GET", scope:"api_rome-metiersv1 nomenclatureRome",
+    path:"/partenaire/rome-metiers/v1/metiers/appellation/requete", query:"q=chauffeur"},
+  offres: {label:"Offres d'emploi (if access is granted)", method:"GET", scope:"api_offresdemploiv2 o2dsoffre",
+    path:"/partenaire/offresdemploi/v2/offres/search", query:"commune=69123&distance=10&range=0-19"}
+};
+(function(){
+  const form=document.getElementById("ftxForm"), sel=document.getElementById("ftxPreset"), out=document.getElementById("ftxOut");
+  for(const [k,v] of Object.entries(FTX)){ const o=document.createElement("option"); o.value=k; o.textContent=v.label; sel.appendChild(o); }
+  const fill=()=>{ const v=FTX[sel.value]; form.method.value=v.method; form.scope.value=v.scope; form.path.value=v.path; form.query.value=v.query||""; form.body.value=v.body?JSON.stringify(v.body,null,2):""; };
+  sel.addEventListener("change", fill); fill();
+  form.addEventListener("submit", async e=>{
+    e.preventDefault(); const btn=form.querySelector(".btn"); btn.disabled=true; btn.textContent="Running…"; out.textContent="";
+    let body=null;
+    if(form.method.value==="POST" && form.body.value.trim()){ try{ body=JSON.parse(form.body.value); }catch(err){ out.appendChild(el("p","error","The JSON body is not valid: "+err.message)); btn.disabled=false; btn.textContent="Run"; return; } }
+    try{
+      const r=await fetch(FN+"francetravail-explorer",{method:"POST",headers:{"content-type":"application/json"},
+        body:JSON.stringify({scope:form.scope.value, method:form.method.value, path:form.path.value, query:form.query.value, body})});
+      const j=await r.json();
+      const meta=el("div","meta");
+      const add=(l,v)=>{ const s=el("span"); s.append(l+" "); s.appendChild(el("b",null,String(v))); meta.appendChild(s); };
+      if(j.status) add("HTTP status:", j.status); if(j.ms!=null) add("Time:", j.ms+" ms"); if(j.step) add("Step:", j.step);
+      out.appendChild(meta);
+      if(j.ok) out.appendChild(el("p","note", j.note || "It works. Send me this scope, path and a short piece of the response, and I'll build the dedicated source."));
+      else { out.appendChild(el("p","error", j.error || ("France Travail answered "+j.status))); if(j.hint) out.appendChild(el("p","hint",j.hint)); }
+      out.appendChild(el("pre",null,JSON.stringify(j.response ?? j, null, 2)));
+    }catch(err){ out.appendChild(el("p","error",err.message)); }
+    finally{ btn.disabled=false; btn.textContent="Run"; }
+  });
+})();
+
 loadStatus();
 </script>
 </body>
