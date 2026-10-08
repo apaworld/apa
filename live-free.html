@@ -238,6 +238,11 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
 #locDrawer .sugg button:hover,#locDrawer .sugg button:focus-visible{background:var(--accent-soft)}
 #locDrawer .sugg b{display:block}
 #locDrawer .sugg small{color:var(--muted)}
+#locDrawer .cbx{position:relative}
+#locDrawer .cbl{max-height:260px;overflow:auto;margin-top:4px}
+#locDrawer .cbl [aria-selected="true"]{background:var(--accent-soft)}
+#locDrawer .cbl .cur{font-weight:700}
+#locDrawer input{unicode-bidi:plaintext}
 #locDrawer .chips2{display:flex;flex-wrap:wrap;gap:6px}
 #locDrawer .chips2 button{border:1px solid #c9ccd3;background:var(--paper);border-radius:9px;padding:7px 10px;cursor:pointer;font-size:.88rem}
 #locDrawer .chips2 button[aria-pressed="true"]{border:2px solid var(--accent);background:var(--accent-soft);font-weight:700;padding:6px 9px}
@@ -265,7 +270,8 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
   <div id="locWarn"></div>
   <div class="fld" data-field="country">
     <div class="fh"><label for="lCountry">Country</label><button data-hidefield="country">Hide this field</button></div>
-    <div class="inp"><select id="lCountry"></select><button class="clr" id="lCountryClr" aria-label="Clear the country">✕</button></div>
+    <div class="cbx"><div class="inp"><input id="lCountry" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lCountryList" autocomplete="off" placeholder="Any country: type to search"><button class="clr" id="lCountryClr" aria-label="Clear the country">✕</button></div>
+      <div class="sugg cbl" id="lCountryList" role="listbox" aria-label="Countries" hidden></div></div>
     <p class="note">Optional: narrows the city list. Cities always show their country.</p>
   </div>
   <div class="fld">
@@ -277,15 +283,16 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
   </div>
   <div class="fld" data-field="tz">
     <div class="fh"><label for="lTz">Time zone</label><button data-hidefield="tz">Hide this field</button></div>
-    <div class="inp"><input id="lTzFind" placeholder="Search: Paris, Hanoi, New York…" aria-label="Search a time zone"></div>
-    <div class="inp"><select id="lTz"></select></div>
+    <div class="cbx"><div class="inp"><input id="lTz" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lTzList" autocomplete="off" placeholder="Type to search: Paris, Hanoi, New York…"><button class="clr" id="lTzClr" aria-label="Back to automatic time zone">✕</button></div>
+      <div class="sugg cbl" id="lTzList" role="listbox" aria-label="Time zones" hidden></div></div>
     <button class="link" id="lTzNow" style="align-self:flex-start">Use current time zone</button>
   </div>
   <div class="fld" data-field="date"><div class="fh"><span>Date format</span><button data-hidefield="date">Hide this field</button></div><div class="chips2" id="lDate"></div></div>
   <div class="fld" data-field="hour"><div class="fh"><span>Time</span><button data-hidefield="hour">Hide this field</button></div><div class="chips2" id="lHour"></div></div>
   <div class="fld" data-field="week"><div class="fh"><span>Week starts on</span><button data-hidefield="week">Hide this field</button></div><div class="chips2" id="lWeek"></div></div>
   <div class="fld" data-field="cal"><div class="fh"><label for="lCal">Also show another calendar</label><button data-hidefield="cal">Hide this field</button></div>
-    <div class="inp"><select id="lCal"></select></div></div>
+    <div class="cbx"><div class="inp"><input id="lCal" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lCalList" autocomplete="off" placeholder="None: type to search"><button class="clr" id="lCalClr" aria-label="No other calendar">✕</button></div>
+      <div class="sugg cbl" id="lCalList" role="listbox" aria-label="Calendars" hidden></div></div></div>
   <div class="fld" data-field="digits"><div class="fh"><span>Digits</span><button data-hidefield="digits">Hide this field</button></div><div class="chips2" id="lDigits"></div></div>
   <div class="fld" data-field="units"><div class="fh"><span>Units</span><button data-hidefield="units">Hide this field</button></div><div class="chips2" id="lTemp"></div><div class="chips2" id="lDist"></div></div>
   <div class="fld"><div class="fh"><span>Widget</span></div><div class="chips2" id="lSizeChips"></div>
@@ -337,12 +344,36 @@ const LOC = (() => {
   const time = (d, zone = tz()) => new Intl.DateTimeFormat(regionLoc(), { timeZone: zone, hour: "2-digit", minute: "2-digit" }).format(d);
   const weekday = (d, zone = tz()) => { if (typeof d === "string") d = new Date(d + "T12:00:00Z"); return new Intl.DateTimeFormat(loc(), { timeZone: zone, weekday: "short" }).format(d); };
   const extraCal = (d) => L.cal === "none" ? "" : new Intl.DateTimeFormat(`${lang}-u-ca-${L.cal}-nu-${L.digits}`, { timeZone: tz(), day: "numeric", month: "long", year: "numeric" }).format(d);
+  const DIGITS = {};
+  const digitMap = (sys) => DIGITS[sys] || (DIGITS[sys] = (() => { try { const f = new Intl.NumberFormat("en-u-nu-" + sys, { useGrouping: false }); return [..."0123456789"].map(d => f.format(+d)); } catch { return null; } })());
+  const digitize = (str) => { const m = L.digits === "latn" ? null : digitMap(L.digits); return m ? String(str).replace(/[0-9]/g, d => m[+d]) : String(str); };
+  function digitizeEl(el) {   // every text inside el follows the chosen digits (also back to 123), except bits marked data-keep-digits
+    if (!el) return;
+    const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: (n) => n.parentElement?.closest("[data-keep-digits]") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+    const ARAB_RUN = /[\u0660-\u0669](?:[\u0660-\u0669\u066B\u066C.,:\/\-]*[\u0660-\u0669])?/g;
+    for (let n; (n = tw.nextNode());) {
+      const old = n.nodeValue;
+      if (!/[0-9\u0660-\u0669\u06F0-\u06F9\u0966-\u096F\u09E6-\u09EF\u0E50-\u0E59]/.test(old)) continue;
+      let v = digitize(undigit(old.replace(/[\u2066\u2069]/g, "")));
+      // Arabic digits count as right-to-left text: keep each number in its place with a left-to-right isolate
+      if (L.digits === "arab") v = v.replace(ARAB_RUN, (m) => "\u2066" + m + "\u2069");
+      if (v !== old) n.nodeValue = v;
+    }
+  }
+
+  const price = (n, cur = "EUR", dec = 3) => { try { return new Intl.NumberFormat(regionLoc(), { style: "currency", currency: cur, minimumFractionDigits: dec, maximumFractionDigits: dec }).format(n); } catch { return "€" + n.toFixed(dec); } };
   const num = (n, dec = 0) => new Intl.NumberFormat(regionLoc(), { maximumFractionDigits: dec, minimumFractionDigits: dec }).format(n);
   const temp = (c, unit = true) => (L.temp === "f" ? num(c * 9 / 5 + 32) : num(c)) + "°" + (unit ? (L.temp === "f" ? "F" : "C") : "");
   const dist = (m) => L.dist === "mi" ? (m < 1609 ? num(Math.max(10, Math.round(m * 3.28084 / 10) * 10)) + " ft" : num(m / 1609.34, m < 16093 ? 1 : 0) + " mi")
                                       : (m < 1000 ? num(Math.max(10, Math.round(m / 10) * 10)) + " m" : num(m / 1000, m < 10000 ? 1 : 0) + " km");
   const offset = (zone, d = new Date()) => { try { return new Intl.DateTimeFormat("en-US", { timeZone: zone, timeZoneName: "longOffset" }).formatToParts(d).find(p => p.type === "timeZoneName").value.replace("GMT", "GMT") || "GMT"; } catch { return "GMT"; } };
-  const tzLabel = (zone) => { const o = offset(zone); return `(${o === "GMT" ? "GMT+00:00" : o}) ${zone.split("/").pop().replace(/_/g, " ")}`; };
+  // Browsers still list some time zones under their old names; show today's names.
+  const NEW_NAME = { "America/Godthab": "Nuuk", "Europe/Kiev": "Kyiv", "Asia/Calcutta": "Kolkata", "Asia/Saigon": "Ho Chi Minh", "Asia/Katmandu": "Kathmandu",
+    "Asia/Rangoon": "Yangon", "Atlantic/Faeroe": "Faroe", "Pacific/Enderbury": "Kanton", "Pacific/Ponape": "Pohnpei", "Pacific/Truk": "Chuuk",
+    "America/Buenos_Aires": "Buenos Aires", "Asia/Ulan_Bator": "Ulaanbaatar", "Europe/Uzhgorod": "Uzhhorod", "America/Coral_Harbour": "Atikokan",
+    "Asia/Thimbu": "Thimphu", "Asia/Dacca": "Dhaka", "Africa/Asmera": "Asmara", "America/Indianapolis": "Indianapolis", "America/Louisville": "Louisville" };
+  const zoneName = (zone) => NEW_NAME[zone] || zone.split("/").pop().replace(/_/g, " ");
+  const tzLabel = (zone) => { const o = offset(zone); return `(${o === "GMT" ? "GMT+00:00" : o}) ${zoneName(zone)}`; };
   const countryName = (code) => { try { return new Intl.DisplayNames([lang], { type: "region" }).of(code); } catch { return code; } };
   const placeLine = (p) => p ? [p.name, p.admin1 && p.admin1 !== p.name ? p.admin1 : "", countryName(p.cc)].filter(Boolean).join(", ") : "";
 
@@ -377,6 +408,7 @@ const LOC = (() => {
     const show = (piece, on) => w.querySelectorAll(`[data-piece="${piece}"]`).forEach(e => e.hidden = !on);
     show("clock", !h.clock); show("date", s === "l" && !h.date); show("place", (s === "m" || s === "l") && !h.place);
     show("weather", (s === "m" || s === "l") && !h.weather && !!wx);
+    digitizeEl(w);
     place();
   }
   function place() {   // keep the widget on screen; default corner follows the writing direction
@@ -436,8 +468,51 @@ const LOC = (() => {
   let zones = []; try { zones = Intl.supportedValuesOf("timeZone"); } catch { zones = [deviceTz, "UTC"]; }
   if (!zones.includes(deviceTz)) zones.push(deviceTz);
   let pickedCountry = "";
+  /* Searchable menu: type to filter, arrows to move, Enter to pick, Esc to close. */
+  const undigit = (x) => String(x).replace(/[\u0660-\u0669]/g, c => c.charCodeAt(0) - 0x660).replace(/[\u06F0-\u06F9]/g, c => c.charCodeAt(0) - 0x6F0)
+    .replace(/[\u0966-\u096F]/g, c => c.charCodeAt(0) - 0x966).replace(/[\u09E6-\u09EF]/g, c => c.charCodeAt(0) - 0x9E6).replace(/[\u0E50-\u0E59]/g, c => c.charCodeAt(0) - 0xE50);
+  const norm = (x) => undigit(String(x || "").replace(/[\u2066-\u2069]/g, "")).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+  function combo(id, getItems, onPick, shown) {
+    const inp = $(id), box = $(id + "List"); let items = [], act = -1;
+    const draw = () => {
+      const q = norm(inp.value === digitize(shown()) ? "" : inp.value);
+      items = getItems().filter(it => !q || norm(it.label + " " + (it.sub || "") + " " + (it.keys || "")).includes(q)).slice(0, 80);
+      act = items.length ? 0 : -1;
+      box.innerHTML = items.length ? items.map((it, i) => `<button type="button" role="option" id="${id}-o${i}" aria-selected="${i === act}" data-i="${i}" class="${it.cur ? "cur" : ""}"><b>${esc(it.label)}</b>${it.sub ? `<small>${esc(it.sub)}</small>` : ""}</button>`).join("")
+        : `<p class="note" style="padding:8px 12px">No match. Try another spelling${id === "lTz" ? ", a big city nearby, or choose your city above: its time zone is set automatically" : ""}.</p>`;
+      digitizeEl(box); box.hidden = false; inp.setAttribute("aria-expanded", "true"); mark();
+      box.querySelectorAll("[data-i]").forEach(b => b.onmousedown = (e) => { e.preventDefault(); pick(+b.dataset.i); });
+    };
+    const mark = () => { box.querySelectorAll("[data-i]").forEach((b, i) => b.setAttribute("aria-selected", String(i === act)));
+      if (act >= 0) { inp.setAttribute("aria-activedescendant", id + "-o" + act); $(id + "-o" + act)?.scrollIntoView({ block: "nearest" }); } };
+    const hide = () => { box.hidden = true; inp.setAttribute("aria-expanded", "false"); inp.removeAttribute("aria-activedescendant"); };
+    const pick = (i) => { const it = items[i]; if (!it) return; hide(); onPick(it.v); inp.value = digitize(shown()); };
+    inp.addEventListener("focus", () => { inp.select(); draw(); });
+    inp.addEventListener("input", draw);
+    inp.addEventListener("blur", () => setTimeout(() => { hide(); inp.value = digitize(shown()); }, 120));
+    inp.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown") { e.preventDefault(); if (box.hidden) draw(); else { act = Math.min(items.length - 1, act + 1); mark(); } }
+      else if (e.key === "ArrowUp") { e.preventDefault(); act = Math.max(0, act - 1); mark(); }
+      else if (e.key === "Enter") { e.preventDefault(); if (!box.hidden && act >= 0) pick(act); }
+      else if (e.key === "Escape" && !box.hidden) { e.stopPropagation(); hide(); inp.value = digitize(shown()); }
+    });
+    return { refresh: () => { if (document.activeElement !== inp) inp.value = digitize(shown()); } };
+  }
+  // Well-known cities whose time zone has another city's name (time zones are named after one city per region)
+  const TZ_ALIAS = { "Asia/Ho_Chi_Minh": "Hanoi Vietnam Saigon", "Asia/Saigon": "Hanoi Vietnam Ho Chi Minh Saigon", "America/Godthab": "Nuuk Greenland Godthab", "America/Nuuk": "Greenland Godthab", "Europe/Kiev": "Kyiv Ukraine Kiev", "Asia/Calcutta": "Kolkata Delhi New Delhi Mumbai Bombay India Bangalore Chennai",
+    "Asia/Rangoon": "Yangon Myanmar", "Asia/Katmandu": "Kathmandu Nepal", "America/Buenos_Aires": "Argentina", "Asia/Shanghai": "Beijing Peking China Guangzhou Shenzhen Chongqing", "Asia/Kolkata": "Delhi New Delhi Mumbai Bombay India Bangalore Chennai Calcutta",
+    "America/New_York": "Washington Boston Miami Atlanta USA", "America/Chicago": "Houston Dallas USA", "America/Los_Angeles": "San Francisco Seattle USA", "America/Denver": "USA",
+    "Europe/Paris": "France Lyon Marseille", "Europe/Berlin": "Germany Munich Hamburg", "Europe/London": "UK England Manchester", "Europe/Moscow": "Russia Saint Petersburg",
+    "Asia/Dubai": "UAE Abu Dhabi", "Asia/Riyadh": "Saudi Arabia Jeddah Mecca", "Africa/Casablanca": "Morocco Rabat Marrakesh", "Africa/Algiers": "Algeria Oran", "Africa/Tunis": "Tunisia",
+    "Africa/Cairo": "Egypt Alexandria", "Africa/Lagos": "Nigeria Abuja", "Africa/Johannesburg": "South Africa Cape Town Pretoria", "Asia/Karachi": "Pakistan Islamabad Lahore",
+    "Asia/Dhaka": "Bangladesh", "Asia/Bangkok": "Thailand", "Asia/Jakarta": "Indonesia", "Asia/Manila": "Philippines", "Asia/Tokyo": "Japan Osaka", "Asia/Seoul": "Korea",
+    "Asia/Tehran": "Iran", "Europe/Istanbul": "Turkey Ankara", "Australia/Sydney": "Australia Canberra Melbourne", "America/Sao_Paulo": "Brazil Rio Brasilia",
+    "America/Argentina/Buenos_Aires": "Argentina", "America/Mexico_City": "Mexico", "America/Toronto": "Canada Ottawa Montreal", "Asia/Kiev": "Ukraine Kyiv", "Europe/Kyiv": "Ukraine Kiev",
+    "Asia/Tashkent": "Uzbekistan", "Asia/Almaty": "Kazakhstan Astana", "Asia/Yerevan": "Armenia", "Asia/Tbilisi": "Georgia", "Asia/Baku": "Azerbaijan" };
+  const CALS = [["none", "None"], ["islamic-umalqura", "Hijri (Umm al-Qura)"], ["islamic", "Hijri (astronomical)"], ["persian", "Persian"], ["chinese", "Chinese"], ["hebrew", "Hebrew"], ["buddhist", "Buddhist"], ["japanese", "Japanese"], ["indian", "Indian national"], ["ethiopic", "Ethiopian"], ["coptic", "Coptic"], ["dangi", "Korean (Dangi)"], ["roc", "Taiwan (Minguo)"]];
+  let cCountry, cTz, cCal;
   function chips(el, opts, cur, on) {
-    $(el).innerHTML = opts.map(([v, t]) => `<button type="button" aria-pressed="${String(v) === String(cur)}" data-v="${esc(v)}">${esc(t)}</button>`).join("");
+    $(el).innerHTML = opts.map(([v, t]) => `<button type="button" aria-pressed="${String(v) === String(cur)}" data-v="${esc(v)}" ${el === "lDigits" ? "data-keep-digits" : ""}>${esc(t)}</button>`).join("");
     $(el).querySelectorAll("button").forEach(b => b.onclick = () => { on(b.dataset.v); renderDrawer(); changed(); });
   }
   function renderDrawer() {
@@ -449,28 +524,26 @@ const LOC = (() => {
          <div class="chips2"><button type="button" id="keepDev">Keep my device time</button><button type="button" id="useIp">Use ${esc(ip.city || ip.country)} time</button></div></div>` : "";
     if ($("keepDev")) { $("keepDev").onclick = () => { L.tz = deviceTz; save(); renderDrawer(); changed(); }; $("useIp").onclick = () => { L.tz = ipTz; save(); renderDrawer(); changed(); }; }
     // country
-    const names = COUNTRIES.map(c => [c, countryName(c)]).sort((a, b) => a[1].localeCompare(b[1], lang));
-    $("lCountry").innerHTML = `<option value="">Any country</option>` + names.map(([c, n]) => `<option value="${c}">${esc(n)}</option>`).join("");
-    $("lCountry").value = pickedCountry;
+    cCountry.refresh();
     $("lCityNote").textContent = L.place ? "Now: " + placeLine(L.place) + " · " + tzLabel(L.place.tz) : (ipOk() && ip.city ? "Detected from your connection: " + ip.city + ", " + countryName(ip.cc) + ". Pick your city to be sure." : "Pick your city for the right weather and time zone.");
     if (!$("lCity").value && L.place) $("lCity").value = L.place.name;
-    // time zones sorted by offset
-    const f = $("lTzFind").value.trim().toLowerCase();
-    const list = zones.filter(z => !f || z.toLowerCase().replace(/_/g, " ").includes(f) || tzLabel(z).toLowerCase().includes(f));
-    const cur = tz();
-    $("lTz").innerHTML = (f ? "" : `<option value="auto">Automatic (${esc(tzLabel(L.place?.tz || deviceTz))})</option>`) +
-      list.map(z => [z, tzLabel(z)]).sort((a, b) => a[1].localeCompare(b[1])).map(([z, t]) => `<option value="${esc(z)}">${esc(t)}</option>`).join("");
-    $("lTz").value = L.tz === "auto" && !f ? "auto" : cur;
+    cTz.refresh();
     // formats
-    chips("lDate", [["auto", "Usual for " + countryName(cc()) + " (" + (() => { const s = L.date; L.date = "auto"; const v = date(now); L.date = s; return v; })() + ")"],
-      ...Object.keys(ORDERS).map(k => [k, (() => { const s = L.date; L.date = k; const v = date(now); L.date = s; return v; })()])], L.date, v => { L.date = v; save(); });
+    // The example is 31 December so nobody can mix up the day and the month.
+    const ex = new Date("2026-12-31T12:00:00Z"), exFmt = (k) => { const s0 = L.date; L.date = k; const v = date(ex, { zone: "UTC" }); L.date = s0; return v; };
+    const ORDER_NAMES = { "dmy/": "day/month/year", "mdy/": "month/day/year", "ymd/": "year/month/day", "ymd-": "year-month-day", "dmy.": "day.month.year", "ymd.": "year.month.day" };
+    chips("lDate", [["auto", "Usual for " + countryName(cc()) + ": " + exFmt("auto")], ...Object.keys(ORDERS).map(k => [k, exFmt(k)])], L.date, v => { L.date = v; save(); });
+    $("lDate").querySelectorAll("button").forEach(b => { const n = ORDER_NAMES[b.dataset.v]; if (n) { b.title = n; b.setAttribute("aria-label", b.textContent + ", " + n); } });
+    if (!$("lDateEx")) $("lDate").insertAdjacentHTML("afterend", '<p class="note" id="lDateEx">Example: 31 December 2026, so you can see which number is the day.</p>');
     chips("lHour", [["auto", "Usual"], ["24", "24 h (" + (() => { const s = L.hour; L.hour = "24"; const v = time(now); L.hour = s; return v; })() + ")"], ["12", "12 h (" + (() => { const s = L.hour; L.hour = "12"; const v = time(now); L.hour = s; return v; })() + ")"]], L.hour, v => { L.hour = v; save(); });
-    const wd = (i) => new Intl.DateTimeFormat(lang, { weekday: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 9, 4 + i)));   // 04/10/2026 is a Sunday
-    chips("lWeek", [["auto", "Usual"], ["1", wd(1)], ["0", wd(0)], ["6", wd(6)]], L.week, v => { L.week = v; save(); });
-    const cals = [["none", "None"], ["islamic-umalqura", "Hijri (Umm al-Qura)"], ["persian", "Persian"], ["chinese", "Chinese"], ["hebrew", "Hebrew"], ["buddhist", "Buddhist"], ["japanese", "Japanese"], ["indian", "Indian national"], ["ethiopic", "Ethiopian"]];
-    $("lCal").innerHTML = cals.map(([v, t]) => `<option value="${v}">${esc(t)}${v !== "none" ? " · " + esc((() => { const s = L.cal; L.cal = v; const x = extraCal(now); L.cal = s; return x; })()) : ""}</option>`).join("");
-    $("lCal").value = L.cal;
-    chips("lDigits", [["latn", "123"], ["arab", "١٢٣"], ["arabext", "۱۲۳"], ["deva", "१२३"], ["beng", "১২৩"], ["thai", "๑๒๓"]], L.digits, v => { L.digits = v; save(); });
+    const wd = (i) => new Intl.DateTimeFormat(lang, { weekday: "long", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 9, 4 + i)));   // 04/10/2026 is a Sunday
+    // usual first day for the country (from the browser's world data): 1 = Monday … 7 = Sunday
+    const firstDay = (() => { try { const lo = new Intl.Locale(regionLoc().split("-u-")[0]); const w = lo.getWeekInfo ? lo.getWeekInfo() : lo.weekInfo; return w?.firstDay; } catch { return null; } })();
+    const usualDay = firstDay ? wd(firstDay % 7) : "";
+    // order chosen for APA: Monday, Saturday, Sunday
+    chips("lWeek", [["auto", usualDay ? "Usual for " + countryName(cc()) + ": " + usualDay : "Usual"], ["1", wd(1)], ["6", wd(6)], ["0", wd(0)]], L.week, v => { L.week = v; save(); });
+    cCal.refresh();
+    chips("lDigits", [["latn", "123 Western"], ["arab", "١٢٣ Arabic"], ["arabext", "۱۲۳ Persian, Urdu"], ["deva", "१२३ Hindi, Marathi, Nepali"], ["beng", "১২৩ Bengali"], ["thai", "๑๒๓ Thai"]], L.digits, v => { L.digits = v; save(); });
     chips("lTemp", [["c", "°C"], ["f", "°F"]], L.temp, v => { L.temp = v; save(); });
     chips("lDist", [["km", "km"], ["mi", "miles"]], L.dist, v => { L.dist = v; save(); });
     chips("lSizeChips", [["s", "Small"], ["m", "Medium"], ["l", "Large"], ["min", "Minimized"]], L.w.size, v => { setSize(v); });
@@ -483,6 +556,7 @@ const LOC = (() => {
       : `<p class="note">Nothing is hidden.</p>`;
     $("lHidden").querySelectorAll("[data-unhide]").forEach(cb => cb.onchange = () => { const [t, k] = cb.dataset.unhide.split(":"); if (t === "f") delete L.hideField[k]; else delete L.w.hide[k]; save(); renderDrawer(); paint(); });
     if ($("lShowAll")) $("lShowAll").onclick = () => { L.hideField = {}; L.w.hide = {}; save(); renderDrawer(); paint(); };
+    digitizeEl($("locDrawer"));
   }
   let searchT = null;
   async function searchCity() {
@@ -495,6 +569,7 @@ const LOC = (() => {
       if (q !== $("lCity").value.trim()) return;
       box.innerHTML = res.length ? `<div class="sugg">${res.map((r, i) => `<button type="button" data-i="${i}"><b>${esc(r.name)}</b><small>${esc([r.admin1, r.country || countryName(r.country_code)].filter(Boolean).join(" · "))} · ${esc(tzLabel(r.timezone || "UTC").split(" ")[0])}</small></button>`).join("")}</div><p class="note">Biggest places first. Pick one.</p>`
         : `<p class="note">No city found${pickedCountry ? " in " + esc(countryName(pickedCountry)) : ""}. Check the spelling${pickedCountry ? " or clear the country" : ""}.</p>`;
+      digitizeEl(box);
       box.querySelectorAll("[data-i]").forEach(b => b.onclick = () => { const r = res[+b.dataset.i];
         L.place = { id: r.id, name: r.name, admin1: r.admin1 || "", cc: r.country_code, lat: r.latitude, lon: r.longitude, tz: r.timezone || deviceTz };
         save(); box.innerHTML = ""; $("lCity").value = r.name; loadWx(true).then(() => { paint(); changed(); }); renderDrawer(); });
@@ -520,21 +595,31 @@ const LOC = (() => {
   function init() {
     wireWidget();
     $("locX").onclick = close; $("locBg").onclick = close;
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("locDrawer").hidden) { e.stopImmediatePropagation(); close(); } }, true);
-    $("lCountry").onchange = () => { pickedCountry = $("lCountry").value; searchCity(); };
-    $("lCountryClr").onclick = () => { pickedCountry = ""; $("lCountry").value = ""; searchCity(); };
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || $("locDrawer").hidden) return;
+      if (e.target?.getAttribute?.("aria-expanded") === "true") return;   // first Esc closes the open list only (the menu handles it)
+      e.stopImmediatePropagation(); close();
+    }, true);
+    const names = () => COUNTRIES.map(c => ({ v: c, label: countryName(c), keys: c, cur: c === pickedCountry })).sort((a, b) => a.label.localeCompare(b.label, lang));
+    cCountry = combo("lCountry", () => [{ v: "", label: "Any country", cur: !pickedCountry }, ...names()], (v) => { pickedCountry = v; searchCity(); }, () => pickedCountry ? countryName(pickedCountry) : "");
+    $("lCountryClr").onclick = () => { pickedCountry = ""; cCountry.refresh(); searchCity(); };
+    const zoneItems = () => { const cur = L.tz;
+      return [{ v: "auto", label: "Automatic", sub: tzLabel(L.place?.tz || deviceTz), cur: cur === "auto" },
+        ...zones.map(z => ({ v: z, label: tzLabel(z), sub: z.split("/")[0] + " · " + zoneName(z), keys: zoneName(z) + " " + z.split("/").pop().replace(/_/g, " ") + " " + (TZ_ALIAS[z] || ""), cur: cur === z })).sort((a, b) => a.label.localeCompare(b.label))]; };
+    cTz = combo("lTz", zoneItems, (v) => { L.tz = v; save(); changed(); renderDrawer(); }, () => L.tz === "auto" ? "Automatic: " + tzLabel(L.place?.tz || deviceTz) : tzLabel(L.tz));
+    $("lTzClr").onclick = () => { L.tz = "auto"; save(); changed(); renderDrawer(); };
+    const calItems = () => { const now = new Date(); return CALS.map(([v, t]) => ({ v, label: t, sub: v === "none" ? "" : (() => { const s0 = L.cal; L.cal = v; const x = extraCal(now); L.cal = s0; return x; })(), cur: v === L.cal })); };
+    cCal = combo("lCal", calItems, (v) => { L.cal = v; save(); changed(); }, () => L.cal === "none" ? "" : (CALS.find(c => c[0] === L.cal) || ["", L.cal])[1]);
+    $("lCalClr").onclick = () => { L.cal = "none"; save(); changed(); cCal.refresh(); };
     $("lCity").oninput = () => { clearTimeout(searchT); searchT = setTimeout(searchCity, 300); };
     $("lCityClr").onclick = () => { $("lCity").value = ""; $("lSugg").innerHTML = ""; L.place = null; save(); loadWx(true).then(paint); renderDrawer(); changed(); $("lCity").focus(); };
     $("lHere").onclick = hereToPlace;
-    $("lTzFind").oninput = renderDrawer;
-    $("lTz").onchange = () => { L.tz = $("lTz").value; save(); changed(); renderDrawer(); };
-    $("lTzNow").onclick = () => { L.tz = deviceTz; $("lTzFind").value = ""; save(); changed(); renderDrawer(); };
-    $("lCal").onchange = () => { L.cal = $("lCal").value; save(); changed(); };
+    $("lTzNow").onclick = () => { L.tz = deviceTz; save(); changed(); renderDrawer(); };
     $("lShowW").onchange = () => { L.w.show = $("lShowW").checked; save(); paint(); };
     document.querySelectorAll("#locDrawer [data-hidefield]").forEach(b => b.onclick = () => { const k = b.dataset.hidefield; L.hideField[k] = true; save(); renderDrawer();
       toast("Field hidden", () => { delete L.hideField[k]; save(); renderDrawer(); }); });
     $("toastU").onclick = () => { if (undo) undo(); $("toast").hidden = true; undo = null; };
-    $("lReset").onclick = () => { if (!confirm("Reset time, place and formats?")) return; L = structuredClone(DEF); save(); pickedCountry = ""; $("lCity").value = ""; loadWx(true).then(paint); renderDrawer(); changed(); };
+    $("lReset").onclick = () => { if (!confirm("Reset time, place and formats?")) return; L = structuredClone(DEF); save(); pickedCountry = ""; $("lCity").value = ""; cCountry.refresh(); loadWx(true).then(paint); renderDrawer(); changed(); };
     paint();
     setInterval(paint, 15000);
     setInterval(() => loadWx().then(paint), 15 * 60000);
@@ -543,7 +628,7 @@ const LOC = (() => {
       if (j && j.country_code) ip = { cc: j.country_code, country: j.country_name, city: j.city, tz: j.timezone, lat: j.latitude, lon: j.longitude };
     }).catch(() => {}).finally(() => loadWx(true).then(paint));
   }
-  return { init, open, date, time, weekday, temp, dist, tz, onChange: (f) => listeners.push(f), get place() { return L.place; } };
+  return { init, open, date, time, weekday, temp, dist, tz, digitize, digitizeEl, price, onChange: (f) => listeners.push(f), get place() { return L.place; } };
 })();
 document.addEventListener("DOMContentLoaded", LOC.init);
 </script>
@@ -728,7 +813,7 @@ const sortedLine = (id, hasDist) => { const { k, d } = getSort(id, hasDist), w =
 function listView(id, items, { head, groups, max, hasDist }) {
   items = sortItems(id, items, hasDist);
   const favs = items.filter(x => isFav(id, x.key)), rest = items.filter(x => !isFav(id, x.key));
-  const cols = head.length + 1, thead = `<thead><tr><th><span class="sr">Favorite</span></th>${head.map(h => typeof h === "string" ? `<th>${h}</th>` : `<th>${h.t}${sortArrows(id, h.k, h.t, hasDist)}</th>`).join("")}</tr></thead>`;
+  const cols = head.length + 1, thead = `<thead><tr><th><span class="sr">Favorite</span></th>${head.map(h => typeof h === "string" ? `<th>${h}</th>` : `<th><span ${/\d/.test(h.t) ? "data-keep-digits" : ""}>${h.t}</span>${sortArrows(id, h.k, h.t, hasDist)}</th>`).join("")}</tr></thead>`;
   const row = (x) => `<tr>${starCell(id, x.key, x.label)}${x.html}</tr>`;
   if (!max && !expanded.has(id)) {          // short view: favorites, then the first rows
     const shown = favs.concat(rest.slice(0, Math.max(0, S.rows - favs.length)));
@@ -775,13 +860,13 @@ const R = {
       const rows = await fuel(p);
       if (!rows.length) return `<p class="msg">No fuel station is listed in postal code ${esc(p.pc)}.</p>`;
       const best = rows[0].prices.Gazole;
-      const sum = best ? `Cheapest diesel: €${best.price.toFixed(3)}, ${esc(rows[0].addr)}` : `${rows.length} stations in ${esc(p.pc)}`;
+      const sum = best ? `Cheapest diesel: ${LOC.price(best.price)}, ${esc(rows[0].addr)}` : `${rows.length} stations in ${esc(p.pc)}`;
       const h = hereFor(p), dist = (r) => h && r.lat != null && r.lon != null ? distM(h.lat, h.lon, r.lat, r.lon) : null;
       const hasDist = rows.some(r => dist(r) != null);
       const items = rows.map(r => { const dm = dist(r); return { key: p.pc + "|" + r.addr, label: r.addr, diesel: !!r.prices.Gazole,
         v: { ...Object.fromEntries(FUELS.map(f => [f, r.prices[f]?.price ?? null])), dist: dm },
         html: `<td class="wrapc">${esc(r.addr)}</td>` + (hasDist ? `<td class="num">${dm == null ? "–" : fmtDist(dm)}</td>` : "") + FUELS.map(f => { const x = r.prices[f];
-          return x ? `<td class="${f === "Gazole" && best && x.price === best.price ? "best" : ""}">€${x.price.toFixed(3)}<small>${esc(anyDateTime(x.when))}</small></td>` : "<td>–</td>"; }).join("") }; });
+          return x ? `<td class="${f === "Gazole" && best && x.price === best.price ? "best" : ""}">${LOC.price(x.price)}<small>${esc(anyDateTime(x.when))}</small></td>` : "<td>–</td>"; }).join("") }; });
       const near = hasDist ? items.filter(x => x.v.dist != null).sort((a, b) => a.v.dist - b.v.dist)[0] : null;
       return `<p class="sum">${sum}</p>` + (near ? `<p class="near">Nearest station: ${esc(near.label)}, ${fmtDist(near.v.dist)}</p>` : "") + locHint(p) + sortedLine("fuel", hasDist)
         + listView("fuel", items, { max, hasDist, head: ["Station", ...(hasDist ? [{ t: "Distance", k: "dist" }] : []), { t: "Diesel", k: "Gazole" }, { t: "E10", k: "E10" }, { t: "SP98", k: "SP98" }],
@@ -792,7 +877,7 @@ const R = {
       return `<div class="tw"><table><thead><tr><th>Place</th><th>Cheapest diesel</th><th>Station</th></tr></thead><tbody>${places.map((p, i) => {
         if (res[i].status !== "fulfilled") return `<tr><td class="wrapc">${esc(placeName(p))}</td><td colspan="2" class="closed">Not loaded</td></tr>`;
         const r = res[i].value.find(x => x.prices.Gazole);
-        return r ? `<tr><td class="wrapc">${esc(placeName(p))}</td><td class="num">€${r.prices.Gazole.price.toFixed(3)}</td><td class="wrapc">${esc(r.addr)}</td></tr>`
+        return r ? `<tr><td class="wrapc">${esc(placeName(p))}</td><td class="num">${LOC.price(r.prices.Gazole.price)}</td><td class="wrapc">${esc(r.addr)}</td></tr>`
                  : `<tr><td class="wrapc">${esc(placeName(p))}</td><td colspan="2">No station listed</td></tr>`;
       }).join("")}</tbody></table></div>`;
     }
@@ -974,6 +1059,7 @@ async function fillCard(el, id, token = renderToken, refocus) {
     const sc = body.querySelector(".scroll")?.scrollTop || 0;
     const src = typeof R[id].src === "function" ? R[id].src(comparing() ? null : active) : R[id].src;
     body.innerHTML = html + (src ? `<p class="src">Source: ${src}</p>` : "");
+    LOC.digitizeEl(body);
     const box = body.querySelector(".scroll"); if (box) box.scrollTop = sc;
     if (refocus) body.querySelector(refocus)?.focus();
   } catch (e) { if (token === renderToken || max) body.innerHTML = `<p class="msg err">This card could not be loaded: ${esc(e.message)}.</p><p class="more"><button class="link" data-retry>Try again</button></p>`;
