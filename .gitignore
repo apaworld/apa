@@ -1,0 +1,7 @@
+# Secret keys - never upload
+.env
+.env.*
+!.env.example
+
+# Installed packages (recreated by npm install)
+node_modules/
