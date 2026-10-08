@@ -60,7 +60,11 @@ h1{font-size:clamp(1.4rem,3vw,1.8rem);letter-spacing:-.03em;margin:14px 0 2px}
 .card{border:1px solid var(--line);border-radius:14px;background:var(--paper);min-width:0}
 .card.sortable-ghost{opacity:.35}
 .card.sortable-chosen{box-shadow:0 10px 30px rgba(20,24,40,.15)}
-.card-h{display:flex;align-items:center;gap:4px;padding:8px 8px 8px 6px;border-bottom:1px solid var(--line)}
+.card-h{display:flex;align-items:center;gap:4px;padding:8px 8px 8px 6px;border-bottom:1px solid var(--line);position:relative}
+.cmenu{position:absolute;right:8px;top:calc(100% - 4px);z-index:20;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:6px;min-width:190px;box-shadow:0 10px 30px rgba(20,24,40,.15)}
+.cmenu button{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;cursor:pointer}
+.cmenu button:hover:not([disabled]),.cmenu button:focus-visible{background:var(--accent-soft)}
+.cmenu button[disabled]{color:var(--muted);opacity:.6;cursor:default}
 .card-h h2{font-size:1rem;margin:0 auto 0 2px;line-height:1.2}
 .ib{border:0;background:none;cursor:pointer;color:var(--muted);width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:.95rem;line-height:1;padding:0}
 .ib:hover{background:var(--soft);color:var(--ink)}
@@ -73,6 +77,17 @@ h1{font-size:clamp(1.4rem,3vw,1.8rem);letter-spacing:-.03em;margin:14px 0 2px}
 .msg{color:var(--muted);font-size:.93rem;margin:0}
 .msg.err{color:var(--err)}
 .more{margin-top:8px}
+.scroll{max-height:440px;overflow:auto;border-bottom:1px solid var(--line)}
+.scroll thead th{position:sticky;top:0;background:var(--paper);z-index:1}
+td.st{width:30px;padding-right:0}
+.star{border:0;background:none;cursor:pointer;color:var(--muted);font-size:1.05rem;line-height:1;padding:2px;border-radius:6px}
+.star[aria-pressed="true"]{color:#d99a00}
+.star:hover{color:#d99a00}
+tr.grp th{padding:12px 4px 6px;border-bottom:1px solid var(--line);background:var(--paper)}
+.fold{border:0;background:none;cursor:pointer;font-weight:700;font-size:.85rem;color:var(--ink);padding:2px 4px;border-radius:6px;display:flex;gap:6px;align-items:center}
+.fold:hover{background:var(--soft)}
+.fold .c{color:var(--muted);font-weight:600}
+.wgrp{margin:12px 0 6px}
 
 /* tables and tiles */
 .tw{overflow-x:auto}
@@ -94,7 +109,7 @@ td small{color:var(--muted);display:block;font-size:.75rem}
 .backdrop{position:fixed;inset:0;background:rgba(10,12,20,.45);z-index:40}
 .card.max{position:fixed;z-index:41;top:max(16px,env(safe-area-inset-top,0px));left:16px;right:16px;max-height:calc(100% - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));max-width:1000px;margin:0 auto;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 .card.max .card-h{position:sticky;top:0;background:var(--paper);z-index:1}
-.card.max .mv,.card.max .drag{display:none}
+.card.max .menu,.card.max .drag{display:none}
 
 /* customize drawer */
 .drawer{position:fixed;z-index:51;top:0;bottom:0;right:0;width:min(340px,92vw);background:var(--paper);border-left:1px solid var(--line);
@@ -164,10 +179,10 @@ const ORD = (n) => n === 1 ? "1er" : n + "e";
 /* ---------- saved settings (this browser only) ---------- */
 const KEY = "apa-live-v1";
 const CARDS = { weather: "Weather", fuel: "Fuel prices", bikes: "Vélo'v bikes" };
-const DEFAULT = { places: [], active: null, order: ["weather", "fuel", "bikes"], hidden: [], rows: 3, view: "one" };
+const DEFAULT = { places: [], active: null, order: ["weather", "fuel", "bikes"], hidden: [], rows: 3, view: "one", fav: {}, fold: {} };
 let S = load();
 function load() {
-  try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && Array.isArray(v.places)) return { ...DEFAULT, ...v, order: fixOrder(v.order) }; } catch {}
+  try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && Array.isArray(v.places)) return { ...DEFAULT, ...v, order: fixOrder(v.order), fav: v.fav || {}, fold: v.fold || {} }; } catch {}
   return structuredClone(DEFAULT);
 }
 function fixOrder(o) { o = Array.isArray(o) ? o.filter(id => CARDS[id]) : []; return o.concat(Object.keys(CARDS).filter(id => !o.includes(id))); }
@@ -260,17 +275,38 @@ function moreBtn(id, shown, total) {
   return `<p class="more"><button class="link" data-more="${id}">${expanded.has(id) ? "Show less" : "Show all " + total}</button></p>`;
 }
 const limit = (id, n, max) => (max || expanded.has(id)) ? n : Math.min(n, S.rows);
+const isFav = (id, k) => (S.fav[id] || []).includes(k);
+const starCell = (id, k, label) => { const on = isFav(id, k);
+  return `<td class="st"><button class="star" data-star="${esc(k)}" aria-pressed="${on}" aria-label="${on ? "Remove " + esc(label) + " from favorites" : "Add " + esc(label) + " to favorites"}" title="${on ? "Remove from favorites" : "Add to favorites"}">${on ? "★" : "☆"}</button></td>`; };
+const foldRow = (id, gk, title, n, cols) => { const open = !S.fold[id + ":" + gk];
+  return `<tr class="grp"><th colspan="${cols}"><button class="fold" data-fold="${id}:${gk}" aria-expanded="${open}"><span aria-hidden="true">${open ? "▾" : "▸"}</span>${title} <span class="c">(${n})</span></button></th></tr>`; };
+// items: [{key, label, html}]; groups: [[groupKey, title, test(item)]]
+function listView(id, items, { head, groups, max }) {
+  const favs = items.filter(x => isFav(id, x.key)), rest = items.filter(x => !isFav(id, x.key));
+  const cols = head.length + 1, thead = `<thead><tr><th><span class="sr">Favorite</span></th>${head.map(h => `<th>${h}</th>`).join("")}</tr></thead>`;
+  const row = (x) => `<tr>${starCell(id, x.key, x.label)}${x.html}</tr>`;
+  if (!max && !expanded.has(id)) {          // short view: favorites, then the first rows
+    const shown = favs.concat(rest.slice(0, Math.max(0, S.rows - favs.length)));
+    return `<div class="tw"><table>${thead}<tbody>${shown.map(row).join("")}</tbody></table></div>${moreBtn(id, shown.length, items.length)}`;
+  }
+  const parts = [["fav", "★ Favorites", favs]].concat(groups.map(([k, t, test]) => [k, t, rest.filter(test)])).filter(g => g[2].length);
+  const body = parts.map(([k, t, list]) => foldRow(id, k, t, list.length, cols) + (S.fold[id + ":" + k] ? "" : list.map(row).join(""))).join("");
+  const table = `<table>${thead}<tbody>${body}</tbody></table>`;
+  return max ? `<div class="tw">${table}</div>` : `<div class="tw scroll">${table}</div>${moreBtn(id, items.length, items.length)}`;
+}
 
 const R = {
   weather: {
     src: "Open-Meteo",
     async one(p, max) {
       const days = await weather(p), [ic, txt] = WX[days[0].code] || ["🌡️", "Weather"];
-      const n = limit("weather", days.length, max);
-      return `<p class="sum">Today in ${esc(placeName(p))}: ${ic} ${txt}, ${Math.round(days[0].min)}° to ${Math.round(days[0].max)}°C</p>
-        <div class="days">${days.slice(0, n).map(d => { const [i, t] = WX[d.code] || ["🌡️", "Weather"];
-          return `<div class="day"><b>${weekday(d.iso)} ${frDate(d.iso)}</b><span class="ic" aria-hidden="true">${i}</span><small>${t}</small><small>${Math.round(d.min)}° to ${Math.round(d.max)}°C</small><small>Rain ${d.rain} mm</small></div>`; }).join("")}</div>
-        ${max ? "" : moreBtn("weather", n, days.length)}`;
+      const tile = (d) => { const [i, t] = WX[d.code] || ["🌡️", "Weather"];
+        return `<div class="day"><b>${weekday(d.iso)} ${frDate(d.iso)}</b><span class="ic" aria-hidden="true">${i}</span><small>${t}</small><small>${Math.round(d.min)}° to ${Math.round(d.max)}°C</small><small>Rain ${d.rain} mm</small></div>`; };
+      const sum = `<p class="sum">Today in ${esc(placeName(p))}: ${ic} ${txt}, ${Math.round(days[0].min)}° to ${Math.round(days[0].max)}°C</p>`;
+      if (!max && !expanded.has("weather")) { const n = Math.min(days.length, S.rows); return sum + `<div class="days">${days.slice(0, n).map(tile).join("")}</div>` + moreBtn("weather", n, days.length); }
+      const grp = (k, t, list) => { if (!list.length) return ""; const open = !S.fold["weather:" + k];
+        return `<div class="wgrp"><button class="fold" data-fold="weather:${k}" aria-expanded="${open}"><span aria-hidden="true">${open ? "▾" : "▸"}</span>${t} <span class="c">(${list.length})</span></button></div>` + (open ? `<div class="days">${list.map(tile).join("")}</div>` : ""); };
+      return sum + grp("next", "Next 3 days", days.slice(0, 3)) + grp("later", "Later this week", days.slice(3)) + (max ? "" : moreBtn("weather", days.length, days.length));
     },
     async all(places) {
       const res = await Promise.allSettled(places.map(weather));
@@ -288,12 +324,13 @@ const R = {
     async one(p, max) {
       const rows = await fuel(p);
       if (!rows.length) return `<p class="msg">No fuel station is listed in postal code ${esc(p.pc)}.</p>`;
-      const best = rows[0].prices.Gazole, n = limit("fuel", rows.length, max);
+      const best = rows[0].prices.Gazole;
       const sum = best ? `Cheapest diesel: €${best.price.toFixed(3)}, ${esc(rows[0].addr)}` : `${rows.length} stations in ${esc(p.pc)}`;
-      return `<p class="sum">${sum}</p><div class="tw"><table><thead><tr><th>Station</th><th>Diesel</th><th>E10</th><th>SP98</th></tr></thead><tbody>
-        ${rows.slice(0, n).map((r, i) => `<tr><td class="wrapc">${esc(r.addr)}</td>${FUELS.map(f => { const x = r.prices[f];
-          return x ? `<td class="${f === "Gazole" && i === 0 ? "best" : ""}">€${x.price.toFixed(3)}<small>${esc(anyDateTime(x.when))}</small></td>` : "<td>–</td>"; }).join("")}</tr>`).join("")}
-        </tbody></table></div>${max ? "" : moreBtn("fuel", n, rows.length)}`;
+      const items = rows.map((r, i) => ({ key: p.pc + "|" + r.addr, label: r.addr, diesel: !!r.prices.Gazole,
+        html: `<td class="wrapc">${esc(r.addr)}</td>` + FUELS.map(f => { const x = r.prices[f];
+          return x ? `<td class="${f === "Gazole" && i === 0 && best ? "best" : ""}">€${x.price.toFixed(3)}<small>${esc(anyDateTime(x.when))}</small></td>` : "<td>–</td>"; }).join("") }));
+      return `<p class="sum">${sum}</p>` + listView("fuel", items, { max, head: ["Station", "Diesel", "E10", "SP98"],
+        groups: [["diesel", "With diesel", x => x.diesel], ["other", "Other fuels only", x => !x.diesel]] });
     },
     async all(places) {
       const res = await Promise.allSettled(places.map(fuel));
@@ -310,10 +347,11 @@ const R = {
     async one(p, max) {
       const list = await bikes(p);
       if (!list.length) return `<p class="msg">No Vélo'v station in ${esc(p.label)}. Vélo'v covers Lyon and nearby towns only.</p>`;
-      const total = list.reduce((s, v) => s + (v.open ? v.bikes : 0), 0), n = limit("bikes", list.length, max);
-      return `<p class="sum">${list.length} stations in ${esc(p.label)}, ${total} bikes available now</p><div class="tw"><table><thead><tr><th>Station</th><th>Bikes</th><th>Free spaces</th><th>Updated</th></tr></thead><tbody>
-        ${list.slice(0, n).map(v => `<tr><td class="wrapc">${esc(v.name)}</td>${v.open ? `<td class="num">${v.bikes}</td><td class="num">${v.spaces}</td>` : `<td class="closed">Closed</td><td>–</td>`}<td>${esc(anyDateTime(v.when))}</td></tr>`).join("")}
-        </tbody></table></div>${max ? "" : moreBtn("bikes", n, list.length)}`;
+      const total = list.reduce((s, v) => s + (v.open ? v.bikes : 0), 0);
+      const items = list.map(v => ({ key: p.insee + "|" + v.name, label: v.name, open: v.open, bikes: v.bikes,
+        html: `<td class="wrapc">${esc(v.name)}</td>${v.open ? `<td class="num">${v.bikes}</td><td class="num">${v.spaces}</td>` : `<td class="closed">Closed</td><td>–</td>`}<td>${esc(anyDateTime(v.when))}</td>` }));
+      return `<p class="sum">${list.length} stations in ${esc(p.label)}, ${total} bikes available now</p>` + listView("bikes", items, { max, head: ["Station", "Bikes", "Free spaces", "Updated"],
+        groups: [["avail", "Bikes available", x => x.open && x.bikes > 0], ["empty", "No bikes right now", x => x.open && x.bikes === 0], ["closed", "Closed", x => !x.open]] });
     },
     async all(places) {
       const res = await Promise.allSettled(places.map(bikes));
@@ -387,25 +425,46 @@ function cardEl(id) {
   el.innerHTML = `<div class="card-h">
       <button class="ib drag" aria-label="Drag to move ${CARDS[id]}" title="Drag to move">⠿</button>
       <h2>${CARDS[id]}</h2>
-      <button class="ib mv" data-mv="-1" aria-label="Move ${CARDS[id]} earlier" title="Move earlier">▲</button>
-      <button class="ib mv" data-mv="1" aria-label="Move ${CARDS[id]} later" title="Move later">▼</button>
+      <button class="ib menu" aria-haspopup="menu" aria-expanded="false" aria-label="More options for ${CARDS[id]}" title="More options">⋯</button>
       <button class="ib mx" aria-label="Maximize ${CARDS[id]}" title="Maximize">⤢</button>
       <button class="ib x" aria-label="Close ${CARDS[id]}" title="Close">✕</button>
+      <div class="cmenu" role="menu" hidden>
+        <button role="menuitem" data-mv="-1">Move earlier</button>
+        <button role="menuitem" data-mv="1">Move later</button>
+        <button role="menuitem" data-act="close">Close card</button>
+      </div>
     </div><div class="card-b"><p class="msg">Loading…</p></div>`;
-  el.querySelectorAll(".mv").forEach(b => b.onclick = () => moveCard(id, +b.dataset.mv));
+  const mb = el.querySelector(".menu"), menu = el.querySelector(".cmenu");
+  mb.onclick = (ev) => { ev.stopPropagation(); menu.hidden ? openMenu(el, id) : closeMenu(); };
+  menu.querySelectorAll("[data-mv]").forEach(b => b.onclick = () => { closeMenu(false); moveCard(id, +b.dataset.mv); });
+  menu.querySelector("[data-act=close]").onclick = () => { closeMenu(false); S.hidden.push(id); save(); renderAll(); };
+  menu.addEventListener("keydown", (e) => {
+    const items = [...menu.querySelectorAll("button:not([disabled])")], i = items.indexOf(document.activeElement);
+    if (e.key === "ArrowDown") { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+    if (e.key === "ArrowUp") { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+    if (e.key === "Tab") closeMenu(false);
+  });
   el.querySelector(".mx").onclick = () => el.classList.contains("max") ? unmax() : maximize(id);
   el.querySelector(".x").onclick = () => { if (el.classList.contains("max")) return unmax(); S.hidden.push(id); save(); renderAll(); };
-  el.addEventListener("click", (ev) => { const m = ev.target.closest("[data-more]"); if (!m) return; expanded.has(id) ? expanded.delete(id) : expanded.add(id); fillCard(el, id); });
+  el.addEventListener("click", (ev) => {
+    const m = ev.target.closest("[data-more]"), st = ev.target.closest("[data-star]"), fo = ev.target.closest("[data-fold]");
+    if (m) { expanded.has(id) ? expanded.delete(id) : expanded.add(id); fillCard(el, id); }
+    else if (st) { const k = st.dataset.star, list = S.fav[id] || []; S.fav[id] = list.includes(k) ? list.filter(x => x !== k) : list.concat(k); save(); fillCard(el, id, renderToken, "[data-star=\"" + CSS.escape(k) + "\"]"); }
+    else if (fo) { const k = fo.dataset.fold; S.fold[k] ? delete S.fold[k] : (S.fold[k] = true); save(); fillCard(el, id, renderToken, "[data-fold=\"" + CSS.escape(k) + "\"]"); }
+  });
   return el;
 }
-async function fillCard(el, id, token = renderToken) {
+async function fillCard(el, id, token = renderToken, refocus) {
   const body = el.querySelector(".card-b"), max = el.classList.contains("max");
   const active = S.places.find(p => p.id === S.active);
   if (!S.places.length) { body.innerHTML = `<p class="msg">Add a place to see this card.</p>`; return; }
   try {
     const html = comparing() ? await R[id].all(S.places) : await R[id].one(active, max);
     if (token !== renderToken && !max) return;
+    const sc = body.querySelector(".scroll")?.scrollTop || 0;
     body.innerHTML = html + `<p class="src">Source: ${R[id].src}</p>`;
+    const box = body.querySelector(".scroll"); if (box) box.scrollTop = sc;
+    if (refocus) body.querySelector(refocus)?.focus();
   } catch (e) { if (token === renderToken || max) body.innerHTML = `<p class="msg err">This card could not be loaded: ${esc(e.message)}.</p><p class="more"><button class="link" data-retry>Try again</button></p>`;
     const rb = body.querySelector("[data-retry]"); if (rb) rb.onclick = () => { body.innerHTML = `<p class="msg">Loading…</p>`; fillCard(el, id); }; }
 }
@@ -415,12 +474,30 @@ function renderCards() {
   shown.forEach(id => { const el = cardEl(id); grid.append(el); fillCard(el, id, token); });
   $("emptyMsg").hidden = shown.length > 0;
 }
+/* card "⋯" menu */
+let openMenuEl = null;
+function openMenu(el, id) {
+  closeMenu(false);
+  const shown = S.order.filter(x => !S.hidden.includes(x)), i = shown.indexOf(id), menu = el.querySelector(".cmenu");
+  menu.querySelector('[data-mv="-1"]').disabled = i <= 0;
+  menu.querySelector('[data-mv="1"]').disabled = i >= shown.length - 1;
+  menu.hidden = false; el.querySelector(".menu").setAttribute("aria-expanded", "true"); openMenuEl = el;
+  menu.querySelector("button:not([disabled])").focus();
+}
+function closeMenu(refocus = true) {
+  if (!openMenuEl) return;
+  const el = openMenuEl; openMenuEl = null;
+  el.querySelector(".cmenu").hidden = true; el.querySelector(".menu").setAttribute("aria-expanded", "false");
+  if (refocus) el.querySelector(".menu").focus();
+}
+document.addEventListener("click", (e) => { if (openMenuEl && !openMenuEl.querySelector(".cmenu").contains(e.target)) closeMenu(false); });
+
 function moveCard(id, dir) {
   const shown = S.order.filter(x => !S.hidden.includes(x)), i = shown.indexOf(id), j = i + dir;
   if (j < 0 || j >= shown.length) return;
   [shown[i], shown[j]] = [shown[j], shown[i]];
   S.order = shown.concat(S.order.filter(x => !shown.includes(x))); save(); renderCards();
-  document.querySelector(`.card[data-id="${id}"] .mv[data-mv="${dir}"]`)?.focus();
+  document.querySelector(`.card[data-id="${id}"] .menu`)?.focus();
 }
 
 /* maximize */
@@ -458,7 +535,7 @@ function closeDrawer() { $("drawer").hidden = true; $("drawerBg").hidden = true;
 $("custBtn").onclick = openDrawer; $("emptyCust").onclick = openDrawer;
 $("drawerX").onclick = closeDrawer; $("drawerBg").onclick = closeDrawer;
 $("resetBtn").onclick = () => { if (!confirm("Reset your places and layout?")) return; S = structuredClone(DEFAULT); tempCompare = false; expanded.clear(); save(); closeDrawer(); start(); };
-document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; if (!$("drawer").hidden) closeDrawer(); else if (maxId) unmax(); else if (!$("addForm").hidden) closeAdd(); });
+document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; if (openMenuEl) closeMenu(); else if (!$("drawer").hidden) closeDrawer(); else if (maxId) unmax(); else if (!$("addForm").hidden) closeAdd(); });
 
 /* ---------- drag and drop (SortableJS); move buttons work without it ---------- */
 if (window.Sortable) {
