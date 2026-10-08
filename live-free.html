@@ -27,6 +27,8 @@ h1{font-size:clamp(1.7rem,4vw,2.3rem);letter-spacing:-.03em;margin:18px 0 4px}
 .fuel td.addr{white-space:normal;min-width:180px}
 .fuel .best{color:var(--ok);font-weight:700}
 .fuel small{color:var(--muted);display:block;font-size:.78rem}
+.fuel .num{font-variant-numeric:tabular-nums;font-weight:700}
+.fuel .closed{color:var(--err)}
 form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:8px}
 label{display:flex;flex-direction:column;font-size:.8rem;font-weight:600;gap:4px}
 input{font:inherit;color:inherit;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:160px}
@@ -53,7 +55,7 @@ footer{color:var(--muted);font-size:.82rem;border-top:1px solid var(--line);padd
 <div class="wrap">
   <a class="mark" href="./"><i></i>Apacom</a>
   <h1>Free live sources</h1>
-  <p class="lead">Type a French postal code. The page finds the town, its weather for the next 7 days and today's fuel prices, using public services that need no account or key.</p>
+  <p class="lead">Type a French postal code. The page finds the town, its weather for the next 7 days, today's fuel prices and Vélo'v bikes, using public services that need no account or key.</p>
 
   <form id="pcForm">
     <label>Postal code<input id="pc" value="69002" inputmode="numeric" maxlength="5" autocomplete="postal-code"></label>
@@ -84,7 +86,17 @@ footer{color:var(--muted);font-size:.82rem;border-top:1px solid var(--line);padd
     </table></div>
   </section>
 
-  <footer>Test page for the APA MVP. Data: geo.api.gouv.fr, Open-Meteo, data.economie.gouv.fr.</footer>
+  <section>
+    <h2>Vélo'v bikes now</h2>
+    <p class="what">From Grand Lyon open data, live. Vélo'v covers Lyon and nearby towns.</p>
+    <p class="msg" id="bikeMsg">Choose a town first.</p>
+    <div class="fuel-wrap"><table class="fuel" id="bikes" hidden>
+      <thead><tr><th>Station</th><th>Bikes</th><th>Free spaces</th><th>Updated</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <footer>Test page for the APA MVP. Data: geo.api.gouv.fr, Open-Meteo, data.economie.gouv.fr, data.grandlyon.com.</footer>
 </div>
 
 <script>
@@ -92,6 +104,10 @@ const $ = (id) => document.getElementById(id);
 const ORD = (n) => n === 1 ? "1er" : n + "e";
 
 // Lyon, Paris and Marseille have one entry per arrondissement; the postal code tells which one.
+function townInsee(pc, c) {
+  const m = /^6900([1-9])$/.exec(pc);
+  return c.nom === "Lyon" && m ? "6938" + m[1] : c.code;
+}
 function arrondissement(pc, communeName) {
   let m;
   if (communeName === "Lyon" && (m = /^6900([1-9])$/.exec(pc))) return "Lyon " + ORD(+m[1]);
@@ -184,9 +200,46 @@ async function showFuel(pc) {
   } catch (e) { msg.className = "msg err"; msg.textContent = "Fuel prices could not be loaded: " + e.message; }
 }
 
+// Vélo'v: one call returns every station; keep those in the chosen town.
+let velovCache = null;
+// Times with a time zone (e.g. "+00:00") are converted to Lyon time; plain times are already local.
+const anyDateTime = (s) => {
+  s = String(s || "");
+  if (/(Z|[+-]\d\d:?\d\d)$/.test(s)) {
+    const d = new Date(s); if (isNaN(d)) return "–";
+    const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(d).map(x => [x.type, x.value]));
+    return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`;
+  }
+  const m = /^(\d{4}-\d\d-\d\d)[ T](\d\d:\d\d)/.exec(s); return m ? frDate(m[1]) + " " + m[2] : "–";
+};
+async function showBikes(c) {
+  const msg = $("bikeMsg"), table = $("bikes"), body = table.querySelector("tbody");
+  body.textContent = ""; table.hidden = true; msg.className = "msg"; msg.textContent = "Loading Vélo'v stations…";
+  try {
+    if (!velovCache) {
+      const j = await getJSON("https://download.data.grandlyon.com/ws/rdata/jcd_jcdecaux.jcdvelov/all.json?compact=false&maxfeatures=1000&start=1");
+      velovCache = (j.values || []).map(v => Array.isArray(v) ? Object.fromEntries(j.fields.map((f, i) => [f, v[i]])) : v);
+    }
+    const list = velovCache.filter(v => String(v.code_insee) === String(c.insee));
+    if (!list.length) { msg.textContent = "No Vélo'v station in " + c.label + ". Vélo'v covers Lyon and nearby towns only."; return; }
+    list.sort((a, b) => (+b.available_bikes || 0) - (+a.available_bikes || 0));
+    let bikes = 0;
+    for (const v of list) {
+      const open = String(v.status).toUpperCase() !== "CLOSED"; bikes += open ? (+v.available_bikes || 0) : 0;
+      const tr = document.createElement("tr");
+      const cells = [v.name || v.address || "Station", open ? String(v.available_bikes ?? "–") : "Closed", open ? String(v.available_bike_stands ?? "–") : "–", anyDateTime(v.last_update)];
+      cells.forEach((txt, i) => { const td = document.createElement("td"); td.textContent = txt;
+        if (i === 0) td.className = "addr"; else if (i < 3) td.className = open ? "num" : "closed"; tr.append(td); });
+      body.append(tr);
+    }
+    table.hidden = false;
+    msg.textContent = list.length + " stations in " + c.label + ", " + bikes + " bikes available right now.";
+  } catch (e) { msg.className = "msg err"; msg.textContent = "Vélo'v data could not be loaded: " + e.message; }
+}
+
 function pick(btn, c) {
   document.querySelectorAll(".communes button").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
-  showWeather(c);
+  showWeather(c); showBikes(c);
 }
 
 $("pcForm").addEventListener("submit", async (ev) => {
@@ -195,14 +248,15 @@ $("pcForm").addEventListener("submit", async (ev) => {
   $("communes").textContent = ""; $("days").textContent = "";
   $("wxMsg").className = "msg"; $("wxMsg").textContent = "Choose a town first.";
   $("fuel").hidden = true; $("fuelMsg").className = "msg"; $("fuelMsg").textContent = "Type a postal code first.";
+  $("bikes").hidden = true; $("bikeMsg").className = "msg"; $("bikeMsg").textContent = "Choose a town first.";
   const msg = $("townMsg"); msg.className = "msg";
   if (!/^\d{5}$/.test(pc)) { msg.className = "msg err"; msg.textContent = "A French postal code has 5 digits, for example 69002."; return; }
   $("go").disabled = true; msg.textContent = "Searching…";
   try {
-    const list = await getJSON("https://geo.api.gouv.fr/communes?" + new URLSearchParams({ codePostal: pc, fields: "nom,centre,population" }));
+    const list = await getJSON("https://geo.api.gouv.fr/communes?" + new URLSearchParams({ codePostal: pc, fields: "nom,code,centre,population" }));
     if (!list.length) { msg.className = "msg err"; msg.textContent = "No town found for " + pc + ". Check the postal code."; return; }
     showFuel(pc);
-    const towns = list.filter(c => c.centre).map(c => ({ ...c, label: arrondissement(pc, c.nom) }));
+    const towns = list.filter(c => c.centre).map(c => ({ ...c, label: arrondissement(pc, c.nom), insee: townInsee(pc, c) }));
     msg.textContent = towns.length === 1 ? "Postal code " + pc + " is:" : "Postal code " + pc + " covers " + towns.length + " towns. Choose yours:";
     towns.forEach((c, i) => {
       const li = document.createElement("li"), b = document.createElement("button");
