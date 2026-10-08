@@ -75,3 +75,4 @@ Provider endpoints, scopes, prices and terms change. If a source fails, the test
 error and the provider's message; compare them with that provider's current docs. The most likely
 to need an update: the France Travail token URL and scope, the OpenFisca variable names, and the
 Claude model name and web search tool version (both can be set with environment variables).
+Live dashboard: https://apaworld.org/live-free.html
