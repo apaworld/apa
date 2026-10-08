@@ -148,7 +148,7 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
 <div class="wrap">
   <div class="top">
     <a class="mark" href="./"><i></i>Apacom</a>
-    <button class="btn ghost" id="custBtn" aria-haspopup="dialog">⚙ Customize</button>
+    <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="timeBtn" aria-haspopup="dialog">🕐 Time and place</button><button class="btn ghost" id="custBtn" aria-haspopup="dialog">⚙ Customize</button></span>
   </div>
   <h1>Live dashboard</h1>
   <p class="lead">Follow live information for the places that matter to you. Add a postal code, move the cards, close the ones you don't need and bring them back from Customize.</p>
@@ -190,6 +190,364 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
 </aside>
 <div class="backdrop" id="maxBg" hidden></div>
 
+<!-- ===== Time, place and local formats: widget + settings ===== -->
+<style>
+.wdg{position:fixed;z-index:30;background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 28px rgba(20,24,40,.14);padding:8px 10px;display:flex;align-items:center;gap:10px;touch-action:none;user-select:none;max-width:calc(100vw - 16px)}
+.wdg.s,.wdg.m{border-radius:999px}
+.wdg .grip{border:0;background:none;color:var(--muted);cursor:grab;width:22px;height:36px;padding:0;display:grid;place-items:center}
+.wdg .main{border:0;background:none;padding:0;cursor:pointer;text-align:start;display:flex;flex-direction:column;gap:1px}
+.wdg .time{font-size:1.25rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.1}
+.wdg.l .time{font-size:1.8rem}
+.wdg .time,.wdg .sub{white-space:nowrap}
+.wdg.l{flex-wrap:wrap;width:min(400px,calc(100vw - 16px));border-radius:18px;row-gap:4px;padding:10px 14px}
+.wdg.l [data-piece="place"]{flex-basis:100%;order:6;padding-inline-start:32px}
+.wdg.l [data-piece="place"] .sub{white-space:normal}
+.wdg.l .tools{order:7}
+.wdg .sub{font-size:.78rem;color:var(--muted);line-height:1.3}
+.wdg .wx{display:flex;align-items:center;gap:6px;font-weight:700;border:0;background:none;padding:0;cursor:pointer}
+.wdg .wx small{display:block;font-weight:500;color:var(--muted);font-size:.75rem}
+.wdg .sep{width:1px;align-self:stretch;background:var(--line)}
+.wdg .pc{position:relative;display:flex;align-items:center}
+.wdg .hx{position:absolute;top:-10px;inset-inline-end:-12px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--muted);font-size:.7rem;line-height:1;padding:0;cursor:pointer;display:none;place-items:center}
+.wdg:hover .hx,.wdg:focus-within .hx,.wdg.edit .hx{display:grid}
+.wdg .tools{display:none;gap:2px}
+.wdg:hover .tools,.wdg:focus-within .tools,.wdg.edit .tools{display:flex}
+.wdg .tools button{border:0;background:none;color:var(--muted);width:28px;height:28px;border-radius:8px;cursor:pointer;padding:0;font-size:.9rem}
+.wdg .tools button:hover{background:var(--soft);color:var(--ink)}
+.wdg .rz{position:absolute;inset-inline-end:2px;bottom:2px;width:16px;height:16px;cursor:nwse-resize;border:0;background:none;padding:0}
+.wdg .rz::after{content:"";position:absolute;inset-inline-end:3px;bottom:3px;width:8px;height:8px;border-inline-end:2px solid var(--muted);border-bottom:2px solid var(--muted);border-end-end-radius:3px;opacity:.7}
+.wdg.min{border-radius:50%;padding:0;width:44px;height:44px;justify-content:center}
+.wdg.min > :not(.dot){display:none!important}
+.wdg .dot{display:none;border:0;background:none;width:44px;height:44px;border-radius:50%;cursor:pointer;color:var(--accent);font-size:1.2rem}
+.wdg.min .dot{display:block}
+.toast{position:fixed;z-index:60;left:50%;transform:translateX(-50%);bottom:max(20px,env(safe-area-inset-bottom,0px));background:#15171c;color:#fff;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;font-size:.92rem;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.toast button{border:0;background:none;color:#a9b4ff;font-weight:700;cursor:pointer;padding:0}
+#locDrawer .fld{display:flex;flex-direction:column;gap:6px;margin:14px 0 0}
+#locDrawer .fh{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:700}
+#locDrawer .fh button{border:0;background:none;color:var(--accent);font-weight:600;font-size:.8rem;cursor:pointer;padding:4px 0}
+#locDrawer .note{font-size:.8rem;color:var(--muted);margin:0}
+#locDrawer .row{display:flex;gap:8px;align-items:center}
+#locDrawer .inp{display:flex;align-items:center;border:1px solid #c9ccd3;border-radius:10px;padding:0 4px 0 0;flex:1;min-width:0;background:var(--paper)}
+#locDrawer .inp:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+#locDrawer .inp input,#locDrawer .inp select{flex:1;min-width:0;border:0;background:none;padding:9px 10px;font-size:.95rem}
+#locDrawer .inp input:focus,#locDrawer .inp select:focus{outline:none}
+#locDrawer .clr{border:0;background:none;color:var(--muted);width:28px;height:28px;cursor:pointer;border-radius:6px}
+#locDrawer .sugg{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:4px}
+#locDrawer .sugg button{display:block;width:100%;text-align:start;border:0;border-bottom:1px solid var(--line);background:var(--paper);padding:8px 12px;cursor:pointer}
+#locDrawer .sugg button:last-child{border-bottom:0}
+#locDrawer .sugg button:hover,#locDrawer .sugg button:focus-visible{background:var(--accent-soft)}
+#locDrawer .sugg b{display:block}
+#locDrawer .sugg small{color:var(--muted)}
+#locDrawer .chips2{display:flex;flex-wrap:wrap;gap:6px}
+#locDrawer .chips2 button{border:1px solid #c9ccd3;background:var(--paper);border-radius:9px;padding:7px 10px;cursor:pointer;font-size:.88rem}
+#locDrawer .chips2 button[aria-pressed="true"]{border:2px solid var(--accent);background:var(--accent-soft);font-weight:700;padding:6px 9px}
+#locDrawer .warn{background:#fff4e5;border:1px solid #f0c27a;color:#4a3200;border-radius:12px;padding:10px 12px;margin-top:14px;font-size:.85rem}
+#locDrawer .warn b{display:block;color:#6b4300;margin-bottom:4px}
+#locDrawer .warn .chips2{margin-top:8px}
+@media (prefers-color-scheme:dark){#locDrawer .warn{background:#3a2a10;border-color:#7a5a20;color:#f3dfb8}#locDrawer .warn b{color:#ffd68a}}
+</style>
+
+<div class="wdg m" id="wdg" role="region" aria-label="Time and weather" hidden>
+  <button class="grip" id="wGrip" aria-label="Move the time and weather widget (drag, or use the arrow keys)" title="Drag to move">⠿</button>
+  <span class="pc" data-piece="clock"><button class="main" id="wMain" aria-label="Open time and place settings"><span class="time" id="wTime">--:--</span></button><button class="hx" data-hide="clock" aria-label="Hide the clock" title="Hide the clock">✕</button></span>
+  <span class="pc" data-piece="date"><span class="sub" id="wDate"></span><button class="hx" data-hide="date" aria-label="Hide the date" title="Hide the date">✕</button></span>
+  <span class="pc" data-piece="place"><span class="sub" id="wPlace"></span><button class="hx" data-hide="place" aria-label="Hide the place" title="Hide the place">✕</button></span>
+  <span class="sep" data-piece="weather"></span>
+  <span class="pc" data-piece="weather"><button class="wx" id="wWx" aria-label="Open time and place settings"><span id="wWxIc" aria-hidden="true"></span><span><span id="wWxT"></span><small id="wWxD"></small></span></button><button class="hx" data-hide="weather" aria-label="Hide the weather" title="Hide the weather">✕</button></span>
+  <span class="tools"><button id="wSize" aria-label="Change the size" title="Change the size">⤢</button><button id="wMin" aria-label="Minimize" title="Minimize">–</button></span>
+  <button class="rz" id="wRz" aria-label="Resize: drag, or press to change the size" title="Drag to resize"></button>
+  <button class="dot" id="wDot" aria-label="Show the time and weather widget">🕐</button>
+</div>
+
+<div class="backdrop d" id="locBg" hidden></div>
+<aside class="drawer" id="locDrawer" role="dialog" aria-modal="true" aria-labelledby="locTitle" hidden>
+  <div class="dh"><h2 id="locTitle">Time and place</h2><button class="ib x" id="locX" aria-label="Close time and place">✕</button></div>
+  <div id="locWarn"></div>
+  <div class="fld" data-field="country">
+    <div class="fh"><label for="lCountry">Country</label><button data-hidefield="country">Hide this field</button></div>
+    <div class="inp"><select id="lCountry"></select><button class="clr" id="lCountryClr" aria-label="Clear the country">✕</button></div>
+    <p class="note">Optional: narrows the city list. Cities always show their country.</p>
+  </div>
+  <div class="fld">
+    <div class="fh"><label for="lCity">City</label></div>
+    <div class="row"><div class="inp"><input id="lCity" autocomplete="off" placeholder="Type a city"><button class="clr" id="lCityClr" aria-label="Clear the city">✕</button></div>
+      <button class="btn ghost" id="lHere" title="Use my location">📍</button></div>
+    <div id="lSugg" aria-live="polite"></div>
+    <p class="note" id="lCityNote"></p>
+  </div>
+  <div class="fld" data-field="tz">
+    <div class="fh"><label for="lTz">Time zone</label><button data-hidefield="tz">Hide this field</button></div>
+    <div class="inp"><input id="lTzFind" placeholder="Search: Paris, Hanoi, New York…" aria-label="Search a time zone"></div>
+    <div class="inp"><select id="lTz"></select></div>
+    <button class="link" id="lTzNow" style="align-self:flex-start">Use current time zone</button>
+  </div>
+  <div class="fld" data-field="date"><div class="fh"><span>Date format</span><button data-hidefield="date">Hide this field</button></div><div class="chips2" id="lDate"></div></div>
+  <div class="fld" data-field="hour"><div class="fh"><span>Time</span><button data-hidefield="hour">Hide this field</button></div><div class="chips2" id="lHour"></div></div>
+  <div class="fld" data-field="week"><div class="fh"><span>Week starts on</span><button data-hidefield="week">Hide this field</button></div><div class="chips2" id="lWeek"></div></div>
+  <div class="fld" data-field="cal"><div class="fh"><label for="lCal">Also show another calendar</label><button data-hidefield="cal">Hide this field</button></div>
+    <div class="inp"><select id="lCal"></select></div></div>
+  <div class="fld" data-field="digits"><div class="fh"><span>Digits</span><button data-hidefield="digits">Hide this field</button></div><div class="chips2" id="lDigits"></div></div>
+  <div class="fld" data-field="units"><div class="fh"><span>Units</span><button data-hidefield="units">Hide this field</button></div><div class="chips2" id="lTemp"></div><div class="chips2" id="lDist"></div></div>
+  <div class="fld"><div class="fh"><span>Widget</span></div><div class="chips2" id="lSizeChips"></div>
+    <label class="opt"><input type="checkbox" id="lShowW"> Show the time and weather widget</label></div>
+  <h3>Hidden items</h3><div id="lHidden"></div>
+  <h3>Reset</h3><button class="btn ghost" id="lReset">Reset time, place and formats</button>
+</aside>
+<div class="toast" id="toast" role="status" hidden><span id="toastT"></span><button id="toastU">Undo</button></div>
+
+<script>
+/* Time, place and local formats. Everything is saved only in this browser and can be changed. */
+const LOC = (() => {
+  const KEY = "apa-locale-v1";
+  const DEF = { place: null, tz: "auto", date: "auto", hour: "auto", week: "auto", cal: "none", digits: "latn", temp: "c", dist: "km",
+    w: { show: true, size: "m", x: null, y: null, hide: {} }, hideField: {} };
+  let L; try { L = { ...structuredClone(DEF), ...(JSON.parse(localStorage.getItem(KEY)) || {}) }; L.w = { ...DEF.w, ...L.w, hide: { ...(L.w?.hide || {}) } }; L.hideField = L.hideField || {}; } catch { L = structuredClone(DEF); }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(L)); } catch {} };
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+  const deviceTz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; } })();
+  const lang = (document.documentElement.lang || navigator.language || "en").split("-")[0];
+  let ip = null;           // { cc, country, city, tz, lat, lon } from the connection, if available
+  const listeners = [];
+
+  const tz = () => L.tz !== "auto" ? L.tz : (L.place?.tz || deviceTz);
+  // the connection's place is trusted only when it agrees with the device's clock (a VPN can move it far away)
+  const ipOk = () => !!ip && !!ip.tz && offset(ip.tz) === offset(deviceTz);
+  const devRegion = (() => { try { return new Intl.Locale(navigator.language).maximize().region || ""; } catch { return (navigator.language.split("-")[1] || "").toUpperCase(); } })();
+  const cc = () => L.place?.cc || (ipOk() ? ip.cc : "") || devRegion || ip?.cc || "FR";
+  const hc = () => L.hour === "24" ? "-hc-h23" : L.hour === "12" ? "-hc-h12" : "";
+  const loc = () => `${lang}-u-nu-${L.digits}` + hc();      // words (weekdays, months) in the user's language
+  const regionLoc = () => {                                    // number order of dates and clocks as used in the country
+    let base = "en-" + cc(); try { const m = new Intl.Locale("und-" + cc()).maximize(); base = m.language + "-" + m.region; } catch {}   // e.g. ja-JP, fr-FR (no script part: some engines then ignore the region)
+    return `${base}-u-nu-${L.digits}` + hc();
+  };
+  const parts = (d, opt) => Object.fromEntries(new Intl.DateTimeFormat(loc(), { timeZone: tz(), ...opt }).formatToParts(d).map(p => [p.type, p.value]));
+
+  // dates: "auto" = usual format for the country; others are fixed orders
+  const ORDERS = { "dmy/": ["d","m","y","/"], "mdy/": ["m","d","y","/"], "ymd/": ["y","m","d","/"], "ymd-": ["y","m","d","-"], "dmy.": ["d","m","y","."], "ymd.": ["y","m","d","."] };
+  function date(d, opt = {}) {
+    if (typeof d === "string") d = /^\d{4}-\d\d-\d\d$/.test(d) ? new Date(d + "T12:00:00Z") : new Date(d);
+    if (isNaN(d)) return "–";
+    const zone = opt.zone ?? tz();
+    if (L.date === "auto") return new Intl.DateTimeFormat(regionLoc(), { timeZone: zone, day: "2-digit", month: "2-digit", year: "numeric" }).format(d);
+    const p = Object.fromEntries(new Intl.DateTimeFormat(regionLoc(), { timeZone: zone, day: "2-digit", month: "2-digit", year: "numeric" }).formatToParts(d).map(x => [x.type, x.value]));
+    const [a, b, c, sep] = ORDERS[L.date]; const v = { d: p.day, m: p.month, y: p.year };
+    return [v[a], v[b], v[c]].join(sep) + (L.date === "ymd." ? "." : "");
+  }
+  const time = (d, zone = tz()) => new Intl.DateTimeFormat(regionLoc(), { timeZone: zone, hour: "2-digit", minute: "2-digit" }).format(d);
+  const weekday = (d, zone = tz()) => { if (typeof d === "string") d = new Date(d + "T12:00:00Z"); return new Intl.DateTimeFormat(loc(), { timeZone: zone, weekday: "short" }).format(d); };
+  const extraCal = (d) => L.cal === "none" ? "" : new Intl.DateTimeFormat(`${lang}-u-ca-${L.cal}-nu-${L.digits}`, { timeZone: tz(), day: "numeric", month: "long", year: "numeric" }).format(d);
+  const num = (n, dec = 0) => new Intl.NumberFormat(regionLoc(), { maximumFractionDigits: dec, minimumFractionDigits: dec }).format(n);
+  const temp = (c, unit = true) => (L.temp === "f" ? num(c * 9 / 5 + 32) : num(c)) + "°" + (unit ? (L.temp === "f" ? "F" : "C") : "");
+  const dist = (m) => L.dist === "mi" ? (m < 1609 ? num(Math.max(10, Math.round(m * 3.28084 / 10) * 10)) + " ft" : num(m / 1609.34, m < 16093 ? 1 : 0) + " mi")
+                                      : (m < 1000 ? num(Math.max(10, Math.round(m / 10) * 10)) + " m" : num(m / 1000, m < 10000 ? 1 : 0) + " km");
+  const offset = (zone, d = new Date()) => { try { return new Intl.DateTimeFormat("en-US", { timeZone: zone, timeZoneName: "longOffset" }).formatToParts(d).find(p => p.type === "timeZoneName").value.replace("GMT", "GMT") || "GMT"; } catch { return "GMT"; } };
+  const tzLabel = (zone) => { const o = offset(zone); return `(${o === "GMT" ? "GMT+00:00" : o}) ${zone.split("/").pop().replace(/_/g, " ")}`; };
+  const countryName = (code) => { try { return new Intl.DisplayNames([lang], { type: "region" }).of(code); } catch { return code; } };
+  const placeLine = (p) => p ? [p.name, p.admin1 && p.admin1 !== p.name ? p.admin1 : "", countryName(p.cc)].filter(Boolean).join(", ") : "";
+
+  /* ---------- weather for the widget ---------- */
+  const WXI = { 0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",71:"🌨️",73:"🌨️",75:"❄️",80:"🌦️",81:"🌧️",82:"⛈️",95:"⛈️",96:"⛈️",99:"⛈️" };
+  let wx = null, wxAt = 0;
+  async function loadWx(force) {
+    const p = L.place || (ipOk() && ip.lat != null ? ip : null);
+    if (!p || p.lat == null) { wx = null; return; }
+    if (!force && wx && wx.key === p.lat + "," + p.lon && Date.now() - wxAt < 15 * 60000) return;
+    try {
+      const q = new URLSearchParams({ latitude: p.lat, longitude: p.lon, current: "temperature_2m,weather_code", daily: "temperature_2m_max,temperature_2m_min", forecast_days: "1", timezone: "auto" });
+      const r = await fetch("https://api.open-meteo.com/v1/forecast?" + q); const j = await r.json();
+      wx = { key: p.lat + "," + p.lon, t: j.current.temperature_2m, code: j.current.weather_code, min: j.daily.temperature_2m_min[0], max: j.daily.temperature_2m_max[0] }; wxAt = Date.now();
+    } catch { wx = null; }
+  }
+
+  /* ---------- the widget ---------- */
+  const W = () => $("wdg");
+  function paint() {
+    const w = W(); if (!w) return;
+    w.hidden = !L.w.show;
+    w.className = "wdg " + (L.w.size === "min" ? "min" : L.w.size);
+    const now = new Date(), s = L.w.size, h = L.w.hide;
+    $("wTime").textContent = time(now);
+    const extra = s === "l" ? extraCal(now) : "";
+    $("wDate").textContent = weekday(now) + " " + date(now) + (extra ? " · " + extra : "");
+    const p = L.place || (ipOk() && ip.city ? { name: ip.city, cc: ip.cc } : null);
+    $("wPlace").textContent = p ? (s === "l" ? placeLine(p) + " · " + tzLabel(tz()).split(" ")[0] : p.name + (p.cc ? ", " + p.cc : "")) : tzLabel(tz());
+    if (wx) { $("wWxIc").textContent = WXI[wx.code] || "🌡️"; $("wWxT").textContent = temp(wx.t); $("wWxD").textContent = s === "l" ? temp(wx.min, false) + " / " + temp(wx.max, false) : ""; }
+    else { $("wWxIc").textContent = ""; $("wWxT").textContent = ""; $("wWxD").textContent = ""; }
+    const show = (piece, on) => w.querySelectorAll(`[data-piece="${piece}"]`).forEach(e => e.hidden = !on);
+    show("clock", !h.clock); show("date", s === "l" && !h.date); show("place", (s === "m" || s === "l") && !h.place);
+    show("weather", (s === "m" || s === "l") && !h.weather && !!wx);
+    place();
+  }
+  function place() {   // keep the widget on screen; default corner follows the writing direction
+    const w = W(); if (!w || w.hidden) return;
+    const rtl = getComputedStyle(document.documentElement).direction === "rtl";
+    const bw = w.offsetWidth, bh = w.offsetHeight, vw = innerWidth, vh = innerHeight;
+    let x = L.w.x == null ? (rtl ? 12 : vw - bw - 12) : L.w.x * vw, y = L.w.y == null ? 70 : L.w.y * vh;
+    x = Math.min(Math.max(8, x), vw - bw - 8); y = Math.min(Math.max(8, y), vh - bh - 8);
+    w.style.left = x + "px"; w.style.top = y + "px";
+  }
+  function setPos(x, y) { L.w.x = x / innerWidth; L.w.y = y / innerHeight; save(); place(); }
+  const SIZES = ["s", "m", "l"];
+  function setSize(s) { L.w.size = s; save(); paint(); }
+  function wireWidget() {
+    const w = W();
+    // drag from the grip or from any empty part of the widget
+    let drag = null;
+    w.addEventListener("pointerdown", (e) => {
+      if (e.target.closest(".hx, .tools, .rz, .dot, #wMain, #wWx")) return;
+      const r = w.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: false, id: e.pointerId };
+      w.setPointerCapture(e.pointerId);
+    });
+    w.addEventListener("pointermove", (e) => { if (!drag) return; drag.moved = true; w.style.left = (e.clientX - drag.dx) + "px"; w.style.top = (e.clientY - drag.dy) + "px"; });
+    const end = (e) => { if (!drag) return; const r = w.getBoundingClientRect(); if (drag.moved) setPos(r.left, r.top); drag = null; };
+    w.addEventListener("pointerup", end); w.addEventListener("pointercancel", end);
+    $("wGrip").addEventListener("keydown", (e) => {
+      const st = e.shiftKey ? 40 : 10, r = w.getBoundingClientRect();
+      const mv = { ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st] }[e.key];
+      if (mv) { e.preventDefault(); setPos(r.left + mv[0], r.top + mv[1]); }
+    });
+    // resize from the corner: drag outwards for bigger, inwards for smaller; a press cycles sizes
+    let rz = null;
+    $("wRz").addEventListener("pointerdown", (e) => { e.stopPropagation(); rz = { x: e.clientX, y: e.clientY, i: SIZES.indexOf(L.w.size), done: false }; $("wRz").setPointerCapture(e.pointerId); });
+    $("wRz").addEventListener("pointermove", (e) => {
+      if (!rz) return; const rtl = getComputedStyle(document.documentElement).direction === "rtl";
+      const d = ((e.clientX - rz.x) * (rtl ? -1 : 1) + (e.clientY - rz.y)) / 2, j = Math.max(0, Math.min(2, rz.i + Math.round(d / 50)));
+      if (SIZES[j] !== L.w.size) { rz.done = true; setSize(SIZES[j]); }
+    });
+    $("wRz").addEventListener("pointerup", () => { if (rz && !rz.done) setSize(SIZES[(SIZES.indexOf(L.w.size) + 1) % 3]); rz = null; });
+    $("wSize").onclick = () => setSize(SIZES[(SIZES.indexOf(L.w.size) + 1) % 3]);
+    $("wMin").onclick = () => { L.w.prev = L.w.size; setSize("min"); $("wDot").focus(); };
+    $("wDot").onclick = () => { setSize(L.w.prev && L.w.prev !== "min" ? L.w.prev : "m"); };
+    $("wMain").onclick = open; $("wWx").onclick = open;
+    w.querySelectorAll("[data-hide]").forEach(b => b.onclick = () => hidePiece(b.dataset.hide));
+    addEventListener("resize", place);
+  }
+  const PIECE_NAMES = { clock: "Clock", date: "Date", place: "Place", weather: "Weather" };
+  let undo = null, toastTimer = null;
+  function toast(text, fn) {
+    $("toastT").textContent = text; $("toast").hidden = false; undo = fn; clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { $("toast").hidden = true; undo = null; }, 6000);
+  }
+  function hidePiece(k) { L.w.hide[k] = true; save(); paint(); toast(PIECE_NAMES[k] + " hidden", () => { delete L.w.hide[k]; save(); paint(); renderDrawer(); }); }
+
+  /* ---------- settings drawer ---------- */
+  const COUNTRIES = "AF AX AL DZ AS AD AO AI AQ AG AR AM AW AU AT AZ BS BH BD BB BY BE BZ BJ BM BT BO BQ BA BW BR IO BN BG BF BI CV KH CM CA KY CF TD CL CN CX CC CO KM CG CD CK CR CI HR CU CW CY CZ DK DJ DM DO EC EG SV GQ ER EE SZ ET FK FO FJ FI FR GF PF GA GM GE DE GH GI GR GL GD GP GU GT GG GN GW GY HT VA HN HK HU IS IN ID IR IQ IE IM IL IT JM JP JE JO KZ KE KI KP KR KW KG LA LV LB LS LR LY LI LT LU MO MG MW MY MV ML MT MH MQ MR MU YT MX FM MD MC MN ME MS MA MZ MM NA NR NP NL NC NZ NI NE NG NU NF MK MP NO OM PK PW PS PA PG PY PE PH PN PL PT PR QA RE RO RU RW BL SH KN LC MF PM VC WS SM ST SA SN RS SC SL SG SX SK SI SB SO ZA GS SS ES LK SD SR SJ SE CH SY TW TJ TZ TH TL TG TK TO TT TN TR TM TC TV UG UA AE GB US UY UZ VU VE VN VG VI WF EH YE ZM ZW".split(" ");
+  let zones = []; try { zones = Intl.supportedValuesOf("timeZone"); } catch { zones = [deviceTz, "UTC"]; }
+  if (!zones.includes(deviceTz)) zones.push(deviceTz);
+  let pickedCountry = "";
+  function chips(el, opts, cur, on) {
+    $(el).innerHTML = opts.map(([v, t]) => `<button type="button" aria-pressed="${String(v) === String(cur)}" data-v="${esc(v)}">${esc(t)}</button>`).join("");
+    $(el).querySelectorAll("button").forEach(b => b.onclick = () => { on(b.dataset.v); renderDrawer(); changed(); });
+  }
+  function renderDrawer() {
+    const now = new Date();
+    // warning when the device and the connection disagree
+    const ipTz = ip?.tz;
+    $("locWarn").innerHTML = ipTz && ipTz !== deviceTz && L.tz === "auto" && !L.place && offset(ipTz) !== offset(deviceTz)
+      ? `<div class="warn" role="status"><b>Two different places detected</b>Your device is set to ${esc(tzLabel(deviceTz))}, but your connection seems to come from ${esc(ip.country || ip.cc)}, ${esc(tzLabel(ipTz))}. A VPN, a proxy or a nearby border can cause this.
+         <div class="chips2"><button type="button" id="keepDev">Keep my device time</button><button type="button" id="useIp">Use ${esc(ip.city || ip.country)} time</button></div></div>` : "";
+    if ($("keepDev")) { $("keepDev").onclick = () => { L.tz = deviceTz; save(); renderDrawer(); changed(); }; $("useIp").onclick = () => { L.tz = ipTz; save(); renderDrawer(); changed(); }; }
+    // country
+    const names = COUNTRIES.map(c => [c, countryName(c)]).sort((a, b) => a[1].localeCompare(b[1], lang));
+    $("lCountry").innerHTML = `<option value="">Any country</option>` + names.map(([c, n]) => `<option value="${c}">${esc(n)}</option>`).join("");
+    $("lCountry").value = pickedCountry;
+    $("lCityNote").textContent = L.place ? "Now: " + placeLine(L.place) + " · " + tzLabel(L.place.tz) : (ipOk() && ip.city ? "Detected from your connection: " + ip.city + ", " + countryName(ip.cc) + ". Pick your city to be sure." : "Pick your city for the right weather and time zone.");
+    if (!$("lCity").value && L.place) $("lCity").value = L.place.name;
+    // time zones sorted by offset
+    const f = $("lTzFind").value.trim().toLowerCase();
+    const list = zones.filter(z => !f || z.toLowerCase().replace(/_/g, " ").includes(f) || tzLabel(z).toLowerCase().includes(f));
+    const cur = tz();
+    $("lTz").innerHTML = (f ? "" : `<option value="auto">Automatic (${esc(tzLabel(L.place?.tz || deviceTz))})</option>`) +
+      list.map(z => [z, tzLabel(z)]).sort((a, b) => a[1].localeCompare(b[1])).map(([z, t]) => `<option value="${esc(z)}">${esc(t)}</option>`).join("");
+    $("lTz").value = L.tz === "auto" && !f ? "auto" : cur;
+    // formats
+    chips("lDate", [["auto", "Usual for " + countryName(cc()) + " (" + (() => { const s = L.date; L.date = "auto"; const v = date(now); L.date = s; return v; })() + ")"],
+      ...Object.keys(ORDERS).map(k => [k, (() => { const s = L.date; L.date = k; const v = date(now); L.date = s; return v; })()])], L.date, v => { L.date = v; save(); });
+    chips("lHour", [["auto", "Usual"], ["24", "24 h (" + (() => { const s = L.hour; L.hour = "24"; const v = time(now); L.hour = s; return v; })() + ")"], ["12", "12 h (" + (() => { const s = L.hour; L.hour = "12"; const v = time(now); L.hour = s; return v; })() + ")"]], L.hour, v => { L.hour = v; save(); });
+    const wd = (i) => new Intl.DateTimeFormat(lang, { weekday: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 9, 4 + i)));   // 04/10/2026 is a Sunday
+    chips("lWeek", [["auto", "Usual"], ["1", wd(1)], ["0", wd(0)], ["6", wd(6)]], L.week, v => { L.week = v; save(); });
+    const cals = [["none", "None"], ["islamic-umalqura", "Hijri (Umm al-Qura)"], ["persian", "Persian"], ["chinese", "Chinese"], ["hebrew", "Hebrew"], ["buddhist", "Buddhist"], ["japanese", "Japanese"], ["indian", "Indian national"], ["ethiopic", "Ethiopian"]];
+    $("lCal").innerHTML = cals.map(([v, t]) => `<option value="${v}">${esc(t)}${v !== "none" ? " · " + esc((() => { const s = L.cal; L.cal = v; const x = extraCal(now); L.cal = s; return x; })()) : ""}</option>`).join("");
+    $("lCal").value = L.cal;
+    chips("lDigits", [["latn", "123"], ["arab", "١٢٣"], ["arabext", "۱۲۳"], ["deva", "१२३"], ["beng", "১২৩"], ["thai", "๑๒๓"]], L.digits, v => { L.digits = v; save(); });
+    chips("lTemp", [["c", "°C"], ["f", "°F"]], L.temp, v => { L.temp = v; save(); });
+    chips("lDist", [["km", "km"], ["mi", "miles"]], L.dist, v => { L.dist = v; save(); });
+    chips("lSizeChips", [["s", "Small"], ["m", "Medium"], ["l", "Large"], ["min", "Minimized"]], L.w.size, v => { setSize(v); });
+    $("lShowW").checked = L.w.show;
+    // hidden fields and pieces
+    document.querySelectorAll("#locDrawer [data-field]").forEach(el => el.hidden = !!L.hideField[el.dataset.field]);
+    const hidden = Object.keys(L.hideField).filter(k => L.hideField[k]).map(k => ["f:" + k, { country: "Country field", tz: "Time zone field", date: "Date format field", hour: "Time field", week: "Week start field", cal: "Other calendar field", digits: "Digits field", units: "Units field" }[k] || k])
+      .concat(Object.keys(L.w.hide).filter(k => L.w.hide[k]).map(k => ["w:" + k, "Widget: " + PIECE_NAMES[k]]));
+    $("lHidden").innerHTML = hidden.length ? hidden.map(([k, t]) => `<label class="opt"><input type="checkbox" data-unhide="${k}"> ${esc(t)}</label>`).join("") + `<button class="link" id="lShowAll">Show everything again</button>`
+      : `<p class="note">Nothing is hidden.</p>`;
+    $("lHidden").querySelectorAll("[data-unhide]").forEach(cb => cb.onchange = () => { const [t, k] = cb.dataset.unhide.split(":"); if (t === "f") delete L.hideField[k]; else delete L.w.hide[k]; save(); renderDrawer(); paint(); });
+    if ($("lShowAll")) $("lShowAll").onclick = () => { L.hideField = {}; L.w.hide = {}; save(); renderDrawer(); paint(); };
+  }
+  let searchT = null;
+  async function searchCity() {
+    const q = $("lCity").value.trim(), box = $("lSugg");
+    if (q.length < 2) { box.innerHTML = ""; return; }
+    try {
+      const p = new URLSearchParams({ name: q, count: "10", language: lang, format: "json" }); if (pickedCountry) p.set("countryCode", pickedCountry);
+      const j = await (await fetch("https://geocoding-api.open-meteo.com/v1/search?" + p)).json();
+      const res = (j.results || []).sort((a, b) => (b.population || 0) - (a.population || 0));
+      if (q !== $("lCity").value.trim()) return;
+      box.innerHTML = res.length ? `<div class="sugg">${res.map((r, i) => `<button type="button" data-i="${i}"><b>${esc(r.name)}</b><small>${esc([r.admin1, r.country || countryName(r.country_code)].filter(Boolean).join(" · "))} · ${esc(tzLabel(r.timezone || "UTC").split(" ")[0])}</small></button>`).join("")}</div><p class="note">Biggest places first. Pick one.</p>`
+        : `<p class="note">No city found${pickedCountry ? " in " + esc(countryName(pickedCountry)) : ""}. Check the spelling${pickedCountry ? " or clear the country" : ""}.</p>`;
+      box.querySelectorAll("[data-i]").forEach(b => b.onclick = () => { const r = res[+b.dataset.i];
+        L.place = { id: r.id, name: r.name, admin1: r.admin1 || "", cc: r.country_code, lat: r.latitude, lon: r.longitude, tz: r.timezone || deviceTz };
+        save(); box.innerHTML = ""; $("lCity").value = r.name; loadWx(true).then(() => { paint(); changed(); }); renderDrawer(); });
+    } catch { box.innerHTML = `<p class="note">The city search is not available right now. Try again in a moment.</p>`; }
+  }
+  function hereToPlace() {
+    if (!navigator.geolocation) return;
+    $("lCityNote").textContent = "Finding your position…";
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude: lat, longitude: lon } = pos.coords;
+      try {   // the nearest named place, worldwide
+        const j = await (await fetch("https://api.open-meteo.com/v1/forecast?" + new URLSearchParams({ latitude: lat, longitude: lon, current: "temperature_2m", timezone: "auto" }))).json();
+        L.place = { id: null, name: "My location", admin1: "", cc: ip?.cc || cc(), lat, lon, tz: j.timezone || deviceTz };
+        save(); await loadWx(true); paint(); renderDrawer(); changed();
+      } catch { $("lCityNote").textContent = "Your position could not be used. Type your city instead."; }
+    }, () => { $("lCityNote").textContent = "Location permission was refused. Type your city instead."; }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 });
+  }
+  let last = null;
+  function open() { last = document.activeElement; renderDrawer(); $("locDrawer").hidden = false; $("locBg").hidden = false; $("locX").focus(); }
+  function close() { $("locDrawer").hidden = true; $("locBg").hidden = true; $("lSugg").innerHTML = ""; (last || document.body).focus?.(); }
+  function changed() { paint(); listeners.forEach(f => { try { f(); } catch {} }); }
+
+  function init() {
+    wireWidget();
+    $("locX").onclick = close; $("locBg").onclick = close;
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("locDrawer").hidden) { e.stopImmediatePropagation(); close(); } }, true);
+    $("lCountry").onchange = () => { pickedCountry = $("lCountry").value; searchCity(); };
+    $("lCountryClr").onclick = () => { pickedCountry = ""; $("lCountry").value = ""; searchCity(); };
+    $("lCity").oninput = () => { clearTimeout(searchT); searchT = setTimeout(searchCity, 300); };
+    $("lCityClr").onclick = () => { $("lCity").value = ""; $("lSugg").innerHTML = ""; L.place = null; save(); loadWx(true).then(paint); renderDrawer(); changed(); $("lCity").focus(); };
+    $("lHere").onclick = hereToPlace;
+    $("lTzFind").oninput = renderDrawer;
+    $("lTz").onchange = () => { L.tz = $("lTz").value; save(); changed(); renderDrawer(); };
+    $("lTzNow").onclick = () => { L.tz = deviceTz; $("lTzFind").value = ""; save(); changed(); renderDrawer(); };
+    $("lCal").onchange = () => { L.cal = $("lCal").value; save(); changed(); };
+    $("lShowW").onchange = () => { L.w.show = $("lShowW").checked; save(); paint(); };
+    document.querySelectorAll("#locDrawer [data-hidefield]").forEach(b => b.onclick = () => { const k = b.dataset.hidefield; L.hideField[k] = true; save(); renderDrawer();
+      toast("Field hidden", () => { delete L.hideField[k]; save(); renderDrawer(); }); });
+    $("toastU").onclick = () => { if (undo) undo(); $("toast").hidden = true; undo = null; };
+    $("lReset").onclick = () => { if (!confirm("Reset time, place and formats?")) return; L = structuredClone(DEF); save(); pickedCountry = ""; $("lCity").value = ""; loadWx(true).then(paint); renderDrawer(); changed(); };
+    paint();
+    setInterval(paint, 15000);
+    setInterval(() => loadWx().then(paint), 15 * 60000);
+    // the connection's country (may be wrong with a VPN): used only as a first guess and for the warning
+    fetch("https://ipapi.co/json/").then(r => r.json()).then(j => {
+      if (j && j.country_code) ip = { cc: j.country_code, country: j.country_name, city: j.city, tz: j.timezone, lat: j.latitude, lon: j.longitude };
+    }).catch(() => {}).finally(() => loadWx(true).then(paint));
+  }
+  return { init, open, date, time, weekday, temp, dist, tz, onChange: (f) => listeners.push(f), get place() { return L.place; } };
+})();
+document.addEventListener("DOMContentLoaded", LOC.init);
+</script>
+
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
@@ -217,16 +575,12 @@ async function getJSON(url) {
   catch (e) { throw new Error(e.name === "AbortError" ? "the service took too long to answer" : e.message); }
   finally { clearTimeout(t); }
 }
-const frDate = (iso) => { const [y, m, d] = iso.split("-"); return d + "/" + m + "/" + y; };
-const weekday = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short" });
-function anyDateTime(s) {   // times with a zone ("+00:00") are shown in Lyon/Paris time
+const frDate = (iso) => LOC.date(iso);          // follows the user's date format
+const weekday = (iso) => LOC.weekday(iso);
+function anyDateTime(s) {   // times with a zone ("+00:00") are shown in the user's time zone; plain times are the source's local time
   s = String(s || "");
-  if (/(Z|[+-]\d\d:?\d\d)$/.test(s)) {
-    const d = new Date(s); if (isNaN(d)) return "–";
-    const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(d).map(x => [x.type, x.value]));
-    return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`;
-  }
-  const m = /^(\d{4}-\d\d-\d\d)[ T](\d\d:\d\d)/.exec(s); return m ? frDate(m[1]) + " " + m[2] : "–";
+  if (/(Z|[+-]\d\d:?\d\d)$/.test(s)) { const d = new Date(s); return isNaN(d) ? "–" : LOC.date(d) + " " + LOC.time(d); }
+  const m = /^(\d{4}-\d\d-\d\d)[ T](\d\d:\d\d)/.exec(s); return m ? LOC.date(m[1], { zone: "UTC" }) + " " + m[2] : "–";
 }
 function arrondissement(pc, name) {
   let m;
@@ -253,7 +607,7 @@ function distM(a, b, c, d) {
   const h = Math.sin(x / 2) ** 2 + Math.cos(a * t) * Math.cos(c * t) * Math.sin(y / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
 }
-const fmtDist = (m) => m < 1000 ? Math.max(10, Math.round(m / 10) * 10) + " m" : (m / 1000).toFixed(m < 10000 ? 1 : 0) + " km";
+const fmtDist = (m) => LOC.dist(m);
 const coord = (v) => { const n = parseFloat(v); return isNaN(n) ? null : Math.abs(n) > 180 ? n / 100000 : n; };
 
 /* ---------- data sources (cached per place for this visit) ---------- */
@@ -392,8 +746,8 @@ const R = {
     async one(p, max) {
       const days = await weather(p), [ic, txt] = WX[days[0].code] || ["🌡️", "Weather"];
       const tile = (d) => { const [i, t] = WX[d.code] || ["🌡️", "Weather"];
-        return `<div class="day"><b>${weekday(d.iso)} ${frDate(d.iso)}</b><span class="ic" aria-hidden="true">${i}</span><small>${t}</small><small>${Math.round(d.min)}° to ${Math.round(d.max)}°C</small><small>Rain ${d.rain} mm</small></div>`; };
-      const sum = `<p class="sum">Today in ${esc(placeName(p))}: ${ic} ${txt}, ${Math.round(days[0].min)}° to ${Math.round(days[0].max)}°C</p>`;
+        return `<div class="day"><b>${weekday(d.iso)} ${frDate(d.iso)}</b><span class="ic" aria-hidden="true">${i}</span><small>${t}</small><small>${LOC.temp(d.min, false)} to ${LOC.temp(d.max)}</small><small>Rain ${d.rain} mm</small></div>`; };
+      const sum = `<p class="sum">Today in ${esc(placeName(p))}: ${ic} ${txt}, ${LOC.temp(days[0].min, false)} to ${LOC.temp(days[0].max)}</p>`;
       const ws = getSort("weather"), byDate = ws.k === "date";
       const sorted = byDate ? days : sortItems("weather", days.map(d => ({ ...d, v: { max: d.max, rain: d.rain } })));
       const bar = `<div class="wsort">Sort:<button class="dbtn" data-sort="date" data-dir="asc" aria-pressed="${byDate}">Date</button>
@@ -411,7 +765,7 @@ const R = {
       return `<div class="tw"><table><thead><tr><th>Place</th>${heads}</tr></thead><tbody>${places.map((p, i) => {
         if (res[i].status !== "fulfilled") return `<tr><td class="wrapc">${esc(placeName(p))}</td><td colspan="3" class="closed">Not loaded</td></tr>`;
         return `<tr><td class="wrapc">${esc(placeName(p))}</td>${res[i].value.slice(0, 3).map(d => { const [ic, t] = WX[d.code] || ["🌡️", ""];
-          return `<td><span aria-hidden="true">${ic}</span> ${Math.round(d.min)}°–${Math.round(d.max)}°<small>${t}</small></td>`; }).join("")}</tr>`;
+          return `<td><span aria-hidden="true">${ic}</span> ${LOC.temp(d.min, false)}–${LOC.temp(d.max, false)}<small>${t}</small></td>`; }).join("")}</tr>`;
       }).join("")}</tbody></table></div>`;
     }
   },
@@ -718,6 +1072,8 @@ async function start() {
   if (!S.places.some(p => p.id === S.active)) S.active = S.places[0].id;
   renderAll();
 }
+LOC.onChange(renderAll);
+$("timeBtn").onclick = LOC.open;
 start();
 </script>
 </body>
