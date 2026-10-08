@@ -88,6 +88,9 @@ tr.grp th{padding:12px 4px 6px;border-bottom:1px solid var(--line);background:va
 .fold:hover{background:var(--soft)}
 .fold .c{color:var(--muted);font-weight:600}
 .wgrp{margin:12px 0 6px}
+.svc{display:inline-block;font-size:.8rem;color:var(--muted);background:var(--soft);border-radius:999px;padding:3px 10px;margin:0 0 8px}
+.svc b{color:var(--ink)}
+td .eb{display:block;font-weight:500;color:var(--muted);font-size:.75rem}
 .sorts{display:inline-flex;gap:1px;margin-left:4px;vertical-align:middle}
 .sorts button{border:0;background:none;cursor:pointer;color:var(--muted);font-size:.78rem;line-height:1;padding:4px 4px;border-radius:5px;opacity:.55}
 .wsort .dbtn{border:0;background:none;cursor:pointer;padding:3px 8px;border-radius:6px;font-weight:600;color:var(--muted)}
@@ -165,7 +168,7 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
   <div class="grid" id="grid"></div>
   <p class="msg" id="emptyMsg" hidden>All cards are closed. Open <button class="link" id="emptyCust">Customize</button> to bring them back.</p>
 
-  <footer>Test page for the APA MVP. Data: geo.api.gouv.fr, Open-Meteo, data.economie.gouv.fr, data.grandlyon.com. Your places and layout are saved only in this browser.</footer>
+  <footer>Test page for the APA MVP. Data: geo.api.gouv.fr, Open-Meteo, data.economie.gouv.fr, data.grandlyon.com, opendata.paris.fr. Your places and layout are saved only in this browser.</footer>
 </div>
 
 <div class="backdrop d" id="drawerBg" hidden></div>
@@ -189,7 +192,7 @@ const ORD = (n) => n === 1 ? "1er" : n + "e";
 
 /* ---------- saved settings (this browser only) ---------- */
 const KEY = "apa-live-v1";
-const CARDS = { weather: "Weather", fuel: "Fuel prices", bikes: "Vélo'v bikes" };
+const CARDS = { weather: "Weather", fuel: "Fuel prices", bikes: "Bike sharing" };
 const DEFAULT = { places: [], active: null, order: ["weather", "fuel", "bikes"], hidden: [], rows: 3, view: "one", fav: {}, fold: {}, sort: {} };
 let S = load();
 function load() {
@@ -270,14 +273,38 @@ const fuel = (p) => once("fuel:" + p.pc, async () => {
   return rows.sort((a, b) => (a.prices.Gazole?.price ?? 99) - (b.prices.Gazole?.price ?? 99));
 });
 
+/* Bike sharing: the town's département decides the service. Vélo'v covers Lyon and nearby towns (69),
+   Vélib' covers Paris and nearby towns (75, 92, 93, 94 and a few around). */
+const SERVICES = {
+  velov: { name: "Vélo'v", city: "Lyon", src: "data.grandlyon.com" },
+  velib: { name: "Vélib'", city: "Paris", src: "opendata.paris.fr" }
+};
+const serviceFor = (p) => { const d = String(p.insee || "").slice(0, 2);
+  return d === "69" ? "velov" : ["75", "77", "78", "91", "92", "93", "94", "95"].includes(d) ? "velib" : null; };
 let velovAll = null;
-const bikes = (p) => once("bikes:" + p.insee, async () => {
+async function velovStations(insee) {
   if (!velovAll) velovAll = getJSON("https://download.data.grandlyon.com/ws/rdata/jcd_jcdecaux.jcdvelov/all.json?compact=false&maxfeatures=1000&start=1")
     .then(j => (j.values || []).map(v => Array.isArray(v) ? Object.fromEntries(j.fields.map((f, i) => [f, v[i]])) : v))
     .catch(e => { velovAll = null; throw e; });
-  const list = (await velovAll).filter(v => String(v.code_insee) === String(p.insee))
-    .map(v => ({ name: v.name || v.address || "Station", open: String(v.status).toUpperCase() !== "CLOSED", bikes: +v.available_bikes || 0, spaces: +v.available_bike_stands || 0, when: v.last_update }));
-  return list.sort((a, b) => b.bikes - a.bikes);
+  return (await velovAll).filter(v => String(v.code_insee) === String(insee))
+    .map(v => ({ name: v.name || v.address || "Station", open: String(v.status).toUpperCase() !== "CLOSED", bikes: +v.available_bikes || 0, spaces: +v.available_bike_stands || 0, ebikes: null, when: v.last_update }));
+}
+async function velibStations(insee) {   // asks only for the stations of this commune, 100 per page
+  const out = [];
+  for (let offset = 0; offset < 400; offset += 100) {
+    const q = new URLSearchParams({ where: `code_insee_commune="${insee}"`, limit: "100", offset: String(offset) });
+    const j = await getJSON("https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel/records?" + q);
+    out.push(...(j.results || []));
+    if (out.length >= (j.total_count || 0) || !(j.results || []).length) break;
+  }
+  return out.map(v => ({ name: v.name || "Station", open: v.is_installed === "OUI" && v.is_renting === "OUI",
+    bikes: +v.numbikesavailable || 0, spaces: +v.numdocksavailable || 0, ebikes: v.ebike == null ? null : +v.ebike, when: v.duedate }));
+}
+const bikes = (p) => once("bikes:" + p.insee, async () => {
+  const service = serviceFor(p);
+  if (!service) return { service: null, list: [] };
+  const list = service === "velov" ? await velovStations(p.insee) : await velibStations(p.insee);
+  return { service, list: list.sort((a, b) => b.bikes - a.bikes) };
 });
 
 /* ---------- card renderers: one place, and compare all ---------- */
@@ -380,24 +407,27 @@ const R = {
     }
   },
   bikes: {
-    src: "data.grandlyon.com",
+    src: (p) => p ? (SERVICES[serviceFor(p)]?.src || "") : "data.grandlyon.com, opendata.paris.fr",
     async one(p, max) {
-      const list = await bikes(p);
-      if (!list.length) return `<p class="msg">No Vélo'v station in ${esc(p.label)}. Vélo'v covers Lyon and nearby towns only.</p>`;
+      const { service, list } = await bikes(p), sv = SERVICES[service];
+      if (!sv) return `<p class="msg">No bike-sharing data for ${esc(p.label)} yet. For now this card covers Vélo'v (Lyon) and Vélib' (Paris).</p>`;
+      const note = `<p class="svc">${esc(p.label)} is served by <b>${sv.name}</b> (${sv.city})</p>`;
+      if (!list.length) return note + `<p class="msg">No ${sv.name} station is listed in ${esc(p.label)}.</p>`;
       const total = list.reduce((s, v) => s + (v.open ? v.bikes : 0), 0);
       const items = list.map(v => ({ key: p.insee + "|" + v.name, label: v.name, open: v.open, bikes: v.bikes,
         v: { bikes: v.open ? v.bikes : null, spaces: v.open ? v.spaces : null },
-        html: `<td class="wrapc">${esc(v.name)}</td>${v.open ? `<td class="num">${v.bikes}</td><td class="num">${v.spaces}</td>` : `<td class="closed">Closed</td><td>–</td>`}<td>${esc(anyDateTime(v.when))}</td>` }));
-      return `<p class="sum">${list.length} stations in ${esc(p.label)}, ${total} bikes available now</p>` + sortedLine("bikes") + listView("bikes", items, { max, head: ["Station", { t: "Bikes", k: "bikes" }, { t: "Free spaces", k: "spaces" }, "Updated"],
+        html: `<td class="wrapc">${esc(v.name)}</td>${v.open ? `<td class="num">${v.bikes}${v.ebikes != null ? `<span class="eb">${v.ebikes} electric</span>` : ""}</td><td class="num">${v.spaces}</td>` : `<td class="closed">Closed</td><td>–</td>`}<td>${esc(anyDateTime(v.when))}</td>` }));
+      return note + `<p class="sum">${list.length} stations in ${esc(p.label)}, ${total} bikes available now</p>` + sortedLine("bikes") + listView("bikes", items, { max, head: ["Station", { t: "Bikes", k: "bikes" }, { t: "Free spaces", k: "spaces" }, "Updated"],
         groups: [["avail", "Bikes available", x => x.open && x.bikes > 0], ["empty", "No bikes right now", x => x.open && x.bikes === 0], ["closed", "Closed", x => !x.open]] });
     },
     async all(places) {
       const res = await Promise.allSettled(places.map(bikes));
-      return `<div class="tw"><table><thead><tr><th>Place</th><th>Stations</th><th>Bikes now</th></tr></thead><tbody>${places.map((p, i) => {
-        if (res[i].status !== "fulfilled") return `<tr><td class="wrapc">${esc(placeName(p))}</td><td colspan="2" class="closed">Not loaded</td></tr>`;
-        const l = res[i].value;
-        return l.length ? `<tr><td class="wrapc">${esc(placeName(p))}</td><td class="num">${l.length}</td><td class="num">${l.reduce((s, v) => s + (v.open ? v.bikes : 0), 0)}</td></tr>`
-                        : `<tr><td class="wrapc">${esc(placeName(p))}</td><td colspan="2">Vélo'v not available here</td></tr>`;
+      return `<div class="tw"><table><thead><tr><th>Place</th><th>Service</th><th>Stations</th><th>Bikes now</th></tr></thead><tbody>${places.map((p, i) => {
+        if (res[i].status !== "fulfilled") return `<tr><td class="wrapc">${esc(placeName(p))}</td><td colspan="3" class="closed">Not loaded</td></tr>`;
+        const { service, list: l } = res[i].value, sv = SERVICES[service];
+        if (!sv) return `<tr><td class="wrapc">${esc(placeName(p))}</td><td colspan="3">No bike-sharing data yet</td></tr>`;
+        return l.length ? `<tr><td class="wrapc">${esc(placeName(p))}</td><td>${sv.name}</td><td class="num">${l.length}</td><td class="num">${l.reduce((s, v) => s + (v.open ? v.bikes : 0), 0)}</td></tr>`
+                        : `<tr><td class="wrapc">${esc(placeName(p))}</td><td>${sv.name}</td><td colspan="2">No station listed</td></tr>`;
       }).join("")}</tbody></table></div>`;
     }
   }
@@ -501,7 +531,8 @@ async function fillCard(el, id, token = renderToken, refocus) {
     const html = comparing() ? await R[id].all(S.places) : await R[id].one(active, max);
     if (token !== renderToken && !max) return;
     const sc = body.querySelector(".scroll")?.scrollTop || 0;
-    body.innerHTML = html + `<p class="src">Source: ${R[id].src}</p>`;
+    const src = typeof R[id].src === "function" ? R[id].src(comparing() ? null : active) : R[id].src;
+    body.innerHTML = html + (src ? `<p class="src">Source: ${src}</p>` : "");
     const box = body.querySelector(".scroll"); if (box) box.scrollTop = sc;
     if (refocus) body.querySelector(refocus)?.focus();
   } catch (e) { if (token === renderToken || max) body.innerHTML = `<p class="msg err">This card could not be loaded: ${esc(e.message)}.</p><p class="more"><button class="link" data-retry>Try again</button></p>`;
