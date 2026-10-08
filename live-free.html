@@ -20,6 +20,13 @@ body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 var(--font)
 .mark i::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--accent)}
 h1{font-size:clamp(1.7rem,4vw,2.3rem);letter-spacing:-.03em;margin:18px 0 4px}
 .lead{color:var(--muted);margin:0 0 22px;max-width:64ch}
+.fuel{width:100%;border-collapse:collapse;font-size:.93rem}
+.fuel-wrap{overflow-x:auto}
+.fuel th,.fuel td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.fuel th{font-size:.8rem;color:var(--muted);font-weight:600}
+.fuel td.addr{white-space:normal;min-width:180px}
+.fuel .best{color:var(--ok);font-weight:700}
+.fuel small{color:var(--muted);display:block;font-size:.78rem}
 form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:8px}
 label{display:flex;flex-direction:column;font-size:.8rem;font-weight:600;gap:4px}
 input{font:inherit;color:inherit;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:160px}
@@ -46,7 +53,7 @@ footer{color:var(--muted);font-size:.82rem;border-top:1px solid var(--line);padd
 <div class="wrap">
   <a class="mark" href="./"><i></i>Apacom</a>
   <h1>Free live sources</h1>
-  <p class="lead">Type a French postal code. The page finds the town and its weather for the next 7 days, using public services that need no account or key.</p>
+  <p class="lead">Type a French postal code. The page finds the town, its weather for the next 7 days and today's fuel prices, using public services that need no account or key.</p>
 
   <form id="pcForm">
     <label>Postal code<input id="pc" value="69002" inputmode="numeric" maxlength="5" autocomplete="postal-code"></label>
@@ -67,7 +74,17 @@ footer{color:var(--muted);font-size:.82rem;border-top:1px solid var(--line);padd
     <div class="days" id="days"></div>
   </section>
 
-  <footer>Test page for the APA MVP. Data: geo.api.gouv.fr, Open-Meteo.</footer>
+  <section>
+    <h2>Fuel prices today</h2>
+    <p class="what">From the French government fuel price service. Stations in this postal code, cheapest diesel first.</p>
+    <p class="msg" id="fuelMsg">Type a postal code first.</p>
+    <div class="fuel-wrap"><table class="fuel" id="fuel" hidden>
+      <thead><tr><th>Station</th><th>Diesel (Gazole)</th><th>E10</th><th>SP98</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <footer>Test page for the APA MVP. Data: geo.api.gouv.fr, Open-Meteo, data.economie.gouv.fr.</footer>
 </div>
 
 <script>
@@ -124,6 +141,49 @@ async function showWeather(c) {
   } catch (e) { $("wxMsg").className = "msg err"; $("wxMsg").textContent = "The weather could not be loaded: " + e.message; }
 }
 
+// Fuel: prices sit in a text field holding a list like [{"@nom":"Gazole","@valeur":"2.459","@maj":"2026-10-06 16:50:33"}]
+const FUELS = ["Gazole", "E10", "SP98"];
+function readPrices(raw) {
+  let list = raw;
+  if (typeof raw === "string") { try { list = JSON.parse(raw); } catch { return {}; } }
+  if (!list) return {};
+  if (!Array.isArray(list)) list = [list];
+  const out = {};
+  for (const p of list) if (p && p["@nom"]) out[p["@nom"]] = { price: parseFloat(p["@valeur"]), when: p["@maj"] || "" };
+  return out;
+}
+const frDateTime = (s) => { const [d, t = ""] = s.split(" "); return frDate(d) + (t ? " " + t.slice(0, 5) : ""); };
+
+async function showFuel(pc) {
+  const msg = $("fuelMsg"), table = $("fuel"), body = table.querySelector("tbody");
+  body.textContent = ""; table.hidden = true; msg.className = "msg"; msg.textContent = "Loading fuel prices…";
+  try {
+    const q = new URLSearchParams({ where: `cp="${pc}"`, limit: "100" });
+    const j = await getJSON("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?" + q);
+    const rows = (j.results || []).map(r => ({ addr: r.adresse || "", ville: r.ville || "", prices: readPrices(r.prix) }))
+      .filter(r => FUELS.some(f => r.prices[f]));
+    if (!rows.length) { msg.textContent = "No fuel station is listed in postal code " + pc + "."; return; }
+    rows.sort((a, b) => (a.prices.Gazole?.price ?? 99) - (b.prices.Gazole?.price ?? 99));
+    const best = Math.min(...rows.map(r => r.prices.Gazole?.price ?? 99));
+    for (const r of rows) {
+      const tr = document.createElement("tr");
+      const td0 = document.createElement("td"); td0.className = "addr"; td0.textContent = r.addr + ", " + r.ville; tr.append(td0);
+      for (const f of FUELS) {
+        const td = document.createElement("td"), p = r.prices[f];
+        if (p) {
+          td.textContent = "€" + p.price.toFixed(3);
+          if (f === "Gazole" && p.price === best) td.className = "best";
+          const sm = document.createElement("small"); sm.textContent = "updated " + frDateTime(p.when); td.append(sm);
+        } else td.textContent = "–";
+        tr.append(td);
+      }
+      body.append(tr);
+    }
+    table.hidden = false;
+    msg.textContent = rows.length + (rows.length === 1 ? " station" : " stations") + " in " + pc + ". Cheapest diesel in green.";
+  } catch (e) { msg.className = "msg err"; msg.textContent = "Fuel prices could not be loaded: " + e.message; }
+}
+
 function pick(btn, c) {
   document.querySelectorAll(".communes button").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
   showWeather(c);
@@ -134,12 +194,14 @@ $("pcForm").addEventListener("submit", async (ev) => {
   const pc = $("pc").value.trim();
   $("communes").textContent = ""; $("days").textContent = "";
   $("wxMsg").className = "msg"; $("wxMsg").textContent = "Choose a town first.";
+  $("fuel").hidden = true; $("fuelMsg").className = "msg"; $("fuelMsg").textContent = "Type a postal code first.";
   const msg = $("townMsg"); msg.className = "msg";
   if (!/^\d{5}$/.test(pc)) { msg.className = "msg err"; msg.textContent = "A French postal code has 5 digits, for example 69002."; return; }
   $("go").disabled = true; msg.textContent = "Searching…";
   try {
     const list = await getJSON("https://geo.api.gouv.fr/communes?" + new URLSearchParams({ codePostal: pc, fields: "nom,centre,population" }));
     if (!list.length) { msg.className = "msg err"; msg.textContent = "No town found for " + pc + ". Check the postal code."; return; }
+    showFuel(pc);
     const towns = list.filter(c => c.centre).map(c => ({ ...c, label: arrondissement(pc, c.nom) }));
     msg.textContent = towns.length === 1 ? "Postal code " + pc + " is:" : "Postal code " + pc + " covers " + towns.length + " towns. Choose yours:";
     towns.forEach((c, i) => {
