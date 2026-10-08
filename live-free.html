@@ -289,15 +289,32 @@ async function velovStations(insee) {
   return (await velovAll).filter(v => String(v.code_insee) === String(insee))
     .map(v => ({ name: v.name || v.address || "Station", open: String(v.status).toUpperCase() !== "CLOSED", bikes: +v.available_bikes || 0, spaces: +v.available_bike_stands || 0, ebikes: null, when: v.last_update }));
 }
-async function velibStations(insee) {   // asks only for the stations of this commune, 100 per page
+const VELIB = "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel";
+async function velibByCommune(code) {    // all stations of one commune: one "export" call, or pages of 100 as a fallback
+  const where = `code_insee_commune="${code}"`;
+  try {
+    const all = await getJSON(VELIB + "/exports/json?" + new URLSearchParams({ where }));
+    if (Array.isArray(all)) return all;
+  } catch {}
   const out = [];
-  for (let offset = 0; offset < 400; offset += 100) {
-    const q = new URLSearchParams({ where: `code_insee_commune="${insee}"`, limit: "100", offset: String(offset) });
-    const j = await getJSON("https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel/records?" + q);
+  for (let offset = 0; offset < 2000; offset += 100) {
+    const j = await getJSON(VELIB + "/records?" + new URLSearchParams({ where, limit: "100", offset: String(offset) }));
     out.push(...(j.results || []));
     if (out.length >= (j.total_count || 0) || !(j.results || []).length) break;
   }
-  return out.map(v => ({ name: v.name || "Station", open: v.is_installed === "OUI" && v.is_renting === "OUI",
+  return out;
+}
+let velibParis = null;
+async function velibStations(insee) {
+  let raw;
+  const m = /^751(\d\d)$/.exec(String(insee));
+  if (m) {
+    // Paris stations all use the code of Paris (75056); the station number gives the arrondissement:
+    // 9020 is in the 9e, 14111 in the 14e, 7002 in the 7e.
+    if (!velibParis) velibParis = velibByCommune("75056").catch(e => { velibParis = null; throw e; });
+    raw = (await velibParis).filter(v => Math.floor(+v.stationcode / 1000) === +m[1]);
+  } else raw = await velibByCommune(insee);
+  return raw.map(v => ({ name: v.name || "Station", open: v.is_installed === "OUI" && v.is_renting === "OUI",
     bikes: +v.numbikesavailable || 0, spaces: +v.numdocksavailable || 0, ebikes: v.ebike == null ? null : +v.ebike, when: v.duedate }));
 }
 const bikes = (p) => once("bikes:" + p.insee, async () => {
