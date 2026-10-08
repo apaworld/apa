@@ -1,0 +1,47 @@
+# One-click test: checks that the Adzuna keys stored in GitHub Secrets work.
+# Start it from the Actions tab: "Adzuna test" > "Run workflow".
+# It prints only the number of jobs found and a few job titles, never the keys.
+name: Adzuna test
+
+on:
+  workflow_dispatch:
+    inputs:
+      what:
+        description: "Job to search"
+        default: "chauffeur livreur"
+      where:
+        description: "Place"
+        default: "Lyon"
+
+permissions:
+  contents: read
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Search Adzuna France
+        env:
+          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+          WHAT: ${{ inputs.what }}
+          WHERE: ${{ inputs.where }}
+        run: |
+          if [ -z "$ADZUNA_APP_ID" ] || [ -z "$ADZUNA_APP_KEY" ]; then
+            echo "::error::The secrets ADZUNA_APP_ID or ADZUNA_APP_KEY are missing."
+            exit 1
+          fi
+          code=$(curl -s -o result.json -w "%{http_code}" -G "https://api.adzuna.com/v1/api/jobs/fr/search/1" \
+            --data-urlencode "app_id=$ADZUNA_APP_ID" \
+            --data-urlencode "app_key=$ADZUNA_APP_KEY" \
+            --data-urlencode "what=$WHAT" \
+            --data-urlencode "where=$WHERE" \
+            --data-urlencode "results_per_page=5" \
+            --data-urlencode "content-type=application/json")
+          if [ "$code" != "200" ]; then
+            echo "::error::Adzuna answered $code. Check that the ID and key are correct and the key is the new one."
+            exit 1
+          fi
+          echo "Jobs found for \"$WHAT\" in \"$WHERE\": $(jq -r '.count' result.json)"
+          echo "First results:"
+          jq -r '.results[] | "- \(.title) | \(.company.display_name // "company not given") | \(.location.display_name // "")"' result.json
