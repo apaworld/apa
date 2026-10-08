@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apacom | Free live sources</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#fff;--ink:#15171c;--muted:#5d6472;--line:#e3e5ea;--soft:#f5f6f8;--accent:#2a3fe0;--accent-ink:#fff;--accent-soft:#eef0fd;--ok:#0f7d55;--err:#c0322b;
+  --font:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root{--paper:#121318;--ink:#eceef3;--muted:#a1a7b4;--line:#2b2e37;--soft:#1b1d24;--accent:#7d8cff;--accent-ink:#0d0f1a;--accent-soft:#232848;--ok:#4fd1a0;--err:#ff8a80}}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 var(--font)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:860px;margin:0 auto;padding:22px 20px 60px}
+.mark{font-weight:800;font-size:1.15rem;display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit}
+.mark i{width:22px;height:22px;border-radius:50%;border:3px solid var(--accent);display:inline-block;position:relative}
+.mark i::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--accent)}
+h1{font-size:clamp(1.7rem,4vw,2.3rem);letter-spacing:-.03em;margin:18px 0 4px}
+.lead{color:var(--muted);margin:0 0 22px;max-width:64ch}
+form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:8px}
+label{display:flex;flex-direction:column;font-size:.8rem;font-weight:600;gap:4px}
+input{font:inherit;color:inherit;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:160px}
+input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:700;padding:11px 20px;border-radius:10px;cursor:pointer}
+.btn[disabled]{opacity:.55;cursor:default}
+section{border-top:1px solid var(--line);padding:22px 0}
+h2{font-size:1.15rem;margin:0}
+.what{color:var(--muted);margin:2px 0 12px;font-size:.93rem}
+.msg{font-size:.95rem;color:var(--muted)}
+.msg.err{color:var(--err)}
+.communes{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0}
+.communes button{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 14px;font:inherit;cursor:pointer}
+.communes button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:6px}
+.day{background:var(--soft);border-radius:12px;padding:10px 12px}
+.day b{display:block;font-size:.85rem}
+.day .ic{font-size:1.6rem;line-height:1.3}
+.day small{color:var(--muted);display:block}
+footer{color:var(--muted);font-size:.82rem;border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="mark" href="./"><i></i>Apacom</a>
+  <h1>Free live sources</h1>
+  <p class="lead">Type a French postal code. The page finds the town and its weather for the next 7 days, using public services that need no account or key.</p>
+
+  <form id="pcForm">
+    <label>Postal code<input id="pc" value="69002" inputmode="numeric" maxlength="5" autocomplete="postal-code"></label>
+    <button class="btn" id="go">Search</button>
+  </form>
+
+  <section>
+    <h2>Your town</h2>
+    <p class="what">From geo.api.gouv.fr, the official French list of communes.</p>
+    <p class="msg" id="townMsg">Type a postal code and press Search.</p>
+    <ul class="communes" id="communes"></ul>
+  </section>
+
+  <section>
+    <h2>Weather for 7 days</h2>
+    <p class="what">From Open-Meteo, a free weather service.</p>
+    <p class="msg" id="wxMsg">Choose a town first.</p>
+    <div class="days" id="days"></div>
+  </section>
+
+  <footer>Test page for the APA MVP. Data: geo.api.gouv.fr, Open-Meteo.</footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const ORD = (n) => n === 1 ? "1er" : n + "e";
+
+// Lyon, Paris and Marseille have one entry per arrondissement; the postal code tells which one.
+function arrondissement(pc, communeName) {
+  let m;
+  if (communeName === "Lyon" && (m = /^6900([1-9])$/.exec(pc))) return "Lyon " + ORD(+m[1]);
+  if (communeName === "Paris" && (m = /^750(\d\d)$/.exec(pc)) && +m[1] >= 1 && +m[1] <= 20) return "Paris " + ORD(+m[1]);
+  if (communeName === "Paris" && pc === "75116") return "Paris 16e";
+  if (communeName === "Marseille" && (m = /^130(\d\d)$/.exec(pc)) && +m[1] >= 1 && +m[1] <= 16) return "Marseille " + ORD(+m[1]);
+  return communeName;
+}
+
+async function getJSON(url) {
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 10000);
+  try {
+    const r = await fetch(url, { signal: ctl.signal });
+    if (!r.ok) throw new Error("The service answered " + r.status);
+    return await r.json();
+  } catch (e) {
+    throw new Error(e.name === "AbortError" ? "The service took too long to answer. Try again." : e.message);
+  } finally { clearTimeout(t); }
+}
+
+const WX = { 0:["☀️","Clear"],1:["🌤️","Mostly clear"],2:["⛅","Partly cloudy"],3:["☁️","Cloudy"],45:["🌫️","Fog"],48:["🌫️","Fog"],
+  51:["🌦️","Drizzle"],53:["🌦️","Drizzle"],55:["🌦️","Drizzle"],61:["🌧️","Rain"],63:["🌧️","Rain"],65:["🌧️","Heavy rain"],
+  71:["🌨️","Snow"],73:["🌨️","Snow"],75:["❄️","Heavy snow"],80:["🌦️","Showers"],81:["🌧️","Showers"],82:["⛈️","Heavy showers"],
+  95:["⛈️","Storm"],96:["⛈️","Storm"],99:["⛈️","Storm"] };
+
+// Dates always shown as DD/MM/YYYY.
+const frDate = (iso) => { const [y, m, d] = iso.split("-"); return d + "/" + m + "/" + y; };
+const weekday = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short" });
+
+async function showWeather(c) {
+  $("days").textContent = ""; $("wxMsg").className = "msg"; $("wxMsg").textContent = "Loading the weather for " + c.label + "…";
+  try {
+    const [lon, lat] = c.centre.coordinates;
+    const q = new URLSearchParams({ latitude: lat, longitude: lon, timezone: "Europe/Paris", forecast_days: "7",
+      daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum" });
+    const w = await getJSON("https://api.open-meteo.com/v1/forecast?" + q);
+    const d = w.daily;
+    $("wxMsg").textContent = "Weather for " + c.label + ":";
+    d.time.forEach((iso, i) => {
+      const [ic, txt] = WX[d.weather_code[i]] || ["🌡️", "Weather"];
+      const el = document.createElement("div"); el.className = "day";
+      el.innerHTML = `<b>${weekday(iso)} ${frDate(iso)}</b><span class="ic" aria-hidden="true">${ic}</span>
+        <small>${txt}</small><small>${Math.round(d.temperature_2m_min[i])}° to ${Math.round(d.temperature_2m_max[i])}°C</small>
+        <small>Rain ${d.precipitation_sum[i]} mm</small>`;
+      $("days").append(el);
+    });
+  } catch (e) { $("wxMsg").className = "msg err"; $("wxMsg").textContent = "The weather could not be loaded: " + e.message; }
+}
+
+function pick(btn, c) {
+  document.querySelectorAll(".communes button").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+  showWeather(c);
+}
+
+$("pcForm").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const pc = $("pc").value.trim();
+  $("communes").textContent = ""; $("days").textContent = "";
+  $("wxMsg").className = "msg"; $("wxMsg").textContent = "Choose a town first.";
+  const msg = $("townMsg"); msg.className = "msg";
+  if (!/^\d{5}$/.test(pc)) { msg.className = "msg err"; msg.textContent = "A French postal code has 5 digits, for example 69002."; return; }
+  $("go").disabled = true; msg.textContent = "Searching…";
+  try {
+    const list = await getJSON("https://geo.api.gouv.fr/communes?" + new URLSearchParams({ codePostal: pc, fields: "nom,centre,population" }));
+    if (!list.length) { msg.className = "msg err"; msg.textContent = "No town found for " + pc + ". Check the postal code."; return; }
+    const towns = list.filter(c => c.centre).map(c => ({ ...c, label: arrondissement(pc, c.nom) }));
+    msg.textContent = towns.length === 1 ? "Postal code " + pc + " is:" : "Postal code " + pc + " covers " + towns.length + " towns. Choose yours:";
+    towns.forEach((c, i) => {
+      const li = document.createElement("li"), b = document.createElement("button");
+      b.type = "button"; b.textContent = c.label; b.setAttribute("aria-pressed", "false");
+      b.addEventListener("click", () => pick(b, c));
+      li.append(b); $("communes").append(li);
+      if (i === 0) pick(b, c);
+    });
+  } catch (e) { msg.className = "msg err"; msg.textContent = "The town could not be found: " + e.message; }
+  finally { $("go").disabled = false; }
+});
+
+$("pcForm").requestSubmit();
+</script>
+</body>
+</html>
