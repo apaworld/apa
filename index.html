@@ -54,15 +54,23 @@ button,input,textarea,select{font:inherit;color:inherit}
 .lang-menu small{color:var(--muted);margin-inline-start:auto;padding-inline-start:16px;font-size:.78rem}
 
 /* hero */
-main{max-width:560px;margin:0 auto;padding:28px 20px 60px}
-h1{font-size:clamp(1.9rem,5.2vw,2.75rem);line-height:1.08;letter-spacing:-.035em;font-weight:800;margin:20px 0 14px}
+main{max-width:560px;margin:0 auto;padding:12px 20px 60px}
+h1{font-size:clamp(1.6rem,4.2vw,2.2rem);line-height:1.1;letter-spacing:-.035em;font-weight:800;margin:8px 0 10px}
 html[lang="ar"] h1,html[lang="zh"] h1{letter-spacing:0;line-height:1.3}
-h1 .hours{display:block;font-size:1.65em;letter-spacing:-.05em;color:var(--accent);font-variant-numeric:tabular-nums}
+h1 .hours{display:block;font-size:1.35em;letter-spacing:-.05em;color:var(--accent);font-variant-numeric:tabular-nums}
 html[lang="ar"] h1 .hours,html[lang="zh"] h1 .hours{letter-spacing:0}
-.lead{color:var(--muted);font-size:1.06rem;margin:0 0 32px;max-width:52ch}
+.lead{color:var(--muted);font-size:1rem;margin:0 0 20px;max-width:52ch}
+/* wide screens: text on the left, form on the right, so the whole form fits on screen */
+@media (min-width:1000px){
+  #app.split{max-width:1080px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,460px);column-gap:72px;align-items:start;padding-top:40px}
+  #app.split>*{grid-column:2}
+  #app.split>#hero{grid-column:1;grid-row:1 / span 12;position:sticky;top:40px;padding-top:12px}
+  #app.split h1{font-size:clamp(2.2rem,3.4vw,3rem)}
+  #app.split .lead{font-size:1.08rem}
+}
 
 /* stepper */
-.steps{display:flex;gap:6px;list-style:none;padding:0;margin:0 0 26px}
+.steps{display:flex;gap:6px;list-style:none;padding:0;margin:0 0 20px}
 .steps li{flex:1;font-size:.82rem;color:var(--muted)}
 .steps li::before{content:"";display:block;height:4px;border-radius:4px;background:var(--line);margin-bottom:7px}
 .steps li.on{color:var(--ink);font-weight:600}
@@ -74,7 +82,7 @@ h2{font-size:1.4rem;letter-spacing:-.02em;margin:0 0 6px}
 .sub{color:var(--muted);margin:0 0 22px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:480px){.row{grid-template-columns:1fr}}
-.field{margin-bottom:16px;position:relative}
+.field{margin-bottom:14px;position:relative}
 label.lbl,.lbl{display:block;font-size:.88rem;font-weight:600;margin-bottom:6px}
 .inp{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--paper);transition:border-color .15s}
 .inp:hover{border-color:#c6cad3}
@@ -182,7 +190,7 @@ body.wide footer{max-width:880px}
 .avatar-btn{display:flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;padding:4px 6px;border-radius:999px;font-weight:600}
 .avatar-btn:hover{background:var(--soft)}
 @media (max-width:560px){#topName{display:none}}
-.btn.sm{padding:7px 14px;font-size:.88rem;border-radius:999px}
+.btn.sm{padding:7px 14px;font-size:.88rem;border-radius:999px;white-space:nowrap}
 .avatar{display:inline-grid;place-items:center;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:700;overflow:hidden;flex:none}
 .avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .avatar.sm{width:30px;height:30px;font-size:.78rem}
@@ -273,6 +281,7 @@ html[lang="ar"] .cab-hello,html[lang="zh"] .cab-hello{letter-spacing:0}
     <button type="button" class="avatar-btn" id="topAvatarBtn"><span class="avatar sm" id="topAvatar"></span><span id="topName"></span></button>
     <button type="button" class="btn ghost sm" id="logoutBtn" data-t="logout"></button>
   </div>
+  <button type="button" class="btn ghost sm" id="topAuth" data-t="signInLink" hidden></button>
   <div class="lang">
     <button class="lang-btn" id="langBtn" aria-haspopup="menu" aria-expanded="false">
       <span class="flag" id="langFlag"></span><span id="langName"></span><span aria-hidden="true">▾</span>
@@ -982,6 +991,9 @@ function showView(v){
   $("hero").hidden = inCab || st.editing;
   $("verifiedMsg").hidden = !!st.editing; $("cancelEdit").hidden = !st.editing;
   $("topUser").hidden = !st.profile;
+  const ta = $("topAuth"), onLogin = v==="login" || v==="reset";
+  ta.hidden = !!st.profile || inCab || onLogin;
+  $("app").classList.toggle("split", !$("hero").hidden);
   renderSteps(); renderTopUser();
   window.scrollTo({top:0, behavior:"smooth"});
   if(v==="s3"||v==="s4"){ const first=$(v).querySelector("input,textarea"); if(first) setTimeout(()=>first.focus({preventScroll:true}),50); }
@@ -1114,6 +1126,7 @@ $("f4").addEventListener("submit", async e=>{
 /* ============ sign in / out ============ */
 $("toLogin").onclick = ()=>{ showView("login"); $("liEm").focus(); };
 $("toRegister").onclick = ()=>{ showView("s1"); $("fn").focus(); };
+$("topAuth").onclick = ()=>{ $("toLogin").click(); };
 ["liEm","liPw"].forEach(id=>$(id).addEventListener("input",()=>setErr("liErr")));
 $("fL").addEventListener("submit", async e=>{
   e.preventDefault();
