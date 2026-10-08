@@ -88,6 +88,17 @@ tr.grp th{padding:12px 4px 6px;border-bottom:1px solid var(--line);background:va
 .fold:hover{background:var(--soft)}
 .fold .c{color:var(--muted);font-weight:600}
 .wgrp{margin:12px 0 6px}
+.sorts{display:inline-flex;gap:1px;margin-left:4px;vertical-align:middle}
+.sorts button{border:0;background:none;cursor:pointer;color:var(--muted);font-size:.78rem;line-height:1;padding:4px 4px;border-radius:5px;opacity:.55}
+.wsort .dbtn{border:0;background:none;cursor:pointer;padding:3px 8px;border-radius:6px;font-weight:600;color:var(--muted)}
+.wsort .dbtn[aria-pressed="true"]{color:var(--accent);background:var(--accent-soft)}
+.sorts button:hover{opacity:1;background:var(--soft)}
+.sorts button[aria-pressed="true"]{color:var(--accent);opacity:1;background:var(--accent-soft)}
+.sorted{color:var(--muted);font-size:.8rem;margin:-6px 0 8px}
+.wsort{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:.8rem;color:var(--muted);font-weight:600;margin:0 0 8px}
+.wsort .lb{display:inline-flex;align-items:center}
+.card-h{cursor:grab}
+.card.sortable-chosen{cursor:grabbing}
 
 /* tables and tiles */
 .tw{overflow-x:auto}
@@ -179,10 +190,10 @@ const ORD = (n) => n === 1 ? "1er" : n + "e";
 /* ---------- saved settings (this browser only) ---------- */
 const KEY = "apa-live-v1";
 const CARDS = { weather: "Weather", fuel: "Fuel prices", bikes: "Vélo'v bikes" };
-const DEFAULT = { places: [], active: null, order: ["weather", "fuel", "bikes"], hidden: [], rows: 3, view: "one", fav: {}, fold: {} };
+const DEFAULT = { places: [], active: null, order: ["weather", "fuel", "bikes"], hidden: [], rows: 3, view: "one", fav: {}, fold: {}, sort: {} };
 let S = load();
 function load() {
-  try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && Array.isArray(v.places)) return { ...DEFAULT, ...v, order: fixOrder(v.order), fav: v.fav || {}, fold: v.fold || {} }; } catch {}
+  try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && Array.isArray(v.places)) return { ...DEFAULT, ...v, order: fixOrder(v.order), fav: v.fav || {}, fold: v.fold || {}, sort: v.sort || {} }; } catch {}
   return structuredClone(DEFAULT);
 }
 function fixOrder(o) { o = Array.isArray(o) ? o.filter(id => CARDS[id]) : []; return o.concat(Object.keys(CARDS).filter(id => !o.includes(id))); }
@@ -280,10 +291,30 @@ const starCell = (id, k, label) => { const on = isFav(id, k);
   return `<td class="st"><button class="star" data-star="${esc(k)}" aria-pressed="${on}" aria-label="${on ? "Remove " + esc(label) + " from favorites" : "Add " + esc(label) + " to favorites"}" title="${on ? "Remove from favorites" : "Add to favorites"}">${on ? "★" : "☆"}</button></td>`; };
 const foldRow = (id, gk, title, n, cols) => { const open = !S.fold[id + ":" + gk];
   return `<tr class="grp"><th colspan="${cols}"><button class="fold" data-fold="${id}:${gk}" aria-expanded="${open}"><span aria-hidden="true">${open ? "▾" : "▸"}</span>${title} <span class="c">(${n})</span></button></th></tr>`; };
-// items: [{key, label, html}]; groups: [[groupKey, title, test(item)]]
+/* min/max sorting: ▼ = lowest first, ▲ = highest first. Items without a value go last. */
+const SORT_DEFAULT = { fuel: { k: "Gazole", d: "asc" }, bikes: { k: "bikes", d: "desc" }, weather: { k: "date", d: "asc" } };
+const getSort = (id) => S.sort[id] || SORT_DEFAULT[id];
+function sortItems(id, items) {
+  const { k, d } = getSort(id), m = d === "asc" ? 1 : -1;
+  return items.slice().sort((a, b) => {
+    const x = a.v?.[k], y = b.v?.[k];
+    if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
+    return (x - y) * m;
+  });
+}
+function sortArrows(id, k, label) {
+  const cur = getSort(id), on = (d) => cur.k === k && cur.d === d;
+  return `<span class="sorts"><button data-sort="${k}" data-dir="desc" aria-pressed="${on("desc")}" aria-label="${label}: highest first" title="Highest first">▲</button><button data-sort="${k}" data-dir="asc" aria-pressed="${on("asc")}" aria-label="${label}: lowest first" title="Lowest first">▼</button></span>`;
+}
+const SORT_WORDS = { Gazole: ["Diesel", "cheapest first", "most expensive first"], E10: ["E10", "cheapest first", "most expensive first"], SP98: ["SP98", "cheapest first", "most expensive first"],
+  bikes: ["Bikes", "fewest first", "most first"], spaces: ["Free spaces", "fewest first", "most first"], max: ["Temperature", "coldest first", "warmest first"], rain: ["Rain", "driest first", "wettest first"] };
+const sortedLine = (id) => { const { k, d } = getSort(id), w = SORT_WORDS[k]; return w ? `<p class="sorted">Sorted by ${w[0].toLowerCase()}, ${d === "asc" ? w[1] : w[2]}</p>` : ""; };
+
+// items: [{key, label, html, v}]; head: ["Title" | {t: "Title", k: "sortKey"}]; groups: [[groupKey, title, test(item)]]
 function listView(id, items, { head, groups, max }) {
+  items = sortItems(id, items);
   const favs = items.filter(x => isFav(id, x.key)), rest = items.filter(x => !isFav(id, x.key));
-  const cols = head.length + 1, thead = `<thead><tr><th><span class="sr">Favorite</span></th>${head.map(h => `<th>${h}</th>`).join("")}</tr></thead>`;
+  const cols = head.length + 1, thead = `<thead><tr><th><span class="sr">Favorite</span></th>${head.map(h => typeof h === "string" ? `<th>${h}</th>` : `<th>${h.t}${sortArrows(id, h.k, h.t)}</th>`).join("")}</tr></thead>`;
   const row = (x) => `<tr>${starCell(id, x.key, x.label)}${x.html}</tr>`;
   if (!max && !expanded.has(id)) {          // short view: favorites, then the first rows
     const shown = favs.concat(rest.slice(0, Math.max(0, S.rows - favs.length)));
@@ -303,10 +334,15 @@ const R = {
       const tile = (d) => { const [i, t] = WX[d.code] || ["🌡️", "Weather"];
         return `<div class="day"><b>${weekday(d.iso)} ${frDate(d.iso)}</b><span class="ic" aria-hidden="true">${i}</span><small>${t}</small><small>${Math.round(d.min)}° to ${Math.round(d.max)}°C</small><small>Rain ${d.rain} mm</small></div>`; };
       const sum = `<p class="sum">Today in ${esc(placeName(p))}: ${ic} ${txt}, ${Math.round(days[0].min)}° to ${Math.round(days[0].max)}°C</p>`;
-      if (!max && !expanded.has("weather")) { const n = Math.min(days.length, S.rows); return sum + `<div class="days">${days.slice(0, n).map(tile).join("")}</div>` + moreBtn("weather", n, days.length); }
+      const ws = getSort("weather"), byDate = ws.k === "date";
+      const sorted = byDate ? days : sortItems("weather", days.map(d => ({ ...d, v: { max: d.max, rain: d.rain } })));
+      const bar = `<div class="wsort">Sort:<button class="dbtn" data-sort="date" data-dir="asc" aria-pressed="${byDate}">Date</button>
+        <span class="lb">Temperature${sortArrows("weather", "max", "Temperature")}</span><span class="lb">Rain${sortArrows("weather", "rain", "Rain")}</span></div>`;
+      if (!max && !expanded.has("weather")) { const n = Math.min(days.length, S.rows); return sum + bar + `<div class="days">${sorted.slice(0, n).map(tile).join("")}</div>` + moreBtn("weather", n, days.length); }
+      if (!byDate) return sum + bar + `<div class="days">${sorted.map(tile).join("")}</div>` + (max ? "" : moreBtn("weather", days.length, days.length));
       const grp = (k, t, list) => { if (!list.length) return ""; const open = !S.fold["weather:" + k];
         return `<div class="wgrp"><button class="fold" data-fold="weather:${k}" aria-expanded="${open}"><span aria-hidden="true">${open ? "▾" : "▸"}</span>${t} <span class="c">(${list.length})</span></button></div>` + (open ? `<div class="days">${list.map(tile).join("")}</div>` : ""); };
-      return sum + grp("next", "Next 3 days", days.slice(0, 3)) + grp("later", "Later this week", days.slice(3)) + (max ? "" : moreBtn("weather", days.length, days.length));
+      return sum + bar + grp("next", "Next 3 days", days.slice(0, 3)) + grp("later", "Later this week", days.slice(3)) + (max ? "" : moreBtn("weather", days.length, days.length));
     },
     async all(places) {
       const res = await Promise.allSettled(places.map(weather));
@@ -326,10 +362,11 @@ const R = {
       if (!rows.length) return `<p class="msg">No fuel station is listed in postal code ${esc(p.pc)}.</p>`;
       const best = rows[0].prices.Gazole;
       const sum = best ? `Cheapest diesel: €${best.price.toFixed(3)}, ${esc(rows[0].addr)}` : `${rows.length} stations in ${esc(p.pc)}`;
-      const items = rows.map((r, i) => ({ key: p.pc + "|" + r.addr, label: r.addr, diesel: !!r.prices.Gazole,
+      const items = rows.map(r => ({ key: p.pc + "|" + r.addr, label: r.addr, diesel: !!r.prices.Gazole,
+        v: Object.fromEntries(FUELS.map(f => [f, r.prices[f]?.price ?? null])),
         html: `<td class="wrapc">${esc(r.addr)}</td>` + FUELS.map(f => { const x = r.prices[f];
-          return x ? `<td class="${f === "Gazole" && i === 0 && best ? "best" : ""}">€${x.price.toFixed(3)}<small>${esc(anyDateTime(x.when))}</small></td>` : "<td>–</td>"; }).join("") }));
-      return `<p class="sum">${sum}</p>` + listView("fuel", items, { max, head: ["Station", "Diesel", "E10", "SP98"],
+          return x ? `<td class="${f === "Gazole" && best && x.price === best.price ? "best" : ""}">€${x.price.toFixed(3)}<small>${esc(anyDateTime(x.when))}</small></td>` : "<td>–</td>"; }).join("") }));
+      return `<p class="sum">${sum}</p>` + sortedLine("fuel") + listView("fuel", items, { max, head: ["Station", { t: "Diesel", k: "Gazole" }, { t: "E10", k: "E10" }, { t: "SP98", k: "SP98" }],
         groups: [["diesel", "With diesel", x => x.diesel], ["other", "Other fuels only", x => !x.diesel]] });
     },
     async all(places) {
@@ -349,8 +386,9 @@ const R = {
       if (!list.length) return `<p class="msg">No Vélo'v station in ${esc(p.label)}. Vélo'v covers Lyon and nearby towns only.</p>`;
       const total = list.reduce((s, v) => s + (v.open ? v.bikes : 0), 0);
       const items = list.map(v => ({ key: p.insee + "|" + v.name, label: v.name, open: v.open, bikes: v.bikes,
+        v: { bikes: v.open ? v.bikes : null, spaces: v.open ? v.spaces : null },
         html: `<td class="wrapc">${esc(v.name)}</td>${v.open ? `<td class="num">${v.bikes}</td><td class="num">${v.spaces}</td>` : `<td class="closed">Closed</td><td>–</td>`}<td>${esc(anyDateTime(v.when))}</td>` }));
-      return `<p class="sum">${list.length} stations in ${esc(p.label)}, ${total} bikes available now</p>` + listView("bikes", items, { max, head: ["Station", "Bikes", "Free spaces", "Updated"],
+      return `<p class="sum">${list.length} stations in ${esc(p.label)}, ${total} bikes available now</p>` + sortedLine("bikes") + listView("bikes", items, { max, head: ["Station", { t: "Bikes", k: "bikes" }, { t: "Free spaces", k: "spaces" }, "Updated"],
         groups: [["avail", "Bikes available", x => x.open && x.bikes > 0], ["empty", "No bikes right now", x => x.open && x.bikes === 0], ["closed", "Closed", x => !x.open]] });
     },
     async all(places) {
@@ -447,8 +485,9 @@ function cardEl(id) {
   el.querySelector(".mx").onclick = () => el.classList.contains("max") ? unmax() : maximize(id);
   el.querySelector(".x").onclick = () => { if (el.classList.contains("max")) return unmax(); S.hidden.push(id); save(); renderAll(); };
   el.addEventListener("click", (ev) => {
-    const m = ev.target.closest("[data-more]"), st = ev.target.closest("[data-star]"), fo = ev.target.closest("[data-fold]");
-    if (m) { expanded.has(id) ? expanded.delete(id) : expanded.add(id); fillCard(el, id); }
+    const m = ev.target.closest("[data-more]"), st = ev.target.closest("[data-star]"), fo = ev.target.closest("[data-fold]"), so = ev.target.closest("[data-sort]");
+    if (so) { S.sort[id] = { k: so.dataset.sort, d: so.dataset.dir }; save(); fillCard(el, id, renderToken, `[data-sort="${so.dataset.sort}"][data-dir="${so.dataset.dir}"]`); }
+    else if (m) { expanded.has(id) ? expanded.delete(id) : expanded.add(id); fillCard(el, id); }
     else if (st) { const k = st.dataset.star, list = S.fav[id] || []; S.fav[id] = list.includes(k) ? list.filter(x => x !== k) : list.concat(k); save(); fillCard(el, id, renderToken, "[data-star=\"" + CSS.escape(k) + "\"]"); }
     else if (fo) { const k = fo.dataset.fold; S.fold[k] ? delete S.fold[k] : (S.fold[k] = true); save(); fillCard(el, id, renderToken, "[data-fold=\"" + CSS.escape(k) + "\"]"); }
   });
@@ -539,7 +578,9 @@ document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; if
 
 /* ---------- drag and drop (SortableJS); move buttons work without it ---------- */
 if (window.Sortable) {
-  Sortable.create($("grid"), { handle: ".drag", animation: 150, onEnd() {
+  Sortable.create($("grid"), { animation: 150, delay: 300, delayOnTouchOnly: true, touchStartThreshold: 6,
+    filter: (ev, item) => item.classList.contains("max") || !!ev.target.closest("button, a, input, select, label, .cmenu"), preventOnFilter: false,
+    onEnd() {
     const dom = [...$("grid").children].map(c => c.dataset.id);
     S.order = dom.concat(S.order.filter(id => !dom.includes(id))); save();
   } });
