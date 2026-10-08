@@ -53,6 +53,9 @@ h1{font-size:clamp(1.4rem,3vw,1.8rem);letter-spacing:-.03em;margin:14px 0 2px}
 .chips button{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 12px;cursor:pointer}
 .chips button:hover{border-color:var(--accent)}
 .spacer{flex:1}
+#locMsg{flex-basis:100%;margin:2px 0 0}
+.hint{color:var(--muted);font-size:.8rem;margin:-4px 0 8px}
+.near{margin:-4px 0 10px;font-size:.88rem}
 
 /* cards */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;align-items:start}
@@ -153,8 +156,10 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
   <div class="places" aria-label="Your places">
     <ul class="tabs" id="tabs"></ul>
     <button class="btn ghost" id="addBtn">+ Add a place</button>
+    <button class="btn ghost" id="locBtn">📍 Use my location</button>
     <span class="spacer"></span>
     <button class="btn ghost" id="cmpBtn" aria-pressed="false">Compare all</button>
+    <p class="msg" id="locMsg" aria-live="polite" hidden></p>
     <form class="add-form" id="addForm" hidden>
       <label>Postal code<input id="addPc" inputmode="numeric" maxlength="5" autocomplete="postal-code" placeholder="69002"></label>
       <label>Name (optional)<input id="addName" maxlength="30" placeholder="My flat"></label>
@@ -240,6 +245,16 @@ function townInsee(pc, c) {
   return c.code;
 }
 const placeName = (p) => p.name || p.label;
+/* Live position: kept only in memory for this visit, never saved. */
+let here = null;   // { lat, lon, acc, placeId }
+const hereFor = (p) => here && p && here.placeId === p.id ? here : null;
+function distM(a, b, c, d) {
+  const R = 6371000, t = Math.PI / 180, x = (c - a) * t, y = (d - b) * t;
+  const h = Math.sin(x / 2) ** 2 + Math.cos(a * t) * Math.cos(c * t) * Math.sin(y / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+const fmtDist = (m) => m < 1000 ? Math.max(10, Math.round(m / 10) * 10) + " m" : (m / 1000).toFixed(m < 10000 ? 1 : 0) + " km";
+const coord = (v) => { const n = parseFloat(v); return isNaN(n) ? null : Math.abs(n) > 180 ? n / 100000 : n; };
 
 /* ---------- data sources (cached per place for this visit) ---------- */
 const cache = new Map();
@@ -249,12 +264,13 @@ const WX = { 0:["☀️","Clear"],1:["🌤️","Mostly clear"],2:["⛅","Partly 
   51:["🌦️","Drizzle"],53:["🌦️","Drizzle"],55:["🌦️","Drizzle"],61:["🌧️","Rain"],63:["🌧️","Rain"],65:["🌧️","Heavy rain"],
   71:["🌨️","Snow"],73:["🌨️","Snow"],75:["❄️","Heavy snow"],80:["🌦️","Showers"],81:["🌧️","Showers"],82:["⛈️","Heavy showers"],
   95:["⛈️","Storm"],96:["⛈️","Storm"],99:["⛈️","Storm"] };
-const weather = (p) => once("wx:" + p.id, async () => {
-  const q = new URLSearchParams({ latitude: p.lat, longitude: p.lon, timezone: "Europe/Paris", forecast_days: "7",
+const weather = (p) => { const h = hereFor(p), lat = h ? h.lat.toFixed(3) : p.lat, lon = h ? h.lon.toFixed(3) : p.lon;
+  return once("wx:" + p.id + (h ? ":" + lat + "," + lon : ""), async () => {
+  const q = new URLSearchParams({ latitude: lat, longitude: lon, timezone: "Europe/Paris", forecast_days: "7",
     daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum" });
   const d = (await getJSON("https://api.open-meteo.com/v1/forecast?" + q)).daily;
   return d.time.map((iso, i) => ({ iso, code: d.weather_code[i], min: d.temperature_2m_min[i], max: d.temperature_2m_max[i], rain: d.precipitation_sum[i] }));
-});
+}); };
 
 const FUELS = ["Gazole", "E10", "SP98"];
 function readPrices(raw) {
@@ -269,7 +285,7 @@ function readPrices(raw) {
 const fuel = (p) => once("fuel:" + p.pc, async () => {
   const q = new URLSearchParams({ where: `cp="${p.pc}"`, limit: "100" });
   const j = await getJSON("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?" + q);
-  const rows = (j.results || []).map(r => ({ addr: (r.adresse || "") + ", " + (r.ville || ""), prices: readPrices(r.prix) })).filter(r => FUELS.some(f => r.prices[f]));
+  const rows = (j.results || []).map(r => ({ addr: (r.adresse || "") + ", " + (r.ville || ""), prices: readPrices(r.prix), lat: coord(r.latitude ?? r.geom?.lat), lon: coord(r.longitude ?? r.geom?.lon) })).filter(r => FUELS.some(f => r.prices[f]));
   return rows.sort((a, b) => (a.prices.Gazole?.price ?? 99) - (b.prices.Gazole?.price ?? 99));
 });
 
@@ -287,7 +303,7 @@ async function velovStations(insee) {
     .then(j => (j.values || []).map(v => Array.isArray(v) ? Object.fromEntries(j.fields.map((f, i) => [f, v[i]])) : v))
     .catch(e => { velovAll = null; throw e; });
   return (await velovAll).filter(v => String(v.code_insee) === String(insee))
-    .map(v => ({ name: v.name || v.address || "Station", open: String(v.status).toUpperCase() !== "CLOSED", bikes: +v.available_bikes || 0, spaces: +v.available_bike_stands || 0, ebikes: null, when: v.last_update }));
+    .map(v => ({ name: v.name || v.address || "Station", open: String(v.status).toUpperCase() !== "CLOSED", bikes: +v.available_bikes || 0, spaces: +v.available_bike_stands || 0, ebikes: null, when: v.last_update, lat: coord(v.lat), lon: coord(v.lng) }));
 }
 const VELIB = "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel";
 async function velibByCommune(code) {    // all stations of one commune: one "export" call, or pages of 100 as a fallback
@@ -315,7 +331,7 @@ async function velibStations(insee) {
     raw = (await velibParis).filter(v => Math.floor(+v.stationcode / 1000) === +m[1]);
   } else raw = await velibByCommune(insee);
   return raw.map(v => ({ name: v.name || "Station", open: v.is_installed === "OUI" && v.is_renting === "OUI",
-    bikes: +v.numbikesavailable || 0, spaces: +v.numdocksavailable || 0, ebikes: v.ebike == null ? null : +v.ebike, when: v.duedate }));
+    bikes: +v.numbikesavailable || 0, spaces: +v.numdocksavailable || 0, ebikes: v.ebike == null ? null : +v.ebike, when: v.duedate, lat: coord(v.coordonnees_geo?.lat), lon: coord(v.coordonnees_geo?.lon) }));
 }
 const bikes = (p) => once("bikes:" + p.insee, async () => {
   const service = serviceFor(p);
@@ -337,28 +353,28 @@ const foldRow = (id, gk, title, n, cols) => { const open = !S.fold[id + ":" + gk
   return `<tr class="grp"><th colspan="${cols}"><button class="fold" data-fold="${id}:${gk}" aria-expanded="${open}"><span aria-hidden="true">${open ? "▾" : "▸"}</span>${title} <span class="c">(${n})</span></button></th></tr>`; };
 /* min/max sorting: ▼ = lowest first, ▲ = highest first. Items without a value go last. */
 const SORT_DEFAULT = { fuel: { k: "Gazole", d: "asc" }, bikes: { k: "bikes", d: "desc" }, weather: { k: "date", d: "asc" } };
-const getSort = (id) => S.sort[id] || SORT_DEFAULT[id];
-function sortItems(id, items) {
-  const { k, d } = getSort(id), m = d === "asc" ? 1 : -1;
+const getSort = (id, hasDist = false) => { const x = S.sort[id] || SORT_DEFAULT[id]; return x.k === "dist" && !hasDist ? SORT_DEFAULT[id] : x; };
+function sortItems(id, items, hasDist) {
+  const { k, d } = getSort(id, hasDist), m = d === "asc" ? 1 : -1;
   return items.slice().sort((a, b) => {
     const x = a.v?.[k], y = b.v?.[k];
     if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
     return (x - y) * m;
   });
 }
-function sortArrows(id, k, label) {
-  const cur = getSort(id), on = (d) => cur.k === k && cur.d === d;
+function sortArrows(id, k, label, hasDist) {
+  const cur = getSort(id, hasDist), on = (d) => cur.k === k && cur.d === d;
   return `<span class="sorts"><button data-sort="${k}" data-dir="desc" aria-pressed="${on("desc")}" aria-label="${label}: highest first" title="Highest first">▲</button><button data-sort="${k}" data-dir="asc" aria-pressed="${on("asc")}" aria-label="${label}: lowest first" title="Lowest first">▼</button></span>`;
 }
 const SORT_WORDS = { Gazole: ["Diesel", "cheapest first", "most expensive first"], E10: ["E10", "cheapest first", "most expensive first"], SP98: ["SP98", "cheapest first", "most expensive first"],
-  bikes: ["Bikes", "fewest first", "most first"], spaces: ["Free spaces", "fewest first", "most first"], max: ["Temperature", "coldest first", "warmest first"], rain: ["Rain", "driest first", "wettest first"] };
-const sortedLine = (id) => { const { k, d } = getSort(id), w = SORT_WORDS[k]; return w ? `<p class="sorted">Sorted by ${w[0].toLowerCase()}, ${d === "asc" ? w[1] : w[2]}</p>` : ""; };
+  dist: ["Distance", "nearest first", "farthest first"], bikes: ["Bikes", "fewest first", "most first"], spaces: ["Free spaces", "fewest first", "most first"], max: ["Temperature", "coldest first", "warmest first"], rain: ["Rain", "driest first", "wettest first"] };
+const sortedLine = (id, hasDist) => { const { k, d } = getSort(id, hasDist), w = SORT_WORDS[k]; return w ? `<p class="sorted">Sorted by ${w[0].toLowerCase()}, ${d === "asc" ? w[1] : w[2]}</p>` : ""; };
 
 // items: [{key, label, html, v}]; head: ["Title" | {t: "Title", k: "sortKey"}]; groups: [[groupKey, title, test(item)]]
-function listView(id, items, { head, groups, max }) {
-  items = sortItems(id, items);
+function listView(id, items, { head, groups, max, hasDist }) {
+  items = sortItems(id, items, hasDist);
   const favs = items.filter(x => isFav(id, x.key)), rest = items.filter(x => !isFav(id, x.key));
-  const cols = head.length + 1, thead = `<thead><tr><th><span class="sr">Favorite</span></th>${head.map(h => typeof h === "string" ? `<th>${h}</th>` : `<th>${h.t}${sortArrows(id, h.k, h.t)}</th>`).join("")}</tr></thead>`;
+  const cols = head.length + 1, thead = `<thead><tr><th><span class="sr">Favorite</span></th>${head.map(h => typeof h === "string" ? `<th>${h}</th>` : `<th>${h.t}${sortArrows(id, h.k, h.t, hasDist)}</th>`).join("")}</tr></thead>`;
   const row = (x) => `<tr>${starCell(id, x.key, x.label)}${x.html}</tr>`;
   if (!max && !expanded.has(id)) {          // short view: favorites, then the first rows
     const shown = favs.concat(rest.slice(0, Math.max(0, S.rows - favs.length)));
@@ -406,11 +422,15 @@ const R = {
       if (!rows.length) return `<p class="msg">No fuel station is listed in postal code ${esc(p.pc)}.</p>`;
       const best = rows[0].prices.Gazole;
       const sum = best ? `Cheapest diesel: €${best.price.toFixed(3)}, ${esc(rows[0].addr)}` : `${rows.length} stations in ${esc(p.pc)}`;
-      const items = rows.map(r => ({ key: p.pc + "|" + r.addr, label: r.addr, diesel: !!r.prices.Gazole,
-        v: Object.fromEntries(FUELS.map(f => [f, r.prices[f]?.price ?? null])),
-        html: `<td class="wrapc">${esc(r.addr)}</td>` + FUELS.map(f => { const x = r.prices[f];
-          return x ? `<td class="${f === "Gazole" && best && x.price === best.price ? "best" : ""}">€${x.price.toFixed(3)}<small>${esc(anyDateTime(x.when))}</small></td>` : "<td>–</td>"; }).join("") }));
-      return `<p class="sum">${sum}</p>` + sortedLine("fuel") + listView("fuel", items, { max, head: ["Station", { t: "Diesel", k: "Gazole" }, { t: "E10", k: "E10" }, { t: "SP98", k: "SP98" }],
+      const h = hereFor(p), dist = (r) => h && r.lat != null && r.lon != null ? distM(h.lat, h.lon, r.lat, r.lon) : null;
+      const hasDist = rows.some(r => dist(r) != null);
+      const items = rows.map(r => { const dm = dist(r); return { key: p.pc + "|" + r.addr, label: r.addr, diesel: !!r.prices.Gazole,
+        v: { ...Object.fromEntries(FUELS.map(f => [f, r.prices[f]?.price ?? null])), dist: dm },
+        html: `<td class="wrapc">${esc(r.addr)}</td>` + (hasDist ? `<td class="num">${dm == null ? "–" : fmtDist(dm)}</td>` : "") + FUELS.map(f => { const x = r.prices[f];
+          return x ? `<td class="${f === "Gazole" && best && x.price === best.price ? "best" : ""}">€${x.price.toFixed(3)}<small>${esc(anyDateTime(x.when))}</small></td>` : "<td>–</td>"; }).join("") }; });
+      const near = hasDist ? items.filter(x => x.v.dist != null).sort((a, b) => a.v.dist - b.v.dist)[0] : null;
+      return `<p class="sum">${sum}</p>` + (near ? `<p class="near">Nearest station: ${esc(near.label)}, ${fmtDist(near.v.dist)}</p>` : "") + locHint(p) + sortedLine("fuel", hasDist)
+        + listView("fuel", items, { max, hasDist, head: ["Station", ...(hasDist ? [{ t: "Distance", k: "dist" }] : []), { t: "Diesel", k: "Gazole" }, { t: "E10", k: "E10" }, { t: "SP98", k: "SP98" }],
         groups: [["diesel", "With diesel", x => x.diesel], ["other", "Other fuels only", x => !x.diesel]] });
     },
     async all(places) {
@@ -431,10 +451,15 @@ const R = {
       const note = `<p class="svc">${esc(p.label)} is served by <b>${sv.name}</b> (${sv.city})</p>`;
       if (!list.length) return note + `<p class="msg">No ${sv.name} station is listed in ${esc(p.label)}.</p>`;
       const total = list.reduce((s, v) => s + (v.open ? v.bikes : 0), 0);
-      const items = list.map(v => ({ key: p.insee + "|" + v.name, label: v.name, open: v.open, bikes: v.bikes,
-        v: { bikes: v.open ? v.bikes : null, spaces: v.open ? v.spaces : null },
-        html: `<td class="wrapc">${esc(v.name)}</td>${v.open ? `<td class="num">${v.bikes}${v.ebikes != null ? `<span class="eb">${v.ebikes} electric</span>` : ""}</td><td class="num">${v.spaces}</td>` : `<td class="closed">Closed</td><td>–</td>`}<td>${esc(anyDateTime(v.when))}</td>` }));
-      return note + `<p class="sum">${list.length} stations in ${esc(p.label)}, ${total} bikes available now</p>` + sortedLine("bikes") + listView("bikes", items, { max, head: ["Station", { t: "Bikes", k: "bikes" }, { t: "Free spaces", k: "spaces" }, "Updated"],
+      const h = hereFor(p), dist = (v) => h && v.lat != null && v.lon != null ? distM(h.lat, h.lon, v.lat, v.lon) : null;
+      const hasDist = list.some(v => dist(v) != null);
+      const items = list.map(v => { const dm = dist(v); return { key: p.insee + "|" + v.name, label: v.name, open: v.open, bikes: v.bikes,
+        v: { bikes: v.open ? v.bikes : null, spaces: v.open ? v.spaces : null, dist: dm },
+        html: `<td class="wrapc">${esc(v.name)}</td>${hasDist ? `<td class="num">${dm == null ? "–" : fmtDist(dm)}</td>` : ""}${v.open ? `<td class="num">${v.bikes}${v.ebikes != null ? `<span class="eb">${v.ebikes} electric</span>` : ""}</td><td class="num">${v.spaces}</td>` : `<td class="closed">Closed</td><td>–</td>`}<td>${esc(anyDateTime(v.when))}</td>` }; });
+      const near = hasDist ? items.filter(x => x.v.dist != null && x.open && x.bikes > 0).sort((a, b) => a.v.dist - b.v.dist)[0] : null;
+      return note + `<p class="sum">${list.length} stations in ${esc(p.label)}, ${total} bikes available now</p>`
+        + (near ? `<p class="near">Nearest station with bikes: ${esc(near.label)}, ${fmtDist(near.v.dist)} (${near.bikes} bikes)</p>` : "") + locHint(p) + sortedLine("bikes", hasDist)
+        + listView("bikes", items, { max, hasDist, head: ["Station", ...(hasDist ? [{ t: "Distance", k: "dist" }] : []), { t: "Bikes", k: "bikes" }, { t: "Free spaces", k: "spaces" }, "Updated"],
         groups: [["avail", "Bikes available", x => x.open && x.bikes > 0], ["empty", "No bikes right now", x => x.open && x.bikes === 0], ["closed", "Closed", x => !x.open]] });
     },
     async all(places) {
@@ -449,6 +474,50 @@ const R = {
     }
   }
 };
+
+const locHint = (p) => p.here && !hereFor(p) ? `<p class="hint">Tap “📍 Use my location” to show distances.</p>` : "";
+
+/* ---------- my location ---------- */
+const REVERSE = ["https://data.geopf.fr/geocodage/reverse", "https://api-adresse.data.gouv.fr/reverse/"];
+async function reverseLookup(lat, lon) {
+  let found = null;
+  for (const base of REVERSE) {
+    try {
+      const j = await getJSON(base + "?" + new URLSearchParams({ lon: lon.toFixed(6), lat: lat.toFixed(6), limit: "1" }));
+      const pr = j.features?.[0]?.properties;
+      if (pr?.postcode) { found = pr; break; }
+    } catch {}
+  }
+  if (!found) throw new Error("Your position could not be matched to a French address. For now, places work in France only.");
+  const towns = await lookup(found.postcode);
+  return towns.find(t => t.insee === found.citycode) || towns[0];
+}
+function locate() {
+  const msg = $("locMsg"), btn = $("locBtn");
+  msg.hidden = false; msg.className = "msg";
+  if (!("geolocation" in navigator)) { msg.className = "msg err"; msg.textContent = "This browser cannot share your location. Type a postal code instead."; return; }
+  msg.textContent = "Finding your position… Your browser may ask for permission."; btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    try {
+      const { latitude: lat, longitude: lon, accuracy } = pos.coords;
+      const t = await reverseLookup(lat, lon);
+      let p = S.places.find(x => x.here);
+      if (p) Object.assign(p, t);
+      else { p = { ...t, name: "📍 My location", here: true, id: "p" + Date.now().toString(36) }; S.places.unshift(p); }
+      S.active = p.id; here = { lat, lon, acc: accuracy, placeId: p.id };
+      S.sort.fuel = { k: "dist", d: "asc" }; S.sort.bikes = { k: "dist", d: "asc" };
+      tempCompare = false; save(); renderAll();
+      msg.textContent = `You are in ${t.label} (${t.pc}), position accurate to about ${fmtDist(accuracy)}. It is used only in this browser to show distances, and is not saved.`;
+    } catch (e) { msg.className = "msg err"; msg.textContent = e.message; }
+    finally { btn.disabled = false; }
+  }, (err) => {
+    btn.disabled = false; msg.className = "msg err";
+    msg.textContent = err.code === 1 ? "Location permission was refused. You can allow it in your browser settings, or type a postal code instead."
+      : err.code === 3 ? "Finding your position took too long. Try again, ideally near a window or outdoors."
+      : "Your position is not available right now. Try again, or type a postal code instead.";
+  }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
+}
+$("locBtn").onclick = locate;
 
 /* ---------- places ---------- */
 function renderTabs() {
@@ -469,6 +538,7 @@ function removePlace(id) {
   const p = S.places.find(x => x.id === id);
   if (!p || !confirm(`Remove ${placeName(p)}?`)) return;
   S.places = S.places.filter(x => x.id !== id);
+  if (here && here.placeId === id) { here = null; $("locMsg").hidden = true; }
   if (S.active === id) S.active = S.places[0]?.id || null;
   save(); renderAll();
 }
