@@ -226,6 +226,13 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
 #locDrawer .fh{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:700}
 #locDrawer .fh button{border:0;background:none;color:var(--accent);font-weight:600;font-size:.8rem;cursor:pointer;padding:4px 0}
 #locDrawer .note{font-size:.8rem;color:var(--muted);margin:0}
+#locDrawer .fld.folded{background:var(--soft);border-radius:10px;padding:6px 10px}
+#locDrawer .fld.folded > :not(.fh){display:none!important}
+#locDrawer .fsum{color:var(--muted);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#locDrawer .fld.folded .fh{justify-content:flex-start;gap:0}
+#locDrawer .fld.folded .fh > :first-child{white-space:nowrap}
+#locDrawer .fld.folded .fh button{margin-inline-start:auto;white-space:nowrap}
+#locDrawer .fld:not(.folded) .fsum{display:none}
 #locDrawer .row{display:flex;gap:8px;align-items:center}
 #locDrawer .inp{display:flex;align-items:center;border:1px solid #c9ccd3;border-radius:10px;padding:0 4px 0 0;flex:1;min-width:0;background:var(--paper)}
 #locDrawer .inp:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
@@ -269,7 +276,7 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
   <div class="dh"><h2 id="locTitle">Time and place</h2><button class="ib x" id="locX" aria-label="Close time and place">✕</button></div>
   <div id="locWarn"></div>
   <div class="fld" data-field="country">
-    <div class="fh"><label for="lCountry">Country</label><button data-hidefield="country">Hide this field</button></div>
+    <div class="fh"><label for="lCountry">Country</label><span class="fsum"></span><button data-hidefield="country">Hide this field</button></div>
     <div class="cbx"><div class="inp"><input id="lCountry" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lCountryList" autocomplete="off" placeholder="Any country: type to search"><button class="clr" id="lCountryClr" aria-label="Clear the country">✕</button></div>
       <div class="sugg cbl" id="lCountryList" role="listbox" aria-label="Countries" hidden></div></div>
     <p class="note">Optional: narrows the city list. Cities always show their country.</p>
@@ -282,19 +289,19 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
     <p class="note" id="lCityNote"></p>
   </div>
   <div class="fld" data-field="tz">
-    <div class="fh"><label for="lTz">Time zone</label><button data-hidefield="tz">Hide this field</button></div>
+    <div class="fh"><label for="lTz">Time zone</label><span class="fsum"></span><button data-hidefield="tz">Hide this field</button></div>
     <div class="cbx"><div class="inp"><input id="lTz" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lTzList" autocomplete="off" placeholder="Type to search: Paris, Hanoi, New York…"><button class="clr" id="lTzClr" aria-label="Back to automatic time zone">✕</button></div>
       <div class="sugg cbl" id="lTzList" role="listbox" aria-label="Time zones" hidden></div></div>
     <button class="link" id="lTzNow" style="align-self:flex-start">Use current time zone</button>
   </div>
-  <div class="fld" data-field="date"><div class="fh"><span>Date format</span><button data-hidefield="date">Hide this field</button></div><div class="chips2" id="lDate"></div></div>
-  <div class="fld" data-field="hour"><div class="fh"><span>Time</span><button data-hidefield="hour">Hide this field</button></div><div class="chips2" id="lHour"></div></div>
-  <div class="fld" data-field="week"><div class="fh"><span>Week starts on</span><button data-hidefield="week">Hide this field</button></div><div class="chips2" id="lWeek"></div></div>
-  <div class="fld" data-field="cal"><div class="fh"><label for="lCal">Also show another calendar</label><button data-hidefield="cal">Hide this field</button></div>
+  <div class="fld" data-field="date"><div class="fh"><span>Date format</span><span class="fsum"></span><button data-hidefield="date">Hide this field</button></div><div class="chips2" id="lDate"></div></div>
+  <div class="fld" data-field="hour"><div class="fh"><span>Time</span><span class="fsum"></span><button data-hidefield="hour">Hide this field</button></div><div class="chips2" id="lHour"></div></div>
+  <div class="fld" data-field="week"><div class="fh"><span>Week starts on</span><span class="fsum"></span><button data-hidefield="week">Hide this field</button></div><div class="chips2" id="lWeek"></div></div>
+  <div class="fld" data-field="cal"><div class="fh"><label for="lCal">Also show another calendar</label><span class="fsum"></span><button data-hidefield="cal">Hide this field</button></div>
     <div class="cbx"><div class="inp"><input id="lCal" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lCalList" autocomplete="off" placeholder="None: type to search"><button class="clr" id="lCalClr" aria-label="No other calendar">✕</button></div>
       <div class="sugg cbl" id="lCalList" role="listbox" aria-label="Calendars" hidden></div></div></div>
-  <div class="fld" data-field="digits"><div class="fh"><span>Digits</span><button data-hidefield="digits">Hide this field</button></div><div class="chips2" id="lDigits"></div></div>
-  <div class="fld" data-field="units"><div class="fh"><span>Units</span><button data-hidefield="units">Hide this field</button></div><div class="chips2" id="lTemp"></div><div class="chips2" id="lDist"></div></div>
+  <div class="fld" data-field="digits"><div class="fh"><span>Digits</span><span class="fsum"></span><button data-hidefield="digits">Hide this field</button></div><div class="chips2" id="lDigits"></div></div>
+  <div class="fld" data-field="units"><div class="fh"><span>Units</span><span class="fsum"></span><button data-hidefield="units">Hide this field</button></div><div class="chips2" id="lTemp"></div><div class="chips2" id="lDist"></div></div>
   <div class="fld"><div class="fh"><span>Widget</span></div><div class="chips2" id="lSizeChips"></div>
     <label class="opt"><input type="checkbox" id="lShowW"> Show the time and weather widget</label></div>
   <h3>Hidden items</h3><div id="lHidden"></div>
@@ -306,7 +313,7 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
 /* Time, place and local formats. Everything is saved only in this browser and can be changed. */
 const LOC = (() => {
   const KEY = "apa-locale-v1";
-  const DEF = { place: null, tz: "auto", date: "auto", hour: "auto", week: "auto", cal: "none", digits: "latn", temp: "c", dist: "km",
+  const DEF = { place: null, country: "", tz: "auto", date: "auto", hour: "auto", week: "auto", cal: "none", digits: "latn", temp: "c", dist: "km",
     w: { show: true, size: "m", x: null, y: null, hide: {} }, hideField: {} };
   let L; try { L = { ...structuredClone(DEF), ...(JSON.parse(localStorage.getItem(KEY)) || {}) }; L.w = { ...DEF.w, ...L.w, hide: { ...(L.w?.hide || {}) } }; L.hideField = L.hideField || {}; } catch { L = structuredClone(DEF); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(L)); } catch {} };
@@ -317,11 +324,28 @@ const LOC = (() => {
   let ip = null;           // { cc, country, city, tz, lat, lon } from the connection, if available
   const listeners = [];
 
-  const tz = () => L.tz !== "auto" ? L.tz : (L.place?.tz || deviceTz);
+  // For countries with several time zones: the zone of the capital or the biggest city, until the user picks a city
+  const MAIN_TZ = { US: ["America/New_York"], CA: ["America/Toronto"], RU: ["Europe/Moscow"], BR: ["America/Sao_Paulo"], AU: ["Australia/Sydney"], MX: ["America/Mexico_City"],
+    ID: ["Asia/Jakarta"], KZ: ["Asia/Almaty"], CN: ["Asia/Shanghai"], AR: ["America/Buenos_Aires", "America/Argentina/Buenos_Aires"], CD: ["Africa/Kinshasa"], ES: ["Europe/Madrid"],
+    PT: ["Europe/Lisbon"], CL: ["America/Santiago"], EC: ["America/Guayaquil"], DE: ["Europe/Berlin"], MN: ["Asia/Ulan_Bator", "Asia/Ulaanbaatar"], UA: ["Europe/Kiev", "Europe/Kyiv"],
+    NZ: ["Pacific/Auckland"], KI: ["Pacific/Tarawa"], FM: ["Pacific/Ponape", "Pacific/Pohnpei"], MY: ["Asia/Kuala_Lumpur"], UZ: ["Asia/Tashkent"], PG: ["Pacific/Port_Moresby"],
+    GL: ["America/Godthab", "America/Nuuk"], CY: ["Asia/Nicosia"], PS: ["Asia/Gaza"], VN: ["Asia/Saigon", "Asia/Ho_Chi_Minh"], IN: ["Asia/Calcutta", "Asia/Kolkata"], PF: ["Pacific/Tahiti"] };
+  const countryZones = (c) => c ? Object.keys(TZ_CC).filter(z => TZ_CC[z] === c && zones.includes(z)) : [];
+  function autoTz() {
+    if (L.place?.tz) return L.place.tz;
+    if (L.country) { const zs = countryZones(L.country); if (zs.includes(deviceTz)) return deviceTz;
+      const main = (MAIN_TZ[L.country] || []).find(z => zs.includes(z)); if (main) return main; if (zs.length) return zs[0]; }
+    return deviceTz;
+  }
+  const tz = () => L.tz !== "auto" ? L.tz : autoTz();
+  // Which country each time zone belongs to (from the world time zone database)
+  const TZ_CC = Object.fromEntries("Africa/Abidjan:CI,Africa/Accra:GH,Africa/Addis_Ababa:ET,Africa/Algiers:DZ,Africa/Asmara:ER,Africa/Bamako:ML,Africa/Bangui:CF,Africa/Banjul:GM,Africa/Bissau:GW,Africa/Blantyre:MW,Africa/Brazzaville:CG,Africa/Bujumbura:BI,Africa/Cairo:EG,Africa/Casablanca:MA,Africa/Ceuta:ES,Africa/Conakry:GN,Africa/Dakar:SN,Africa/Dar_es_Salaam:TZ,Africa/Djibouti:DJ,Africa/Douala:CM,Africa/El_Aaiun:EH,Africa/Freetown:SL,Africa/Gaborone:BW,Africa/Harare:ZW,Africa/Johannesburg:ZA,Africa/Juba:SS,Africa/Kampala:UG,Africa/Khartoum:SD,Africa/Kigali:RW,Africa/Kinshasa:CD,Africa/Lagos:NG,Africa/Libreville:GA,Africa/Lome:TG,Africa/Luanda:AO,Africa/Lubumbashi:CD,Africa/Lusaka:ZM,Africa/Malabo:GQ,Africa/Maputo:MZ,Africa/Maseru:LS,Africa/Mbabane:SZ,Africa/Mogadishu:SO,Africa/Monrovia:LR,Africa/Nairobi:KE,Africa/Ndjamena:TD,Africa/Niamey:NE,Africa/Nouakchott:MR,Africa/Ouagadougou:BF,Africa/Porto-Novo:BJ,Africa/Sao_Tome:ST,Africa/Tripoli:LY,Africa/Tunis:TN,Africa/Windhoek:NA,America/Adak:US,America/Anchorage:US,America/Anguilla:AI,America/Antigua:AG,America/Araguaina:BR,America/Argentina/Buenos_Aires:AR,America/Argentina/Catamarca:AR,America/Argentina/Cordoba:AR,America/Argentina/Jujuy:AR,America/Argentina/La_Rioja:AR,America/Argentina/Mendoza:AR,America/Argentina/Rio_Gallegos:AR,America/Argentina/Salta:AR,America/Argentina/San_Juan:AR,America/Argentina/San_Luis:AR,America/Argentina/Tucuman:AR,America/Argentina/Ushuaia:AR,America/Aruba:AW,America/Asuncion:PY,America/Atikokan:CA,America/Bahia:BR,America/Bahia_Banderas:MX,America/Barbados:BB,America/Belem:BR,America/Belize:BZ,America/Blanc-Sablon:CA,America/Boa_Vista:BR,America/Bogota:CO,America/Boise:US,America/Cambridge_Bay:CA,America/Campo_Grande:BR,America/Cancun:MX,America/Caracas:VE,America/Cayenne:GF,America/Cayman:KY,America/Chicago:US,America/Chihuahua:MX,America/Ciudad_Juarez:MX,America/Costa_Rica:CR,America/Coyhaique:CL,America/Creston:CA,America/Cuiaba:BR,America/Curacao:CW,America/Danmarkshavn:GL,America/Dawson:CA,America/Dawson_Creek:CA,America/Denver:US,America/Detroit:US,America/Dominica:DM,America/Edmonton:CA,America/Eirunepe:BR,America/El_Salvador:SV,America/Fort_Nelson:CA,America/Fortaleza:BR,America/Glace_Bay:CA,America/Goose_Bay:CA,America/Grand_Turk:TC,America/Grenada:GD,America/Guadeloupe:GP,America/Guatemala:GT,America/Guayaquil:EC,America/Guyana:GY,America/Halifax:CA,America/Havana:CU,America/Hermosillo:MX,America/Indiana/Indianapolis:US,America/Indiana/Knox:US,America/Indiana/Marengo:US,America/Indiana/Petersburg:US,America/Indiana/Tell_City:US,America/Indiana/Vevay:US,America/Indiana/Vincennes:US,America/Indiana/Winamac:US,America/Inuvik:CA,America/Iqaluit:CA,America/Jamaica:JM,America/Juneau:US,America/Kentucky/Louisville:US,America/Kentucky/Monticello:US,America/Kralendijk:BQ,America/La_Paz:BO,America/Lima:PE,America/Los_Angeles:US,America/Lower_Princes:SX,America/Maceio:BR,America/Managua:NI,America/Manaus:BR,America/Marigot:MF,America/Martinique:MQ,America/Matamoros:MX,America/Mazatlan:MX,America/Menominee:US,America/Merida:MX,America/Metlakatla:US,America/Mexico_City:MX,America/Miquelon:PM,America/Moncton:CA,America/Monterrey:MX,America/Montevideo:UY,America/Montserrat:MS,America/Nassau:BS,America/New_York:US,America/Nome:US,America/Noronha:BR,America/North_Dakota/Beulah:US,America/North_Dakota/Center:US,America/North_Dakota/New_Salem:US,America/Nuuk:GL,America/Ojinaga:MX,America/Panama:PA,America/Paramaribo:SR,America/Phoenix:US,America/Port-au-Prince:HT,America/Port_of_Spain:TT,America/Porto_Velho:BR,America/Puerto_Rico:PR,America/Punta_Arenas:CL,America/Rankin_Inlet:CA,America/Recife:BR,America/Regina:CA,America/Resolute:CA,America/Rio_Branco:BR,America/Santarem:BR,America/Santiago:CL,America/Santo_Domingo:DO,America/Sao_Paulo:BR,America/Scoresbysund:GL,America/Sitka:US,America/St_Barthelemy:BL,America/St_Johns:CA,America/St_Kitts:KN,America/St_Lucia:LC,America/St_Thomas:VI,America/St_Vincent:VC,America/Swift_Current:CA,America/Tegucigalpa:HN,America/Thule:GL,America/Tijuana:MX,America/Toronto:CA,America/Tortola:VG,America/Vancouver:CA,America/Whitehorse:CA,America/Winnipeg:CA,America/Yakutat:US,Antarctica/Casey:AQ,Antarctica/Davis:AQ,Antarctica/DumontDUrville:AQ,Antarctica/Macquarie:AU,Antarctica/Mawson:AQ,Antarctica/McMurdo:AQ,Antarctica/Palmer:AQ,Antarctica/Rothera:AQ,Antarctica/Syowa:AQ,Antarctica/Troll:AQ,Antarctica/Vostok:AQ,Arctic/Longyearbyen:SJ,Asia/Aden:YE,Asia/Almaty:KZ,Asia/Amman:JO,Asia/Anadyr:RU,Asia/Aqtau:KZ,Asia/Aqtobe:KZ,Asia/Ashgabat:TM,Asia/Atyrau:KZ,Asia/Baghdad:IQ,Asia/Bahrain:BH,Asia/Baku:AZ,Asia/Bangkok:TH,Asia/Barnaul:RU,Asia/Beirut:LB,Asia/Bishkek:KG,Asia/Brunei:BN,Asia/Chita:RU,Asia/Colombo:LK,Asia/Damascus:SY,Asia/Dhaka:BD,Asia/Dili:TL,Asia/Dubai:AE,Asia/Dushanbe:TJ,Asia/Famagusta:CY,Asia/Gaza:PS,Asia/Hebron:PS,Asia/Ho_Chi_Minh:VN,Asia/Hong_Kong:HK,Asia/Hovd:MN,Asia/Irkutsk:RU,Asia/Jakarta:ID,Asia/Jayapura:ID,Asia/Jerusalem:IL,Asia/Kabul:AF,Asia/Kamchatka:RU,Asia/Karachi:PK,Asia/Kathmandu:NP,Asia/Khandyga:RU,Asia/Kolkata:IN,Asia/Krasnoyarsk:RU,Asia/Kuala_Lumpur:MY,Asia/Kuching:MY,Asia/Kuwait:KW,Asia/Macau:MO,Asia/Magadan:RU,Asia/Makassar:ID,Asia/Manila:PH,Asia/Muscat:OM,Asia/Nicosia:CY,Asia/Novokuznetsk:RU,Asia/Novosibirsk:RU,Asia/Omsk:RU,Asia/Oral:KZ,Asia/Phnom_Penh:KH,Asia/Pontianak:ID,Asia/Pyongyang:KP,Asia/Qatar:QA,Asia/Qostanay:KZ,Asia/Qyzylorda:KZ,Asia/Riyadh:SA,Asia/Sakhalin:RU,Asia/Samarkand:UZ,Asia/Seoul:KR,Asia/Shanghai:CN,Asia/Singapore:SG,Asia/Srednekolymsk:RU,Asia/Taipei:TW,Asia/Tashkent:UZ,Asia/Tbilisi:GE,Asia/Tehran:IR,Asia/Thimphu:BT,Asia/Tokyo:JP,Asia/Tomsk:RU,Asia/Ulaanbaatar:MN,Asia/Urumqi:CN,Asia/Ust-Nera:RU,Asia/Vientiane:LA,Asia/Vladivostok:RU,Asia/Yakutsk:RU,Asia/Yangon:MM,Asia/Yekaterinburg:RU,Asia/Yerevan:AM,Atlantic/Azores:PT,Atlantic/Bermuda:BM,Atlantic/Canary:ES,Atlantic/Cape_Verde:CV,Atlantic/Faroe:FO,Atlantic/Madeira:PT,Atlantic/Reykjavik:IS,Atlantic/South_Georgia:GS,Atlantic/St_Helena:SH,Atlantic/Stanley:FK,Australia/Adelaide:AU,Australia/Brisbane:AU,Australia/Broken_Hill:AU,Australia/Darwin:AU,Australia/Eucla:AU,Australia/Hobart:AU,Australia/Lindeman:AU,Australia/Lord_Howe:AU,Australia/Melbourne:AU,Australia/Perth:AU,Australia/Sydney:AU,Europe/Amsterdam:NL,Europe/Andorra:AD,Europe/Astrakhan:RU,Europe/Athens:GR,Europe/Belgrade:RS,Europe/Berlin:DE,Europe/Bratislava:SK,Europe/Brussels:BE,Europe/Bucharest:RO,Europe/Budapest:HU,Europe/Busingen:DE,Europe/Chisinau:MD,Europe/Copenhagen:DK,Europe/Dublin:IE,Europe/Gibraltar:GI,Europe/Guernsey:GG,Europe/Helsinki:FI,Europe/Isle_of_Man:IM,Europe/Istanbul:TR,Europe/Jersey:JE,Europe/Kaliningrad:RU,Europe/Kirov:RU,Europe/Kyiv:UA,Europe/Lisbon:PT,Europe/Ljubljana:SI,Europe/London:GB,Europe/Luxembourg:LU,Europe/Madrid:ES,Europe/Malta:MT,Europe/Mariehamn:AX,Europe/Minsk:BY,Europe/Monaco:MC,Europe/Moscow:RU,Europe/Oslo:NO,Europe/Paris:FR,Europe/Podgorica:ME,Europe/Prague:CZ,Europe/Riga:LV,Europe/Rome:IT,Europe/Samara:RU,Europe/San_Marino:SM,Europe/Sarajevo:BA,Europe/Saratov:RU,Europe/Simferopol:UA,Europe/Skopje:MK,Europe/Sofia:BG,Europe/Stockholm:SE,Europe/Tallinn:EE,Europe/Tirane:AL,Europe/Ulyanovsk:RU,Europe/Vaduz:LI,Europe/Vatican:VA,Europe/Vienna:AT,Europe/Vilnius:LT,Europe/Volgograd:RU,Europe/Warsaw:PL,Europe/Zagreb:HR,Europe/Zurich:CH,Indian/Antananarivo:MG,Indian/Chagos:IO,Indian/Christmas:CX,Indian/Cocos:CC,Indian/Comoro:KM,Indian/Kerguelen:TF,Indian/Mahe:SC,Indian/Maldives:MV,Indian/Mauritius:MU,Indian/Mayotte:YT,Indian/Reunion:RE,Pacific/Apia:WS,Pacific/Auckland:NZ,Pacific/Bougainville:PG,Pacific/Chatham:NZ,Pacific/Chuuk:FM,Pacific/Easter:CL,Pacific/Efate:VU,Pacific/Fakaofo:TK,Pacific/Fiji:FJ,Pacific/Funafuti:TV,Pacific/Galapagos:EC,Pacific/Gambier:PF,Pacific/Guadalcanal:SB,Pacific/Guam:GU,Pacific/Honolulu:US,Pacific/Kanton:KI,Pacific/Kiritimati:KI,Pacific/Kosrae:FM,Pacific/Kwajalein:MH,Pacific/Majuro:MH,Pacific/Marquesas:PF,Pacific/Midway:UM,Pacific/Nauru:NR,Pacific/Niue:NU,Pacific/Norfolk:NF,Pacific/Noumea:NC,Pacific/Pago_Pago:AS,Pacific/Palau:PW,Pacific/Pitcairn:PN,Pacific/Pohnpei:FM,Pacific/Port_Moresby:PG,Pacific/Rarotonga:CK,Pacific/Saipan:MP,Pacific/Tahiti:PF,Pacific/Tarawa:KI,Pacific/Tongatapu:TO,Pacific/Wake:UM,Pacific/Wallis:WF,Asia/Calcutta:IN,America/Godthab:GL,Asia/Saigon:VN,Europe/Kiev:UA,Asia/Katmandu:NP,Asia/Rangoon:MM,Atlantic/Faeroe:FO,Pacific/Enderbury:KI,Pacific/Ponape:FM,Pacific/Truk:FM,America/Buenos_Aires:AR,Asia/Ulan_Bator:MN,Europe/Uzhgorod:UA,America/Coral_Harbour:CA,Asia/Thimbu:BT,Asia/Dacca:BD,Africa/Asmera:ER,America/Indianapolis:US,America/Louisville:US,America/Catamarca:AR,America/Cordoba:AR,America/Jujuy:AR,America/Mendoza:AR,Asia/Chongqing:CN,Asia/Harbin:CN,Asia/Macao:MO,Asia/Ujung_Pandang:ID,Europe/Zaporozhye:UA,America/Nuuk:GL,Europe/Kyiv:UA,Asia/Kolkata:IN,Asia/Ho_Chi_Minh:VN,Asia/Kathmandu:NP,Asia/Yangon:MM".split(",").map(x => x.split(":")));
   // the connection's place is trusted only when it agrees with the device's clock (a VPN can move it far away)
   const ipOk = () => !!ip && !!ip.tz && offset(ip.tz) === offset(deviceTz);
   const devRegion = (() => { try { return new Intl.Locale(navigator.language).maximize().region || ""; } catch { return (navigator.language.split("-")[1] || "").toUpperCase(); } })();
-  const cc = () => L.place?.cc || (ipOk() ? ip.cc : "") || devRegion || ip?.cc || "FR";
+  // Country used for the usual formats, from the most to the least reliable clue:
+  // the chosen city, the connection (if it matches the clock), the time zone, then the browser's language setting.
+  const cc = () => L.place?.cc || L.country || (ipOk() ? ip.cc : "") || TZ_CC[L.tz !== "auto" ? L.tz : deviceTz] || devRegion || ip?.cc || "FR";
   const hc = () => L.hour === "24" ? "-hc-h23" : L.hour === "12" ? "-hc-h12" : "";
   const loc = () => `${lang}-u-nu-${L.digits}` + hc();      // words (weekdays, months) in the user's language
   const regionLoc = () => {                                    // number order of dates and clocks as used in the country
@@ -341,7 +365,9 @@ const LOC = (() => {
     const [a, b, c, sep] = ORDERS[L.date]; const v = { d: p.day, m: p.month, y: p.year };
     return [v[a], v[b], v[c]].join(sep) + (L.date === "ymd." ? "." : "");
   }
-  const time = (d, zone = tz()) => new Intl.DateTimeFormat(regionLoc(), { timeZone: zone, hour: "2-digit", minute: "2-digit" }).format(d);
+  const regionHc = () => { try { return new Intl.DateTimeFormat(regionLoc().split("-u-")[0], { hour: "numeric" }).resolvedOptions().hourCycle || "h23"; } catch { return "h23"; } };
+  const timeLoc = () => `${lang}-u-nu-${L.digits}-hc-` + (L.hour === "24" ? "h23" : L.hour === "12" ? "h12" : (regionHc() === "h11" || regionHc() === "h12" ? "h12" : "h23"));
+  const time = (d, zone = tz()) => new Intl.DateTimeFormat(timeLoc(), { timeZone: zone, hour: "2-digit", minute: "2-digit" }).format(d);
   const weekday = (d, zone = tz()) => { if (typeof d === "string") d = new Date(d + "T12:00:00Z"); return new Intl.DateTimeFormat(loc(), { timeZone: zone, weekday: "short" }).format(d); };
   const extraCal = (d) => L.cal === "none" ? "" : new Intl.DateTimeFormat(`${lang}-u-ca-${L.cal}-nu-${L.digits}`, { timeZone: tz(), day: "numeric", month: "long", year: "numeric" }).format(d);
   const DIGITS = {};
@@ -381,7 +407,7 @@ const LOC = (() => {
   const WXI = { 0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",71:"🌨️",73:"🌨️",75:"❄️",80:"🌦️",81:"🌧️",82:"⛈️",95:"⛈️",96:"⛈️",99:"⛈️" };
   let wx = null, wxAt = 0;
   async function loadWx(force) {
-    const p = L.place || (ipOk() && ip.lat != null ? ip : null);
+    const p = L.place || (ipOk() && (!L.country || ip.cc === L.country) && ip.lat != null ? ip : null);
     if (!p || p.lat == null) { wx = null; return; }
     if (!force && wx && wx.key === p.lat + "," + p.lon && Date.now() - wxAt < 15 * 60000) return;
     try {
@@ -397,20 +423,32 @@ const LOC = (() => {
     const w = W(); if (!w) return;
     w.hidden = !L.w.show;
     w.className = "wdg " + (L.w.size === "min" ? "min" : L.w.size);
-    const now = new Date(), s = L.w.size, h = L.w.hide;
+    // what is shown: widget pieces closed with ✕, and sections folded in Settings (folding hides their information on screen)
+    const now = new Date(), s = L.w.size, h = L.w.hide, f = L.hideField;
     $("wTime").textContent = time(now);
-    const extra = s === "l" ? extraCal(now) : "";
+    const extra = s === "l" && !f.cal ? extraCal(now) : "";
     $("wDate").textContent = weekday(now) + " " + date(now) + (extra ? " · " + extra : "");
-    const p = L.place || (ipOk() && ip.city ? { name: ip.city, cc: ip.cc } : null);
-    $("wPlace").textContent = p ? (s === "l" ? placeLine(p) + " · " + tzLabel(tz()).split(" ")[0] : p.name + (p.cc ? ", " + p.cc : "")) : tzLabel(tz());
+    const p = L.place || (L.country && !(ipOk() && ip.cc === L.country) ? { name: countryName(L.country), cc: "", isCountry: true } : null) || (ipOk() && ip.city ? { name: ip.city, cc: ip.cc } : null);
+    let line = "";
+    if (p) {
+      const city = p.isCountry ? "" : p.name, region = s === "l" && p.admin1 && p.admin1 !== p.name ? p.admin1 : "";
+      const ctry = f.country ? "" : (p.isCountry ? p.name : (s === "l" ? countryName(p.cc) : p.cc));
+      line = [city, region, ctry].filter(Boolean).join(", ");
+    }
+    const tzPart = s === "l" && !f.tz ? tzLabel(tz()).split(" ")[0] : "";
+    $("wPlace").textContent = [line, tzPart].filter(Boolean).join(" · ") || (f.tz ? "" : tzLabel(tz()));
     if (wx) { $("wWxIc").textContent = WXI[wx.code] || "🌡️"; $("wWxT").textContent = temp(wx.t); $("wWxD").textContent = s === "l" ? temp(wx.min, false) + " / " + temp(wx.max, false) : ""; }
     else { $("wWxIc").textContent = ""; $("wWxT").textContent = ""; $("wWxD").textContent = ""; }
     const show = (piece, on) => w.querySelectorAll(`[data-piece="${piece}"]`).forEach(e => e.hidden = !on);
-    show("clock", !h.clock); show("date", s === "l" && !h.date); show("place", (s === "m" || s === "l") && !h.place);
-    show("weather", (s === "m" || s === "l") && !h.weather && !!wx);
+    const vis = { clock: !h.clock && !f.hour, date: s === "l" && !h.date && !f.date, place: (s === "m" || s === "l") && !h.place && !!$("wPlace").textContent,
+      weather: (s === "m" || s === "l") && !h.weather && !f.units && !!wx };
+    Object.entries(vis).forEach(([k, on]) => show(k, on));
+    // nothing left to show: keep a small clock dot so the widget can be found again
+    if (L.w.size !== "min" && !Object.values(vis).some(Boolean)) w.className = "wdg min";
     digitizeEl(w);
     place();
   }
+
   function place() {   // keep the widget on screen; default corner follows the writing direction
     const w = W(); if (!w || w.hidden) return;
     const rtl = getComputedStyle(document.documentElement).direction === "rtl";
@@ -467,7 +505,8 @@ const LOC = (() => {
   const COUNTRIES = "AF AX AL DZ AS AD AO AI AQ AG AR AM AW AU AT AZ BS BH BD BB BY BE BZ BJ BM BT BO BQ BA BW BR IO BN BG BF BI CV KH CM CA KY CF TD CL CN CX CC CO KM CG CD CK CR CI HR CU CW CY CZ DK DJ DM DO EC EG SV GQ ER EE SZ ET FK FO FJ FI FR GF PF GA GM GE DE GH GI GR GL GD GP GU GT GG GN GW GY HT VA HN HK HU IS IN ID IR IQ IE IM IL IT JM JP JE JO KZ KE KI KP KR KW KG LA LV LB LS LR LY LI LT LU MO MG MW MY MV ML MT MH MQ MR MU YT MX FM MD MC MN ME MS MA MZ MM NA NR NP NL NC NZ NI NE NG NU NF MK MP NO OM PK PW PS PA PG PY PE PH PN PL PT PR QA RE RO RU RW BL SH KN LC MF PM VC WS SM ST SA SN RS SC SL SG SX SK SI SB SO ZA GS SS ES LK SD SR SJ SE CH SY TW TJ TZ TH TL TG TK TO TT TN TR TM TC TV UG UA AE GB US UY UZ VU VE VN VG VI WF EH YE ZM ZW".split(" ");
   let zones = []; try { zones = Intl.supportedValuesOf("timeZone"); } catch { zones = [deviceTz, "UTC"]; }
   if (!zones.includes(deviceTz)) zones.push(deviceTz);
-  let pickedCountry = "";
+  // the Country field: saved, used for the usual formats and to narrow the city search
+  const getCountry = () => L.place?.cc || L.country || "";
   /* Searchable menu: type to filter, arrows to move, Enter to pick, Esc to close. */
   const undigit = (x) => String(x).replace(/[\u0660-\u0669]/g, c => c.charCodeAt(0) - 0x660).replace(/[\u06F0-\u06F9]/g, c => c.charCodeAt(0) - 0x6F0)
     .replace(/[\u0966-\u096F]/g, c => c.charCodeAt(0) - 0x966).replace(/[\u09E6-\u09EF]/g, c => c.charCodeAt(0) - 0x9E6).replace(/[\u0E50-\u0E59]/g, c => c.charCodeAt(0) - 0xE50);
@@ -476,7 +515,7 @@ const LOC = (() => {
     const inp = $(id), box = $(id + "List"); let items = [], act = -1;
     const draw = () => {
       const q = norm(inp.value === digitize(shown()) ? "" : inp.value);
-      items = getItems().filter(it => !q || norm(it.label + " " + (it.sub || "") + " " + (it.keys || "")).includes(q)).slice(0, 80);
+      items = getItems().filter(it => !q || norm(it.label + " " + (it.sub || "") + " " + (it.keys || "")).includes(q));   // the full list, A to Z
       act = items.length ? 0 : -1;
       box.innerHTML = items.length ? items.map((it, i) => `<button type="button" role="option" id="${id}-o${i}" aria-selected="${i === act}" data-i="${i}" class="${it.cur ? "cur" : ""}"><b>${esc(it.label)}</b>${it.sub ? `<small>${esc(it.sub)}</small>` : ""}</button>`).join("")
         : `<p class="note" style="padding:8px 12px">No match. Try another spelling${id === "lTz" ? ", a big city nearby, or choose your city above: its time zone is set automatically" : ""}.</p>`;
@@ -488,6 +527,7 @@ const LOC = (() => {
     const hide = () => { box.hidden = true; inp.setAttribute("aria-expanded", "false"); inp.removeAttribute("aria-activedescendant"); };
     const pick = (i) => { const it = items[i]; if (!it) return; hide(); onPick(it.v); inp.value = digitize(shown()); };
     inp.addEventListener("focus", () => { inp.select(); draw(); });
+    inp.addEventListener("click", () => { if (inp.value === digitize(shown())) inp.select(); if (box.hidden) draw(); });   // clicking again after a choice starts a new search
     inp.addEventListener("input", draw);
     inp.addEventListener("blur", () => setTimeout(() => { hide(); inp.value = digitize(shown()); }, 120));
     inp.addEventListener("keydown", (e) => {
@@ -519,13 +559,16 @@ const LOC = (() => {
     const now = new Date();
     // warning when the device and the connection disagree
     const ipTz = ip?.tz;
-    $("locWarn").innerHTML = ipTz && ipTz !== deviceTz && L.tz === "auto" && !L.place && offset(ipTz) !== offset(deviceTz)
+    $("locWarn").innerHTML = ipTz && ipTz !== deviceTz && L.tz === "auto" && !L.place && !L.country && offset(ipTz) !== offset(deviceTz)
       ? `<div class="warn" role="status"><b>Two different places detected</b>Your device is set to ${esc(tzLabel(deviceTz))}, but your connection seems to come from ${esc(ip.country || ip.cc)}, ${esc(tzLabel(ipTz))}. A VPN, a proxy or a nearby border can cause this.
          <div class="chips2"><button type="button" id="keepDev">Keep my device time</button><button type="button" id="useIp">Use ${esc(ip.city || ip.country)} time</button></div></div>` : "";
     if ($("keepDev")) { $("keepDev").onclick = () => { L.tz = deviceTz; save(); renderDrawer(); changed(); }; $("useIp").onclick = () => { L.tz = ipTz; save(); renderDrawer(); changed(); }; }
     // country
     cCountry.refresh();
-    $("lCityNote").textContent = L.place ? "Now: " + placeLine(L.place) + " · " + tzLabel(L.place.tz) : (ipOk() && ip.city ? "Detected from your connection: " + ip.city + ", " + countryName(ip.cc) + ". Pick your city to be sure." : "Pick your city for the right weather and time zone.");
+    const czs = countryZones(L.country);
+    $("lCityNote").textContent = L.place ? "Now: " + placeLine(L.place) + " · " + tzLabel(L.place.tz)
+      : L.country ? (czs.length > 1 ? countryName(L.country) + " has several time zones (the clock shows " + zoneName(autoTz()) + " for now). Pick your city, or your time zone below, so it is right." : "Pick your city in " + countryName(L.country) + " for the local weather.")
+      : (ipOk() && ip.city ? "Detected from your connection: " + ip.city + ", " + countryName(ip.cc) + ". Pick your city to be sure." : "Pick your city for the right weather and time zone.");
     if (!$("lCity").value && L.place) $("lCity").value = L.place.name;
     cTz.refresh();
     // formats
@@ -549,9 +592,19 @@ const LOC = (() => {
     chips("lSizeChips", [["s", "Small"], ["m", "Medium"], ["l", "Large"], ["min", "Minimized"]], L.w.size, v => { setSize(v); });
     $("lShowW").checked = L.w.show;
     // hidden fields and pieces
-    document.querySelectorAll("#locDrawer [data-field]").forEach(el => el.hidden = !!L.hideField[el.dataset.field]);
-    const hidden = Object.keys(L.hideField).filter(k => L.hideField[k]).map(k => ["f:" + k, { country: "Country field", tz: "Time zone field", date: "Date format field", hour: "Time field", week: "Week start field", cal: "Other calendar field", digits: "Digits field", units: "Units field" }[k] || k])
-      .concat(Object.keys(L.w.hide).filter(k => L.w.hide[k]).map(k => ["w:" + k, "Widget: " + PIECE_NAMES[k]]));
+    // a hidden field folds into one line (title + current value + Show); its setting keeps working
+    const ex31 = new Date("2026-12-31T12:00:00Z");
+    const SUM = { country: () => getCountry() ? countryName(getCountry()) : "Any country", tz: () => tzLabel(tz()), date: () => date(ex31, { zone: "UTC" }),
+      hour: () => ({ auto: "Usual", "24": "24 h", "12": "12 h" }[L.hour]), week: () => L.week === "auto" ? "Usual" : wd(+L.week),
+      cal: () => L.cal === "none" ? "None" : (CALS.find(c => c[0] === L.cal) || ["", L.cal])[1], digits: () => ({ latn: "123", arab: "١٢٣", arabext: "۱۲۳", deva: "१२३", beng: "১২৩", thai: "๑๒๓" }[L.digits]),
+      units: () => (L.temp === "f" ? "°F" : "°C") + ", " + (L.dist === "mi" ? "miles" : "km") };
+    document.querySelectorAll("#locDrawer [data-field]").forEach(el => {
+      const k = el.dataset.field, folded = !!L.hideField[k], b = el.querySelector("[data-hidefield]");
+      el.hidden = false; el.classList.toggle("folded", folded);
+      if (b) { b.textContent = folded ? "Show" : "Hide this field"; b.setAttribute("aria-expanded", String(!folded)); }
+      const sm = el.querySelector(".fsum"); if (sm && SUM[k]) { sm.textContent = ": " + SUM[k](); if (k === "digits") sm.setAttribute("data-keep-digits", ""); }
+    });
+    const hidden = Object.keys(L.w.hide).filter(k => L.w.hide[k]).map(k => ["w:" + k, "Widget: " + PIECE_NAMES[k]]);
     $("lHidden").innerHTML = hidden.length ? hidden.map(([k, t]) => `<label class="opt"><input type="checkbox" data-unhide="${k}"> ${esc(t)}</label>`).join("") + `<button class="link" id="lShowAll">Show everything again</button>`
       : `<p class="note">Nothing is hidden.</p>`;
     $("lHidden").querySelectorAll("[data-unhide]").forEach(cb => cb.onchange = () => { const [t, k] = cb.dataset.unhide.split(":"); if (t === "f") delete L.hideField[k]; else delete L.w.hide[k]; save(); renderDrawer(); paint(); });
@@ -563,15 +616,15 @@ const LOC = (() => {
     const q = $("lCity").value.trim(), box = $("lSugg");
     if (q.length < 2) { box.innerHTML = ""; return; }
     try {
-      const p = new URLSearchParams({ name: q, count: "10", language: lang, format: "json" }); if (pickedCountry) p.set("countryCode", pickedCountry);
+      const p = new URLSearchParams({ name: q, count: "10", language: lang, format: "json" }); if (getCountry()) p.set("countryCode", getCountry());
       const j = await (await fetch("https://geocoding-api.open-meteo.com/v1/search?" + p)).json();
       const res = (j.results || []).sort((a, b) => (b.population || 0) - (a.population || 0));
       if (q !== $("lCity").value.trim()) return;
       box.innerHTML = res.length ? `<div class="sugg">${res.map((r, i) => `<button type="button" data-i="${i}"><b>${esc(r.name)}</b><small>${esc([r.admin1, r.country || countryName(r.country_code)].filter(Boolean).join(" · "))} · ${esc(tzLabel(r.timezone || "UTC").split(" ")[0])}</small></button>`).join("")}</div><p class="note">Biggest places first. Pick one.</p>`
-        : `<p class="note">No city found${pickedCountry ? " in " + esc(countryName(pickedCountry)) : ""}. Check the spelling${pickedCountry ? " or clear the country" : ""}.</p>`;
+        : `<p class="note">No city found${getCountry() ? " in " + esc(countryName(getCountry())) : ""}. Check the spelling${getCountry() ? " or clear the country" : ""}.</p>`;
       digitizeEl(box);
       box.querySelectorAll("[data-i]").forEach(b => b.onclick = () => { const r = res[+b.dataset.i];
-        L.place = { id: r.id, name: r.name, admin1: r.admin1 || "", cc: r.country_code, lat: r.latitude, lon: r.longitude, tz: r.timezone || deviceTz };
+        L.place = { id: r.id, name: r.name, admin1: r.admin1 || "", cc: r.country_code, lat: r.latitude, lon: r.longitude, tz: r.timezone || deviceTz }; L.country = r.country_code; cCountry.refresh();
         save(); box.innerHTML = ""; $("lCity").value = r.name; loadWx(true).then(() => { paint(); changed(); }); renderDrawer(); });
     } catch { box.innerHTML = `<p class="note">The city search is not available right now. Try again in a moment.</p>`; }
   }
@@ -600,13 +653,27 @@ const LOC = (() => {
       if (e.target?.getAttribute?.("aria-expanded") === "true") return;   // first Esc closes the open list only (the menu handles it)
       e.stopImmediatePropagation(); close();
     }, true);
-    const names = () => COUNTRIES.map(c => ({ v: c, label: countryName(c), keys: c, cur: c === pickedCountry })).sort((a, b) => a.label.localeCompare(b.label, lang));
-    cCountry = combo("lCountry", () => [{ v: "", label: "Any country", cur: !pickedCountry }, ...names()], (v) => { pickedCountry = v; searchCity(); }, () => pickedCountry ? countryName(pickedCountry) : "");
-    $("lCountryClr").onclick = () => { pickedCountry = ""; cCountry.refresh(); searchCity(); };
+    const names = () => COUNTRIES.map(c => ({ v: c, label: countryName(c), keys: c, cur: c === getCountry() })).sort((a, b) => a.label.localeCompare(b.label, lang));
+    const setCountry = (v) => {
+      L.country = v;
+      if (L.place && L.place.cc !== v) { L.place = null; $("lCity").value = ""; }   // a city in another country no longer fits
+      if (v && L.tz !== "auto" && TZ_CC[L.tz] && TZ_CC[L.tz] !== v) L.tz = "auto";       // nor a time zone of another country
+      loadWx(true).then(paint);
+      save(); searchCity(); renderDrawer(); changed();
+    };
+    cCountry = combo("lCountry", () => [{ v: "", label: "Any country", cur: !getCountry() }, ...names()], setCountry, () => getCountry() ? countryName(getCountry()) : "");
+    $("lCountryClr").onclick = () => {
+      const before = { country: L.country, place: L.place, tz: L.tz };
+      L.country = ""; L.place = null; L.tz = "auto"; $("lCity").value = ""; save(); loadWx(true).then(paint); renderDrawer(); changed(); cCountry.refresh();
+      toast("Back to your device's place and time", () => { Object.assign(L, before); save(); loadWx(true).then(paint); renderDrawer(); changed(); cCountry.refresh(); });
+    };
     const zoneItems = () => { const cur = L.tz;
-      return [{ v: "auto", label: "Automatic", sub: tzLabel(L.place?.tz || deviceTz), cur: cur === "auto" },
-        ...zones.map(z => ({ v: z, label: tzLabel(z), sub: z.split("/")[0] + " · " + zoneName(z), keys: zoneName(z) + " " + z.split("/").pop().replace(/_/g, " ") + " " + (TZ_ALIAS[z] || ""), cur: cur === z })).sort((a, b) => a.label.localeCompare(b.label))]; };
-    cTz = combo("lTz", zoneItems, (v) => { L.tz = v; save(); changed(); renderDrawer(); }, () => L.tz === "auto" ? "Automatic: " + tzLabel(L.place?.tz || deviceTz) : tzLabel(L.tz));
+      const mine = new Set(countryZones(L.place?.cc || L.country));
+      return [{ v: "auto", label: "Automatic", sub: tzLabel(autoTz()), cur: cur === "auto" },
+        ...zones.filter(z => mine.has(z)).map(z => ({ v: z, label: tzLabel(z), sub: "In " + countryName(L.place?.cc || L.country) + " · " + zoneName(z), keys: zoneName(z) + " " + (TZ_ALIAS[z] || ""), cur: cur === z })).sort((a, b) => a.label.localeCompare(b.label)),
+        ...zones.filter(z => !mine.has(z)).map(z => ({ v: z, label: tzLabel(z), sub: z.split("/")[0] + " · " + zoneName(z), keys: zoneName(z) + " " + z.split("/").pop().replace(/_/g, " ") + " " + (TZ_ALIAS[z] || ""), cur: cur === z })).sort((a, b) => a.label.localeCompare(b.label))]; };
+    cTz = combo("lTz", zoneItems, (v) => { L.tz = v; save(); changed(); renderDrawer();
+        const c = L.place?.cc || L.country; if (v !== "auto" && c && TZ_CC[v] && TZ_CC[v] !== c) toast("This time zone is in " + countryName(TZ_CC[v]) + ", not " + countryName(c), () => { L.tz = "auto"; save(); changed(); renderDrawer(); }); }, () => L.tz === "auto" ? "Automatic: " + tzLabel(autoTz()) : tzLabel(L.tz));
     $("lTzClr").onclick = () => { L.tz = "auto"; save(); changed(); renderDrawer(); };
     const calItems = () => { const now = new Date(); return CALS.map(([v, t]) => ({ v, label: t, sub: v === "none" ? "" : (() => { const s0 = L.cal; L.cal = v; const x = extraCal(now); L.cal = s0; return x; })(), cur: v === L.cal })); };
     cCal = combo("lCal", calItems, (v) => { L.cal = v; save(); changed(); }, () => L.cal === "none" ? "" : (CALS.find(c => c[0] === L.cal) || ["", L.cal])[1]);
@@ -616,10 +683,12 @@ const LOC = (() => {
     $("lHere").onclick = hereToPlace;
     $("lTzNow").onclick = () => { L.tz = deviceTz; save(); changed(); renderDrawer(); };
     $("lShowW").onchange = () => { L.w.show = $("lShowW").checked; save(); paint(); };
-    document.querySelectorAll("#locDrawer [data-hidefield]").forEach(b => b.onclick = () => { const k = b.dataset.hidefield; L.hideField[k] = true; save(); renderDrawer();
-      toast("Field hidden", () => { delete L.hideField[k]; save(); renderDrawer(); }); });
+    document.querySelectorAll("#locDrawer [data-hidefield]").forEach(b => b.onclick = () => { const k = b.dataset.hidefield;
+      if (L.hideField[k]) { delete L.hideField[k]; save(); renderDrawer(); paint(); return; }
+      L.hideField[k] = true; save(); renderDrawer(); paint();
+      toast("Hidden in Settings and on screen", () => { delete L.hideField[k]; save(); renderDrawer(); paint(); }); });
     $("toastU").onclick = () => { if (undo) undo(); $("toast").hidden = true; undo = null; };
-    $("lReset").onclick = () => { if (!confirm("Reset time, place and formats?")) return; L = structuredClone(DEF); save(); pickedCountry = ""; $("lCity").value = ""; cCountry.refresh(); loadWx(true).then(paint); renderDrawer(); changed(); };
+    $("lReset").onclick = () => { if (!confirm("Reset time, place and formats?")) return; L = structuredClone(DEF); save(); $("lCity").value = ""; cCountry.refresh(); loadWx(true).then(paint); renderDrawer(); changed(); };
     paint();
     setInterval(paint, 15000);
     setInterval(() => loadWx().then(paint), 15 * 60000);
