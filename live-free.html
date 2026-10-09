@@ -222,6 +222,10 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
 .wdg.min .dot{display:block}
 .toast{position:fixed;z-index:60;left:50%;transform:translateX(-50%);bottom:max(20px,env(safe-area-inset-bottom,0px));background:#15171c;color:#fff;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;font-size:.92rem;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .toast button{border:0;background:none;color:#a9b4ff;font-weight:700;cursor:pointer;padding:0}
+.calask{position:fixed;z-index:55;inset-inline-end:16px;bottom:max(16px,env(safe-area-inset-bottom,0px));width:min(360px,calc(100vw - 32px));background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 36px rgba(20,24,40,.18);padding:14px 16px}
+.calask p{margin:0 0 10px;font-size:.95rem}
+.calask .row2{display:flex;gap:8px;flex-wrap:wrap}
+.calask .fine{margin:10px 0 0;font-size:.78rem;color:var(--muted)}
 #locDrawer .fld{display:flex;flex-direction:column;gap:6px;margin:14px 0 0}
 #locDrawer .fh{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:700}
 #locDrawer .fh button{border:0;background:none;color:var(--accent);font-weight:600;font-size:.8rem;cursor:pointer;padding:4px 0}
@@ -307,15 +311,20 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
   <h3>Hidden items</h3><div id="lHidden"></div>
   <h3>Reset</h3><button class="btn ghost" id="lReset">Reset time, place and formats</button>
 </aside>
+<div class="calask" id="calAsk" role="dialog" aria-labelledby="calAskT" hidden>
+  <p id="calAskT"></p>
+  <div class="row2"><button class="btn" id="calYes">Yes, show it</button><button class="btn ghost" id="calNo">No thanks</button></div>
+  <p class="fine">You can change this anytime in Time and place.</p>
+</div>
 <div class="toast" id="toast" role="status" hidden><span id="toastT"></span><button id="toastU">Undo</button></div>
 
 <script>
 /* Time, place and local formats. Everything is saved only in this browser and can be changed. */
 const LOC = (() => {
   const KEY = "apa-locale-v1";
-  const DEF = { place: null, country: "", tz: "auto", date: "auto", hour: "auto", week: "auto", cal: "none", digits: "latn", temp: "c", dist: "km",
+  const DEF = { place: null, country: "", calAsked: {}, tz: "auto", date: "auto", hour: "auto", week: "auto", cal: "none", digits: "latn", temp: "c", dist: "km",
     w: { show: true, size: "m", x: null, y: null, hide: {} }, hideField: {} };
-  let L; try { L = { ...structuredClone(DEF), ...(JSON.parse(localStorage.getItem(KEY)) || {}) }; L.w = { ...DEF.w, ...L.w, hide: { ...(L.w?.hide || {}) } }; L.hideField = L.hideField || {}; } catch { L = structuredClone(DEF); }
+  let L; try { L = { ...structuredClone(DEF), ...(JSON.parse(localStorage.getItem(KEY)) || {}) }; L.calAsked = L.calAsked || {}; L.w = { ...DEF.w, ...L.w, hide: { ...(L.w?.hide || {}) } }; L.hideField = L.hideField || {}; } catch { L = structuredClone(DEF); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(L)); } catch {} };
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
@@ -350,7 +359,7 @@ const LOC = (() => {
   const loc = () => `${lang}-u-nu-${L.digits}` + hc();      // words (weekdays, months) in the user's language
   const regionLoc = () => {                                    // number order of dates and clocks as used in the country
     let base = "en-" + cc(); try { const m = new Intl.Locale("und-" + cc()).maximize(); base = m.language + "-" + m.region; } catch {}   // e.g. ja-JP, fr-FR (no script part: some engines then ignore the region)
-    return `${base}-u-nu-${L.digits}` + hc();
+    return `${base}-u-ca-gregory-nu-${L.digits}` + hc();   // the main date is always the international calendar; another one is only added if chosen
   };
   const parts = (d, opt) => Object.fromEntries(new Intl.DateTimeFormat(loc(), { timeZone: tz(), ...opt }).formatToParts(d).map(p => [p.type, p.value]));
 
@@ -369,7 +378,27 @@ const LOC = (() => {
   const timeLoc = () => `${lang}-u-nu-${L.digits}-hc-` + (L.hour === "24" ? "h23" : L.hour === "12" ? "h12" : (regionHc() === "h11" || regionHc() === "h12" ? "h12" : "h23"));
   const time = (d, zone = tz()) => new Intl.DateTimeFormat(timeLoc(), { timeZone: zone, hour: "2-digit", minute: "2-digit" }).format(d);
   const weekday = (d, zone = tz()) => { if (typeof d === "string") d = new Date(d + "T12:00:00Z"); return new Intl.DateTimeFormat(loc(), { timeZone: zone, weekday: "short" }).format(d); };
-  const extraCal = (d) => L.cal === "none" ? "" : new Intl.DateTimeFormat(`${lang}-u-ca-${L.cal}-nu-${L.digits}`, { timeZone: tz(), day: "numeric", month: "long", year: "numeric" }).format(d);
+  // The other calendar, always named so nobody wonders what it is: "Persian: Mehr 17, 1405", "Chinese: 8th month, day 29 · Fire Horse year"
+  const CAL_NAMES = { "islamic-umalqura": "Hijri", islamic: "Hijri", persian: "Persian", chinese: "Chinese", dangi: "Korean", hebrew: "Hebrew", buddhist: "Buddhist",
+    japanese: "Japanese", indian: "Indian", ethiopic: "Ethiopian", coptic: "Coptic", roc: "Minguo" };
+  const STEM = { "甲": "Wood", "乙": "Wood", "丙": "Fire", "丁": "Fire", "戊": "Earth", "己": "Earth", "庚": "Metal", "辛": "Metal", "壬": "Water", "癸": "Water" };
+  const BRANCH = { "子": "Rat", "丑": "Ox", "寅": "Tiger", "卯": "Rabbit", "辰": "Dragon", "巳": "Snake", "午": "Horse", "未": "Goat", "申": "Monkey", "酉": "Rooster", "戌": "Dog", "亥": "Pig" };
+  const ord = (n) => { const v = n % 100; return n + (v >= 11 && v <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[n % 10] || "th")); };
+  function extraCal(d) {
+    if (L.cal === "none") return "";
+    const name = CAL_NAMES[L.cal] || L.cal;
+    try {
+      if (L.cal === "chinese" || L.cal === "dangi") {
+        const p = Object.fromEntries(new Intl.DateTimeFormat(`en-u-ca-${L.cal}`, { timeZone: tz(), month: "numeric", day: "numeric", year: "numeric" }).formatToParts(d).map(x => [x.type, x.value]));
+        const yz = new Intl.DateTimeFormat(`zh-u-ca-chinese`, { timeZone: tz(), year: "numeric" }).formatToParts(d).find(x => x.type === "yearName")?.value || "";
+        const leap = /bis|leap/i.test(p.month) ? "leap " : "", m = parseInt(p.month, 10), day = parseInt(p.day, 10);
+        const animal = yz.length === 2 && STEM[yz[0]] && BRANCH[yz[1]] ? ` · ${STEM[yz[0]]} ${BRANCH[yz[1]]} year` : "";
+        return `${name}: ${leap}${ord(m)} month, day ${day}${animal}`;
+      }
+      const v = new Intl.DateTimeFormat(`${lang}-u-ca-${L.cal}-nu-${L.digits}`, { timeZone: tz(), day: "numeric", month: "long", year: "numeric" }).format(d);
+      return name + ": " + v.replace(/\s*ERA\d\b/g, "");   // some calendars come with a raw era code (Ethiopian, Coptic)
+    } catch { return ""; }
+  }
   const DIGITS = {};
   const digitMap = (sys) => DIGITS[sys] || (DIGITS[sys] = (() => { try { const f = new Intl.NumberFormat("en-u-nu-" + sys, { useGrouping: false }); return [..."0123456789"].map(d => f.format(+d)); } catch { return null; } })());
   const digitize = (str) => { const m = L.digits === "latn" ? null : digitMap(L.digits); return m ? String(str).replace(/[0-9]/g, d => m[+d]) : String(str); };
@@ -660,7 +689,20 @@ const LOC = (() => {
   let last = null;
   function open() { last = document.activeElement; renderDrawer(); $("locDrawer").hidden = false; $("locBg").hidden = false; $("locX").focus(); }
   function close() { $("locDrawer").hidden = true; $("locBg").hidden = true; $("lSugg").innerHTML = ""; (last || document.body).focus?.(); }
-  function changed() { paint(); listeners.forEach(f => { try { f(); } catch {} }); }
+  /* Countries where a second calendar is part of daily life: offer it once, never switch it on by itself */
+  const LOCAL_CAL = { IR: "persian", AF: "persian", SA: "islamic-umalqura", IL: "hebrew", TH: "buddhist", ET: "ethiopic" };
+  function askCalendar() {
+    const c = cc(), cal = LOCAL_CAL[c];
+    L.calAsked = L.calAsked || {};
+    if (!cal || L.cal !== "none" || L.calAsked[c] || !$("calAsk").hidden) return;
+    const s0 = L.cal; L.cal = cal; const today = extraCal(new Date()).replace(/^[^:]+:\s*/, ""); L.cal = s0;
+    $("calAskT").textContent = `In ${countryName(c)}, the ${CAL_NAMES[cal]} calendar is common. Show it next to the date? Today is ${today}.`;
+    digitizeEl($("calAskT"));
+    const done = (yes) => { L.calAsked[c] = true; if (yes) L.cal = cal; save(); $("calAsk").hidden = true; changed(); if (!$("locDrawer").hidden) renderDrawer(); };
+    $("calYes").onclick = () => done(true); $("calNo").onclick = () => done(false);
+    $("calAsk").hidden = false;
+  }
+  function changed() { paint(); listeners.forEach(f => { try { f(); } catch {} }); askCalendar(); }
 
   function init() {
     wireWidget();
@@ -693,7 +735,7 @@ const LOC = (() => {
     cTz = combo("lTz", zoneItems, (v) => { L.tz = v; save(); changed(); renderDrawer();
         const c = L.place?.cc || L.country; if (v !== "auto" && c && TZ_CC[v] && TZ_CC[v] !== c) toast("This time zone is in " + countryName(TZ_CC[v]) + ", not " + countryName(c), () => { L.tz = "auto"; save(); changed(); renderDrawer(); }); }, () => L.tz === "auto" ? "Automatic: " + tzLabel(autoTz()) : tzLabel(L.tz));
     $("lTzClr").onclick = () => { L.tz = "auto"; save(); changed(); renderDrawer(); };
-    const calItems = () => { const now = new Date(); return CALS.map(([v, t]) => ({ v, label: t, sub: v === "none" ? "" : (() => { const s0 = L.cal; L.cal = v; const x = extraCal(now); L.cal = s0; return x; })(), cur: v === L.cal })); };
+    const calItems = () => { const now = new Date(); return CALS.map(([v, t]) => ({ v, label: t, sub: v === "none" ? "" : (() => { const s0 = L.cal; L.cal = v; const x = extraCal(now); L.cal = s0; return "Today: " + x.replace(/^[^:]+:\s*/, ""); })(), cur: v === L.cal })); };
     cCal = combo("lCal", calItems, (v) => { L.cal = v; save(); changed(); }, () => L.cal === "none" ? "" : (CALS.find(c => c[0] === L.cal) || ["", L.cal])[1]);
     $("lCalClr").onclick = () => { L.cal = "none"; save(); changed(); cCal.refresh(); };
     $("lCity").oninput = () => { clearTimeout(searchT); searchT = setTimeout(searchCity, 300); };
@@ -713,7 +755,7 @@ const LOC = (() => {
     // the connection's country (may be wrong with a VPN): used only as a first guess and for the warning
     fetch("https://ipapi.co/json/").then(r => r.json()).then(j => {
       if (j && j.country_code) ip = { cc: j.country_code, country: j.country_name, city: j.city, tz: j.timezone, lat: j.latitude, lon: j.longitude };
-    }).catch(() => {}).finally(() => loadWx(true).then(paint));
+    }).catch(() => {}).finally(() => { loadWx(true).then(paint); askCalendar(); });
   }
   return { init, open, date, time, weekday, temp, dist, tz, digitize, digitizeEl, price, onChange: (f) => listeners.push(f), get place() { return L.place; } };
 })();
