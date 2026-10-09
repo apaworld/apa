@@ -329,7 +329,7 @@ const LOC = (() => {
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   const deviceTz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; } })();
-  const lang = (document.documentElement.lang || navigator.language || "en").split("-")[0];
+  let lang = (document.documentElement.lang || navigator.language || "en").split("-")[0];   // follows the page language (updated on change)
   let ip = null;           // { cc, country, city, tz, lat, lon } from the connection, if available
   const listeners = [];
 
@@ -482,7 +482,9 @@ const LOC = (() => {
     const w = W(); if (!w || w.hidden) return;
     const rtl = getComputedStyle(document.documentElement).direction === "rtl";
     const bw = w.offsetWidth, bh = w.offsetHeight, vw = innerWidth, vh = innerHeight;
-    let x = L.w.x == null ? (rtl ? 12 : vw - bw - 12) : L.w.x * vw, y = L.w.y == null ? 70 : L.w.y * vh;
+    // default place: top corner on the dashboard, bottom corner on pages with forms (set by the page with data-widget-place="bottom")
+    const bottom = document.body.dataset.widgetPlace === "bottom";
+    let x = L.w.x == null ? (rtl ? 12 : vw - bw - 12) : L.w.x * vw, y = L.w.y == null ? (bottom ? vh - bh - 16 : 70) : L.w.y * vh;
     x = Math.min(Math.max(8, x), vw - bw - 8); y = Math.min(Math.max(8, y), vh - bh - 8);
     w.style.left = x + "px"; w.style.top = y + "px";
   }
@@ -706,6 +708,9 @@ const LOC = (() => {
 
   function init() {
     wireWidget();
+    // when the page changes language or writing direction: new words, and the widget moves to the reading-start corner if not placed by the user
+    new MutationObserver(() => { lang = (document.documentElement.lang || "en").split("-")[0]; Object.keys(DIGITS).forEach(k => delete DIGITS[k]); paint(); if (!$("locDrawer").hidden) renderDrawer(); })
+      .observe(document.documentElement, { attributes: true, attributeFilter: ["lang", "dir"] });
     $("locX").onclick = close; $("locBg").onclick = close;
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape" || $("locDrawer").hidden) return;
