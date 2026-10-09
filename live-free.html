@@ -280,7 +280,7 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
   <div class="dh"><h2 id="locTitle">Time and place</h2><button class="ib x" id="locX" aria-label="Close time and place">✕</button></div>
   <div id="locWarn"></div>
   <div class="fld" data-field="country">
-    <div class="fh"><label for="lCountry">Country</label><span class="fsum"></span><button data-hidefield="country">Hide this field</button></div>
+    <div class="fh"><label for="lCountry">Country</label><span class="fsum"></span><button data-hidefield="country">Minimize ▴</button></div>
     <div class="cbx"><div class="inp"><input id="lCountry" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lCountryList" autocomplete="off" placeholder="Any country: type to search"><button class="clr" id="lCountryClr" aria-label="Clear the country">✕</button></div>
       <div class="sugg cbl" id="lCountryList" role="listbox" aria-label="Countries" hidden></div></div>
     <p class="note">Optional: narrows the city list. Cities always show their country.</p>
@@ -293,19 +293,19 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
     <p class="note" id="lCityNote"></p>
   </div>
   <div class="fld" data-field="tz">
-    <div class="fh"><label for="lTz">Time zone</label><span class="fsum"></span><button data-hidefield="tz">Hide this field</button></div>
+    <div class="fh"><label for="lTz">Time zone</label><span class="fsum"></span><button data-hidefield="tz">Minimize ▴</button></div>
     <div class="cbx"><div class="inp"><input id="lTz" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lTzList" autocomplete="off" placeholder="Type to search: Paris, Hanoi, New York…"><button class="clr" id="lTzClr" aria-label="Back to automatic time zone">✕</button></div>
       <div class="sugg cbl" id="lTzList" role="listbox" aria-label="Time zones" hidden></div></div>
     <button class="link" id="lTzNow" style="align-self:flex-start">Use current time zone</button>
   </div>
-  <div class="fld" data-field="date"><div class="fh"><span>Date format</span><span class="fsum"></span><button data-hidefield="date">Hide this field</button></div><div class="chips2" id="lDate"></div></div>
-  <div class="fld" data-field="hour"><div class="fh"><span>Time</span><span class="fsum"></span><button data-hidefield="hour">Hide this field</button></div><div class="chips2" id="lHour"></div></div>
-  <div class="fld" data-field="week"><div class="fh"><span>Week starts on</span><span class="fsum"></span><button data-hidefield="week">Hide this field</button></div><div class="chips2" id="lWeek"></div></div>
-  <div class="fld" data-field="cal"><div class="fh"><label for="lCal">Also show another calendar</label><span class="fsum"></span><button data-hidefield="cal">Hide this field</button></div>
+  <div class="fld" data-field="date"><div class="fh"><span>Date format</span><span class="fsum"></span><button data-hidefield="date">Minimize ▴</button></div><div class="chips2" id="lDate"></div></div>
+  <div class="fld" data-field="hour"><div class="fh"><span>Time</span><span class="fsum"></span><button data-hidefield="hour">Minimize ▴</button></div><div class="chips2" id="lHour"></div></div>
+  <div class="fld" data-field="week"><div class="fh"><span>Week starts on</span><span class="fsum"></span><button data-hidefield="week">Minimize ▴</button></div><div class="chips2" id="lWeek"></div></div>
+  <div class="fld" data-field="cal"><div class="fh"><label for="lCal">Also show another calendar</label><span class="fsum"></span><button data-hidefield="cal">Minimize ▴</button></div>
     <div class="cbx"><div class="inp"><input id="lCal" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lCalList" autocomplete="off" placeholder="None: type to search"><button class="clr" id="lCalClr" aria-label="No other calendar">✕</button></div>
       <div class="sugg cbl" id="lCalList" role="listbox" aria-label="Calendars" hidden></div></div></div>
-  <div class="fld" data-field="digits"><div class="fh"><span>Digits</span><span class="fsum"></span><button data-hidefield="digits">Hide this field</button></div><div class="chips2" id="lDigits"></div></div>
-  <div class="fld" data-field="units"><div class="fh"><span>Units</span><span class="fsum"></span><button data-hidefield="units">Hide this field</button></div><div class="chips2" id="lTemp"></div><div class="chips2" id="lDist"></div></div>
+  <div class="fld" data-field="digits"><div class="fh"><span>Digits</span><span class="fsum"></span><button data-hidefield="digits">Minimize ▴</button></div><div class="chips2" id="lDigits"></div></div>
+  <div class="fld" data-field="units"><div class="fh"><span>Units</span><span class="fsum"></span><button data-hidefield="units">Minimize ▴</button></div><div class="chips2" id="lTemp"></div><div class="chips2" id="lDist"></div></div>
   <div class="fld"><div class="fh"><span>Widget</span></div><div class="chips2" id="lSizeChips"></div>
     <label class="opt"><input type="checkbox" id="lShowW"> Show the time and weather widget</label></div>
   <h3>Hidden items</h3><div id="lHidden"></div>
@@ -647,7 +647,7 @@ const LOC = (() => {
     document.querySelectorAll("#locDrawer [data-field]").forEach(el => {
       const k = el.dataset.field, folded = !!L.hideField[k], b = el.querySelector("[data-hidefield]");
       el.hidden = false; el.classList.toggle("folded", folded);
-      if (b) { b.textContent = folded ? "Show" : "Hide this field"; b.setAttribute("aria-expanded", String(!folded)); }
+      if (b) { b.textContent = folded ? "Expand ▾" : "Minimize ▴"; b.setAttribute("aria-label", (folded ? "Expand " : "Minimize ") + (el.querySelector(".fh > :first-child")?.textContent || "")); b.setAttribute("aria-expanded", String(!folded)); }
       const sm = el.querySelector(".fsum"); if (sm && SUM[k]) { sm.textContent = ": " + SUM[k](); if (k === "digits") sm.setAttribute("data-keep-digits", ""); }
     });
     const hidden = Object.keys(L.w.hide).filter(k => L.w.hide[k]).map(k => ["w:" + k, "Widget: " + PIECE_NAMES[k]]);
@@ -746,7 +746,7 @@ const LOC = (() => {
     document.querySelectorAll("#locDrawer [data-hidefield]").forEach(b => b.onclick = () => { const k = b.dataset.hidefield;
       if (L.hideField[k]) { delete L.hideField[k]; save(); renderDrawer(); paint(); return; }
       L.hideField[k] = true; save(); renderDrawer(); paint();
-      toast("Hidden in Settings and on screen", () => { delete L.hideField[k]; save(); renderDrawer(); paint(); }); });
+      toast("Minimized here, and hidden on screen", () => { delete L.hideField[k]; save(); renderDrawer(); paint(); }); });
     $("toastU").onclick = () => { if (undo) undo(); $("toast").hidden = true; undo = null; };
     $("lReset").onclick = () => { if (!confirm("Reset time, place and formats?")) return; L = structuredClone(DEF); save(); $("lCity").value = ""; cCountry.refresh(); loadWx(true).then(paint); renderDrawer(); changed(); };
     paint();
