@@ -80,6 +80,9 @@ h1{font-size:clamp(1.4rem,3vw,1.8rem);letter-spacing:-.03em;margin:14px 0 2px}
 .msg{color:var(--muted);font-size:.93rem;margin:0}
 .msg.err{color:var(--err)}
 .more{margin-top:8px}
+.bsrch{margin:0 0 10px}
+.bsrch input{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--paper)}
+.bsrch input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .scroll{max-height:440px;overflow:auto;border-bottom:1px solid var(--line)}
 .scroll thead th{position:sticky;top:0;background:var(--paper);z-index:1}
 td.st{width:30px;padding-right:0}
@@ -330,7 +333,8 @@ const LOC = (() => {
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   const deviceTz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; } })();
   let lang = (document.documentElement.lang || navigator.language || "en").split("-")[0];   // follows the page language (updated on change)
-  let ip = null;           // { cc, country, city, tz, lat, lon } from the connection, if available
+  let ip = null;
+  let gps = null;   // { name, cc, lat, lon } from the device's location, for this visit only (never saved)           // { cc, country, city, tz, lat, lon } from the connection, if available
   const listeners = [];
 
   // For countries with several time zones: the zone of the capital or the biggest city, until the user picks a city
@@ -436,7 +440,7 @@ const LOC = (() => {
   const WXI = { 0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",71:"🌨️",73:"🌨️",75:"❄️",80:"🌦️",81:"🌧️",82:"⛈️",95:"⛈️",96:"⛈️",99:"⛈️" };
   let wx = null, wxAt = 0;
   async function loadWx(force) {
-    const p = L.place || (ipOk() && (!L.country || ip.cc === L.country) && ip.lat != null ? ip : null);
+    const p = L.place || (gps && (!L.country || gps.cc === L.country) ? gps : null) || (ipOk() && (!L.country || ip.cc === L.country) && ip.lat != null ? ip : null);
     if (!p || p.lat == null) { wx = null; return; }
     if (!force && wx && wx.key === p.lat + "," + p.lon && Date.now() - wxAt < 15 * 60000) return;
     try {
@@ -457,7 +461,9 @@ const LOC = (() => {
     $("wTime").textContent = time(now);
     const extra = s === "l" && !f.cal ? extraCal(now) : "";
     $("wDate").textContent = weekday(now) + " " + date(now) + (extra ? " · " + extra : "");
-    const p = L.place || (L.country && !(ipOk() && ip.cc === L.country) ? { name: countryName(L.country), cc: "", isCountry: true } : null) || (ipOk() && ip.city ? { name: ip.city, cc: ip.cc } : null);
+    const p = L.place || (gps && (!L.country || gps.cc === L.country) ? gps : null)
+      || (L.country && !(ipOk() && ip.cc === L.country) ? { name: countryName(L.country), cc: "", isCountry: true } : null)
+      || (ipOk() && ip.city ? { name: "~" + ip.city, cc: ip.cc, approx: true } : null);   // "~" = approximate, from the internet connection
     let line = "";
     if (p) {
       const city = p.isCountry ? "" : p.name, region = s === "l" && p.admin1 && p.admin1 !== p.name ? p.admin1 : "";
@@ -466,6 +472,7 @@ const LOC = (() => {
     }
     const tzPart = s === "l" && !f.tz ? tzLabel(tz()).split(" ")[0] : "";
     $("wPlace").textContent = [line, tzPart].filter(Boolean).join(" · ") || (f.tz ? "" : tzLabel(tz()));
+    $("wPlace").title = p?.approx ? "Approximate place, from your internet connection. Choose your city in Time and place, or use your location." : "";
     if (wx) { $("wWxIc").textContent = WXI[wx.code] || "🌡️"; $("wWxT").textContent = temp(wx.t); $("wWxD").textContent = s === "l" ? temp(wx.min, false) + " / " + temp(wx.max, false) : ""; }
     else { $("wWxIc").textContent = ""; $("wWxT").textContent = ""; $("wWxD").textContent = ""; }
     const show = (piece, on) => w.querySelectorAll(`[data-piece="${piece}"]`).forEach(e => e.hidden = !on);
@@ -483,7 +490,7 @@ const LOC = (() => {
     const rtl = getComputedStyle(document.documentElement).direction === "rtl";
     const bw = w.offsetWidth, bh = w.offsetHeight, vw = innerWidth, vh = innerHeight;
     // default place: top corner on the dashboard, bottom corner on pages with forms (set by the page with data-widget-place="bottom")
-    const bottom = document.body.dataset.widgetPlace === "bottom";
+    const bottom = document.body.dataset.widgetPlace === "bottom" || vw < 700;
     let x = L.w.x == null ? (rtl ? 12 : vw - bw - 12) : L.w.x * vw, y = L.w.y == null ? (bottom ? vh - bh - 16 : 70) : L.w.y * vh;
     x = Math.min(Math.max(8, x), vw - bw - 8); y = Math.min(Math.max(8, y), vh - bh - 8);
     w.style.left = x + "px"; w.style.top = y + "px";
@@ -762,7 +769,9 @@ const LOC = (() => {
       if (j && j.country_code) ip = { cc: j.country_code, country: j.country_name, city: j.city, tz: j.timezone, lat: j.latitude, lon: j.longitude };
     }).catch(() => {}).finally(() => { loadWx(true).then(paint); askCalendar(); });
   }
-  return { init, open, date, time, weekday, temp, dist, tz, digitize, digitizeEl, price, onChange: (f) => listeners.push(f), get place() { return L.place; } };
+  // the page found a precise position (e.g. "Use my location"): use it for the widget too, unless the user chose a city
+  function setDetected(p) { gps = p && p.lat != null ? { name: p.name, cc: p.cc || "", lat: p.lat, lon: p.lon } : null; loadWx(true).then(paint); }
+  return { init, open, setDetected, date, time, weekday, temp, dist, tz, digitize, digitizeEl, price, onChange: (f) => listeners.push(f), get place() { return L.place; } };
 })();
 document.addEventListener("DOMContentLoaded", LOC.init);
 </script>
@@ -870,13 +879,13 @@ const SERVICES = {
 };
 const serviceFor = (p) => { const d = String(p.insee || "").slice(0, 2);
   return d === "69" ? "velov" : ["75", "77", "78", "91", "92", "93", "94", "95"].includes(d) ? "velib" : null; };
-let velovAll = null;
+let velovAll = null, bikeQ = "", bikeQT = null;
 async function velovStations(insee) {
   if (!velovAll) velovAll = getJSON("https://download.data.grandlyon.com/ws/rdata/jcd_jcdecaux.jcdvelov/all.json?compact=false&maxfeatures=1000&start=1")
     .then(j => (j.values || []).map(v => Array.isArray(v) ? Object.fromEntries(j.fields.map((f, i) => [f, v[i]])) : v))
     .catch(e => { velovAll = null; throw e; });
   return (await velovAll).filter(v => String(v.code_insee) === String(insee))
-    .map(v => ({ name: v.name || v.address || "Station", open: String(v.status).toUpperCase() !== "CLOSED", bikes: +v.available_bikes || 0, spaces: +v.available_bike_stands || 0, ebikes: null, when: v.last_update, lat: coord(v.lat), lon: coord(v.lng) }));
+    .map(v => ({ name: v.name || v.address || "Station", open: String(v.status).toUpperCase() !== "CLOSED", bikes: +v.available_bikes || 0, spaces: +v.available_bike_stands || 0, ebikes: null, when: v.last_update, lat: coord(v.lat), lon: coord(v.lng), code: String(v.number ?? "") }));
 }
 const VELIB = "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel";
 async function velibByCommune(code) {    // all stations of one commune: one "export" call, or pages of 100 as a fallback
@@ -904,7 +913,7 @@ async function velibStations(insee) {
     raw = (await velibParis).filter(v => Math.floor(+v.stationcode / 1000) === +m[1]);
   } else raw = await velibByCommune(insee);
   return raw.map(v => ({ name: v.name || "Station", open: v.is_installed === "OUI" && v.is_renting === "OUI",
-    bikes: +v.numbikesavailable || 0, spaces: +v.numdocksavailable || 0, ebikes: v.ebike == null ? null : +v.ebike, when: v.duedate, lat: coord(v.coordonnees_geo?.lat), lon: coord(v.coordonnees_geo?.lon) }));
+    bikes: +v.numbikesavailable || 0, spaces: +v.numdocksavailable || 0, ebikes: v.ebike == null ? null : +v.ebike, when: v.duedate, lat: coord(v.coordonnees_geo?.lat), lon: coord(v.coordonnees_geo?.lon), code: String(v.stationcode ?? "") }));
 }
 const bikes = (p) => once("bikes:" + p.insee, async () => {
   const service = serviceFor(p);
@@ -926,7 +935,7 @@ const foldRow = (id, gk, title, n, cols) => { const open = !S.fold[id + ":" + gk
   return `<tr class="grp"><th colspan="${cols}"><button class="fold" data-fold="${id}:${gk}" aria-expanded="${open}"><span aria-hidden="true">${open ? "▾" : "▸"}</span>${title} <span class="c">(${n})</span></button></th></tr>`; };
 /* min/max sorting: ▼ = lowest first, ▲ = highest first. Items without a value go last. */
 const SORT_DEFAULT = { fuel: { k: "Gazole", d: "asc" }, bikes: { k: "bikes", d: "desc" }, weather: { k: "date", d: "asc" } };
-const getSort = (id, hasDist = false) => { const x = S.sort[id] || SORT_DEFAULT[id]; return x.k === "dist" && !hasDist ? SORT_DEFAULT[id] : x; };
+const getSort = (id, hasDist = false) => { const x = S.sort[id] || (hasDist && (id === "bikes" || id === "fuel") ? { k: "dist", d: "asc" } : SORT_DEFAULT[id]); return x.k === "dist" && !hasDist ? SORT_DEFAULT[id] : x; };
 function sortItems(id, items, hasDist) {
   const { k, d } = getSort(id, hasDist), m = d === "asc" ? 1 : -1;
   return items.slice().sort((a, b) => {
@@ -1030,9 +1039,15 @@ const R = {
         v: { bikes: v.open ? v.bikes : null, spaces: v.open ? v.spaces : null, dist: dm },
         html: `<td class="wrapc">${esc(v.name)}</td>${hasDist ? `<td class="num">${dm == null ? "–" : fmtDist(dm)}</td>` : ""}${v.open ? `<td class="num">${v.bikes}${v.ebikes != null ? `<span class="eb">${v.ebikes} electric</span>` : ""}</td><td class="num">${v.spaces}</td>` : `<td class="closed">Closed</td><td>–</td>`}<td>${esc(anyDateTime(v.when))}</td>` }; });
       const near = hasDist ? items.filter(x => x.v.dist != null && x.open && x.bikes > 0).sort((a, b) => a.v.dist - b.v.dist)[0] : null;
+      // find a station by its number or name (the number is on every station's sign)
+      const nq = (x) => String(x).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+      const q = nq(bikeQ.trim()), codes = Object.fromEntries(list.map(v => [p.insee + "|" + v.name, v.code || ""]));
+      const shown = q ? items.filter(x => nq(x.label + " " + codes[x.key]).includes(q)) : items;
+      const search = `<div class="bsrch"><label class="sr" for="bikeQ">Find a station by number or name</label><input id="bikeQ" data-bikesearch inputmode="search" autocomplete="off" value="${esc(bikeQ)}" placeholder="Find a station: number or name (e.g. 8041)"></div>`;
+      if (q && !shown.length) return note + search + `<p class="msg">No station matches “${esc(bikeQ)}” in ${esc(p.label)}.</p>`;
       return note + `<p class="sum">${list.length} stations in ${esc(p.label)}, ${total} bikes available now</p>`
-        + (near ? `<p class="near">Nearest station with bikes: ${esc(near.label)}, ${fmtDist(near.v.dist)} (${near.bikes} bikes)</p>` : "") + locHint(p) + sortedLine("bikes", hasDist)
-        + listView("bikes", items, { max, hasDist, head: ["Station", ...(hasDist ? [{ t: "Distance", k: "dist" }] : []), { t: "Bikes", k: "bikes" }, { t: "Free spaces", k: "spaces" }, "Updated"],
+        + (near ? `<p class="near">Nearest station with bikes: ${esc(near.label)}, ${fmtDist(near.v.dist)} (${near.bikes} bikes)</p>` : "") + locHint(p) + search + sortedLine("bikes", hasDist)
+        + listView("bikes", shown, { max, hasDist, head: ["Station", ...(hasDist ? [{ t: "Distance", k: "dist" }] : []), { t: "Bikes", k: "bikes" }, { t: "Free spaces", k: "spaces" }, "Updated"],
         groups: [["avail", "Bikes available", x => x.open && x.bikes > 0], ["empty", "No bikes right now", x => x.open && x.bikes === 0], ["closed", "Closed", x => !x.open]] });
     },
     async all(places) {
@@ -1078,6 +1093,7 @@ function locate() {
       if (p) Object.assign(p, t);
       else { p = { ...t, name: "📍 My location", here: true, id: "p" + Date.now().toString(36) }; S.places.unshift(p); }
       S.active = p.id; here = { lat, lon, acc: accuracy, placeId: p.id };
+      LOC.setDetected({ name: t.label, cc: "FR", lat, lon });   // the clock widget shows the same place
       S.sort.fuel = { k: "dist", d: "asc" }; S.sort.bikes = { k: "dist", d: "asc" };
       tempCompare = false; save(); renderAll();
       msg.textContent = `You are in ${t.label} (${t.pc}), position accurate to about ${fmtDist(accuracy)}. It is used only in this browser to show distances, and is not saved.`;
@@ -1174,6 +1190,10 @@ function cardEl(id) {
   });
   el.querySelector(".mx").onclick = () => el.classList.contains("max") ? unmax() : maximize(id);
   el.querySelector(".x").onclick = () => { if (el.classList.contains("max")) return unmax(); S.hidden.push(id); save(); renderAll(); };
+  el.addEventListener("input", (ev) => {
+    if (!ev.target.closest("[data-bikesearch]")) return;
+    bikeQ = ev.target.value; clearTimeout(bikeQT); bikeQT = setTimeout(() => fillCard(el, id, renderToken, "[data-bikesearch]"), 150);
+  });
   el.addEventListener("click", (ev) => {
     const m = ev.target.closest("[data-more]"), st = ev.target.closest("[data-star]"), fo = ev.target.closest("[data-fold]"), so = ev.target.closest("[data-sort]");
     if (so) { S.sort[id] = { k: so.dataset.sort, d: so.dataset.dir }; save(); fillCard(el, id, renderToken, `[data-sort="${so.dataset.sort}"][data-dir="${so.dataset.dir}"]`); }
@@ -1195,7 +1215,7 @@ async function fillCard(el, id, token = renderToken, refocus) {
     body.innerHTML = html + (src ? `<p class="src">Source: ${src}</p>` : "");
     LOC.digitizeEl(body);
     const box = body.querySelector(".scroll"); if (box) box.scrollTop = sc;
-    if (refocus) body.querySelector(refocus)?.focus();
+    if (refocus) { const f = body.querySelector(refocus); if (f) { f.focus(); if (f.setSelectionRange && f.value) f.setSelectionRange(f.value.length, f.value.length); } }
   } catch (e) { if (token === renderToken || max) body.innerHTML = `<p class="msg err">This card could not be loaded: ${esc(e.message)}.</p><p class="more"><button class="link" data-retry>Try again</button></p>`;
     const rb = body.querySelector("[data-retry]"); if (rb) rb.onclick = () => { body.innerHTML = `<p class="msg">Loading…</p>`; fillCard(el, id); }; }
 }
@@ -1291,6 +1311,13 @@ async function start() {
   }
   if (!S.places.some(p => p.id === S.active)) S.active = S.places[0].id;
   renderAll();
+  // location already allowed for this site and "My location" in use: find the position again, without asking
+  try {
+    if (S.places.some(p => p.here) && navigator.permissions?.query) {
+      const st = await navigator.permissions.query({ name: "geolocation" });
+      if (st.state === "granted") locate();
+    }
+  } catch {}
 }
 LOC.onChange(renderAll);
 $("timeBtn").onclick = LOC.open;
