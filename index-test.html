@@ -186,7 +186,17 @@ html[lang="ar"] .doc .doc-title,html[lang="zh"] .doc .doc-title{letter-spacing:0
 /* top bar user */
 body.wide footer{max-width:880px}
 .top-r{display:flex;align-items:center;gap:10px}
-.top-user{display:flex;align-items:center;gap:8px}
+.top-user{display:flex;align-items:center;gap:8px;position:relative}
+#logoutBtn{display:none}   /* Log out now lives in the menu under the photo */
+.um-chev{font-size:.7rem;color:var(--muted)}
+.user-menu{position:absolute;top:calc(100% + 8px);inset-inline-end:0;z-index:40;min-width:240px;background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px rgba(20,24,40,.16);padding:6px}
+.user-menu[hidden]{display:none}
+.user-menu .um-head{padding:10px 12px 8px;display:flex;flex-direction:column;gap:2px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.user-menu .um-head small{color:var(--muted);font-size:.82rem;overflow:hidden;text-overflow:ellipsis}
+.user-menu button{display:block;width:100%;text-align:start;border:0;background:none;padding:10px 12px;border-radius:9px;cursor:pointer;font:inherit;color:var(--ink)}
+.user-menu button:hover,.user-menu button:focus-visible{background:var(--accent-soft)}
+.user-menu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.user-menu .um-out{color:#c0322b}
 .avatar-btn{display:flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;padding:4px 6px;border-radius:999px;font-weight:600}
 .avatar-btn:hover{background:var(--soft)}
 @media (max-width:560px){#topName{display:none}}
@@ -279,8 +289,17 @@ html[lang="ar"] .cab-hello,html[lang="zh"] .cab-hello{letter-spacing:0}
   <div class="mark"><i aria-hidden="true"></i><span>Apacom</span></div>
   <div class="top-r">
   <div class="top-user" id="topUser" hidden>
-    <button type="button" class="avatar-btn" id="topAvatarBtn"><span class="avatar sm" id="topAvatar"></span><span id="topName"></span></button>
+    <button type="button" class="avatar-btn" id="topAvatarBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu"><span class="avatar sm" id="topAvatar"></span><span id="topName"></span><span class="um-chev" aria-hidden="true">▾</span></button>
     <button type="button" class="btn ghost sm" id="logoutBtn" data-t="logout"></button>
+    <div class="user-menu" id="userMenu" role="menu" aria-labelledby="topAvatarBtn" hidden>
+      <div class="um-head"><b id="umName"></b><small id="umEmail"></small></div>
+      <button type="button" role="menuitem" data-go="account"></button>
+      <button type="button" role="menuitem" data-go="profile"></button>
+      <button type="button" role="menuitem" data-go="place"></button>
+      <button type="button" role="menuitem" data-go="privacy"></button>
+      <hr>
+      <button type="button" role="menuitem" data-go="logout" class="um-out"></button>
+    </div>
   </div>
   <button type="button" class="btn ghost sm" id="topAuth" data-t="signInLink" hidden></button>
   <div class="lang">
@@ -1170,7 +1189,26 @@ function paintAvatar(el, p){
   else el.textContent = p ? initials(p) : "";
 }
 function renderTopUser(){ if(st.profile){ paintAvatar($("topAvatar"), st.profile); $("topName").textContent = st.profile.firstName; } }
-$("topAvatarBtn").onclick = ()=>{ if(st.profile) openCabinet(st.tab||"today"); };
+/* Menu under the photo: account pages and Log out, from any page */
+const UM_LABEL = { account:"tabAccount", profile:"tabProfile", place:"tabPlace", privacy:"tabPrivacy", logout:"logout" };
+function umOpen(){
+  if(!st.profile) return;
+  $("umName").textContent = (st.profile.firstName||"")+" "+(st.profile.lastName||""); $("umEmail").textContent = st.profile.email||"";
+  $("userMenu").querySelectorAll("[data-go]").forEach(b=>b.textContent=t(UM_LABEL[b.dataset.go]));
+  $("userMenu").hidden=false; $("topAvatarBtn").setAttribute("aria-expanded","true");
+  $("userMenu").querySelector("[data-go]").focus();
+}
+function umClose(refocus){ if($("userMenu").hidden) return; $("userMenu").hidden=true; $("topAvatarBtn").setAttribute("aria-expanded","false"); if(refocus) $("topAvatarBtn").focus(); }
+$("topAvatarBtn").onclick = (e)=>{ e.stopPropagation(); $("userMenu").hidden ? umOpen() : umClose(true); };
+$("userMenu").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ const g=b.dataset.go; umClose(false); if(g==="logout") logout(); else openCabinet(g); });
+$("userMenu").addEventListener("keydown", e=>{
+  const items=[...$("userMenu").querySelectorAll("[data-go]")], i=items.indexOf(document.activeElement);
+  if(e.key==="ArrowDown"){ e.preventDefault(); items[(i+1)%items.length].focus(); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); items[(i-1+items.length)%items.length].focus(); }
+  else if(e.key==="Escape"){ e.preventDefault(); umClose(true); }
+  else if(e.key==="Tab"){ umClose(false); }
+});
+document.addEventListener("click", e=>{ if(!$("userMenu").hidden && !$("userMenu").contains(e.target)) umClose(false); });
 
 /* ============ cabinet ============ */
 const DOMAINS = [
