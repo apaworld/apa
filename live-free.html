@@ -146,11 +146,33 @@ td small{color:var(--muted);display:block;font-size:.75rem}
 footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);padding-top:14px;margin-top:28px}
 @media (prefers-reduced-motion:no-preference){.card.max{animation:pop .15s ease-out}@keyframes pop{from{transform:scale(.98);opacity:.6}}}
 </style>
+<script src="version.js"></script>
+<style>
+/* BETA badge and notice */
+.beta{border:1px solid #f0c27a;background:#fff4e5;color:#7a4a00;font:inherit;font-size:.68rem;font-weight:800;letter-spacing:.04em;border-radius:999px;padding:2px 8px;margin-inline-start:8px;cursor:pointer;vertical-align:middle;white-space:nowrap}
+.beta:hover{border-color:#d8a04a}
+.beta-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff8e1;color:#5a3d00;border:1px solid #f0d27a;border-radius:12px;padding:9px 14px;margin:10px auto 0;max-width:1180px;font-size:.9rem;box-sizing:border-box}
+.beta-bar[hidden]{display:none}
+.beta-bar .bt{flex:1;min-width:200px}
+.beta-bar button{background:none;border:0;font:inherit;cursor:pointer}
+.beta-bar .bm{color:#2a3fe0;font-weight:700;text-decoration:underline}
+.beta-bar .bx{color:#7a4a00;font-size:1rem;padding:0 4px}
+#betaDlg{border:0;border-radius:16px;padding:0;max-width:min(520px,calc(100vw - 32px));box-shadow:0 20px 60px rgba(0,0,0,.25);color:var(--ink,#15171c);background:var(--paper,#fff)}
+#betaDlg::backdrop{background:rgba(10,12,20,.45)}
+#betaDlg .bd{padding:22px 24px;display:flex;flex-direction:column;gap:10px}
+#betaDlg h2{margin:0;font-size:1.2rem}
+#betaDlg p,#betaDlg li{margin:0;font-size:.95rem;line-height:1.5}
+#betaDlg ul{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px}
+#betaDlg .bv{font-size:.82rem;color:var(--muted,#5d6472)}
+#betaDlg .bc{align-self:flex-end;border:0;border-radius:10px;background:var(--accent,#2a3fe0);color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
+</style>
 </head>
 <body>
 <div class="wrap">
+<div class="beta-bar" id="betaBar" role="status" hidden><span class="bt" id="betaText"></span><button type="button" class="bm" id="betaMore"></button><button type="button" class="bx" id="betaX" aria-label="Close">✕</button></div>
+<dialog id="betaDlg" aria-labelledby="betaT"><div class="bd"><h2 id="betaT"></h2><p class="bv" id="betaV"></p><p id="betaP1"></p><p id="betaP2"></p><p id="betaP3"></p><h2 id="betaNewT" style="font-size:1rem;margin-top:6px"></h2><ul id="betaNotes"></ul><button type="button" class="bc" id="betaClose"></button></div></dialog>
   <div class="top">
-    <a class="mark" href="./"><i></i>Apacom</a>
+    <a class="mark" href="./"><i></i>Apacom</a><button type="button" class="beta" id="betaBadge"></button>
     <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="timeBtn" aria-haspopup="dialog">🕐 Time and place</button><button class="btn ghost" id="custBtn" aria-haspopup="dialog">⚙ Customize</button></span>
   </div>
   <h1>Live dashboard</h1>
@@ -1732,6 +1754,31 @@ async function start() {
 LOC.onChange(renderAll);
 $("timeBtn").onclick = LOC.open;
 start();
+</script>
+<script>
+/* BETA badge and notice: the number comes from version.js; the notice shows on the first visit and again after each new version */
+(function () {
+  const V = window.APA_VERSION || { stage: "BETA", v: "1.0", date: "", notes: [] };
+  const TXT = {"en": {"badge": "BETA {v}", "text": "APA is in beta (version {v}): it is being tested and updated continuously. Some features may change or contain errors.", "more": "More info", "title": "APA is in beta", "p1": "This is a free test version. We add and improve features often, sometimes several times a week.", "p2": "Things may change, move or have small errors. During the test, some data may also be reset.", "p3": "Found a problem or have an idea? Tell us: your feedback shapes APA.", "newt": "What's new in version {v}", "ver": "Version {v} · {d}", "close": "Close"}, "fr": {"badge": "BÊTA {v}", "text": "APA est en version bêta ({v}) : il est testé et mis à jour en continu. Certaines fonctions peuvent changer ou contenir des erreurs.", "more": "En savoir plus", "title": "APA est en version bêta", "p1": "C’est une version de test gratuite. Nous ajoutons et améliorons des fonctions souvent, parfois plusieurs fois par semaine.", "p2": "Des choses peuvent changer, se déplacer ou contenir de petites erreurs. Pendant le test, certaines données peuvent aussi être réinitialisées.", "p3": "Vous avez trouvé un problème ou une idée ? Dites-le-nous : vos retours font évoluer APA.", "newt": "Nouveautés de la version {v}", "ver": "Version {v} · {d}", "close": "Fermer"}, "zh": {"badge": "测试版 {v}", "text": "APA 目前为测试版（版本 {v}）：正在持续测试和更新。部分功能可能会变化或出现错误。", "more": "了解更多", "title": "APA 目前为测试版", "p1": "这是免费的测试版本。我们会经常添加和改进功能，有时每周多次。", "p2": "界面和功能可能会变化，也可能出现小错误。测试期间，部分数据可能会被重置。", "p3": "发现问题或有想法？请告诉我们：您的反馈将塑造 APA。", "newt": "版本 {v} 的新内容", "ver": "版本 {v} · {d}", "close": "关闭"}, "ar": {"badge": "تجريبي {v}", "text": "APA في مرحلة تجريبية (الإصدار {v}): يتم اختباره وتحديثه باستمرار. قد تتغير بعض الميزات أو تحتوي على أخطاء.", "more": "مزيد من المعلومات", "title": "APA في مرحلة تجريبية", "p1": "هذه نسخة تجريبية مجانية. نضيف الميزات ونحسّنها كثيرًا، أحيانًا عدة مرات في الأسبوع.", "p2": "قد تتغير بعض الأشياء أو تنتقل أو تحتوي على أخطاء صغيرة. وخلال فترة الاختبار قد تتم إعادة تعيين بعض البيانات.", "p3": "هل وجدت مشكلة أو لديك فكرة؟ أخبرنا: ملاحظاتك تشكّل APA.", "newt": "الجديد في الإصدار {v}", "ver": "الإصدار {v} · {d}", "close": "إغلاق"}};
+  const $b = (id) => document.getElementById(id);
+  const fill = (s) => s.replace("{v}", V.v).replace("{d}", (V.date || "").split("-").reverse().join("/"));
+  function render() {
+    const lang = (document.documentElement.lang || "en").slice(0, 2), T = TXT[lang] || TXT.en;
+    const badge = $b("betaBadge"); if (badge) { badge.textContent = fill(T.badge); badge.title = fill(T.text); }
+    $b("betaText").textContent = fill(T.text); $b("betaMore").textContent = T.more; $b("betaX").setAttribute("aria-label", T.close);
+    $b("betaT").textContent = T.title; $b("betaV").textContent = fill(T.ver); $b("betaP1").textContent = T.p1; $b("betaP2").textContent = T.p2; $b("betaP3").textContent = T.p3;
+    $b("betaNewT").textContent = fill(T.newt); $b("betaClose").textContent = T.close;
+    $b("betaNotes").innerHTML = ""; (V.notes || []).forEach(n => { const li = document.createElement("li"); li.textContent = n; $b("betaNotes").appendChild(li); });
+  }
+  let seen = null; try { seen = localStorage.getItem("apa_beta_seen"); } catch {}
+  $b("betaBar").hidden = seen === V.v;
+  const open = () => { try { $b("betaDlg").showModal(); } catch { $b("betaDlg").setAttribute("open", ""); } };
+  $b("betaMore").onclick = open; if ($b("betaBadge")) $b("betaBadge").onclick = open;
+  $b("betaClose").onclick = () => $b("betaDlg").close();
+  $b("betaX").onclick = () => { $b("betaBar").hidden = true; try { localStorage.setItem("apa_beta_seen", V.v); } catch {} };
+  render();
+  new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+})();
 </script>
 </body>
 </html>
