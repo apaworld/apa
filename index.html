@@ -1844,7 +1844,23 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 .wdg .sep{width:1px;align-self:stretch;background:var(--line)}
 .wdg .pc{position:relative;display:flex;align-items:center}
 .wdg .hx{position:absolute;top:-10px;inset-inline-end:-12px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--muted);font-size:.7rem;line-height:1;padding:0;cursor:pointer;display:none;place-items:center}
-.wdg:hover .hx,.wdg:focus-within .hx,.wdg.edit .hx{display:grid}
+.wdg .pc:hover > .hx,.wdg .pc:focus-within > .hx,.wdg.edit .hx{display:grid}
+.wdg .wcl{flex-basis:100%;width:100%;min-width:0;order:8;display:flex;flex-direction:column;border-top:1px solid var(--line);margin-top:4px;padding-top:2px}
+.wdg .wcl[hidden]{display:none}
+.wdg .wcr{display:flex;align-items:center;gap:10px;padding:7px 2px;border-bottom:1px solid var(--line)}
+.wdg .wcr:last-child{border-bottom:0}
+.wdg .wcr i{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--muted)}
+.wdg .wcr i.on{background:#1f9d63}.wdg .wcr i.ev{background:#d29a2a}
+.wdg .wcr .wn{flex:1;min-width:0}
+.wdg .wcr .wn b{display:block;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wdg .wcr .wn small,.wdg .wcr .wt small{display:block;font-size:.72rem;color:var(--muted);white-space:nowrap}
+.wdg .wcr .wt{text-align:end;flex-shrink:0}
+.wdg .wcr .wt b{font-size:1.05rem;font-variant-numeric:tabular-nums}
+.wdg .wcm{border:0;background:var(--accent-soft);color:var(--accent);font:inherit;font-weight:700;font-size:.78rem;border-radius:999px;padding:4px 10px;cursor:pointer;align-self:flex-start;margin-top:6px}
+.wdg.m.open .wcl,.wdg.l .wcl{display:flex}
+.wdg.m:not(.open) .wcl{display:none}
+.wdg.m.open{border-radius:18px;flex-wrap:wrap;width:min(380px,calc(100vw - 16px))}
+.wdg .wchip{border:0;background:var(--accent-soft);color:var(--accent);font:inherit;font-weight:700;font-size:.75rem;border-radius:999px;padding:3px 9px;cursor:pointer;white-space:nowrap}
 .wdg .tools{display:none;gap:2px}
 .wdg:hover .tools,.wdg:focus-within .tools,.wdg.edit .tools{display:flex}
 .wdg .tools button{border:0;background:none;color:var(--muted);width:28px;height:28px;border-radius:8px;cursor:pointer;padding:0;font-size:.9rem}
@@ -1867,6 +1883,13 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 #locDrawer .l-note{font-size:.8rem;color:var(--muted);margin:0}
 #locDrawer .fld.folded{background:var(--soft);border-radius:10px;padding:6px 10px}
 #locDrawer .fld.folded > :not(.fh){display:none!important}
+#locDrawer .clk{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--line)}
+#locDrawer .clk input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--paper)}
+#locDrawer .clk small{display:block;color:var(--muted);font-size:.75rem}
+#locDrawer .clk .cw{flex:1;min-width:0}
+#locDrawer .clk button{border:0;background:none;color:var(--muted);width:28px;height:28px;border-radius:8px;cursor:pointer}
+#locDrawer .clk button:hover{background:var(--soft);color:var(--ink)}
+#locDrawer .clk button[disabled]{opacity:.3;cursor:default}
 #locDrawer .fsum{color:var(--muted);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #locDrawer .fld.folded .fh{justify-content:flex-start;gap:0}
 #locDrawer .fld.folded .fh > :first-child{white-space:nowrap}
@@ -1903,6 +1926,7 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
   <span class="pc" data-piece="clock"><button class="main" id="wMain" aria-label="Open time and place settings"><span class="time" id="wTime">--:--</span></button><button class="hx" data-hide="clock" aria-label="Hide the clock" title="Hide the clock">✕</button></span>
   <span class="pc" data-piece="date"><span class="l-sub" id="wDate"></span><button class="hx" data-hide="date" aria-label="Hide the date" title="Hide the date">✕</button></span>
   <span class="pc" data-piece="place"><span class="l-sub" id="wPlace"></span><button class="hx" data-hide="place" aria-label="Hide the place" title="Hide the place">✕</button></span>
+  <div class="wcl" data-piece="clocks" id="wClocks" aria-label="Other cities"></div>
   <span class="sep" data-piece="weather"></span>
   <span class="pc" data-piece="weather"><button class="wx" id="wWx" aria-label="Open time and place settings"><span id="wWxIc" aria-hidden="true"></span><span><span id="wWxT"></span><small id="wWxD"></small></span></button><button class="hx" data-hide="weather" aria-label="Hide the weather" title="Hide the weather">✕</button></span>
   <span class="tools"><button id="wSize" aria-label="Change the size" title="Change the size">⤢</button><button id="wMin" aria-label="Minimize" title="Minimize">–</button></span>
@@ -1941,6 +1965,12 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
       <div class="sugg cbl" id="lCalList" role="listbox" aria-label="Calendars" hidden></div></div></div>
   <div class="fld" data-field="digits"><div class="fh"><span>Digits</span><span class="fsum"></span><button data-hidefield="digits">Minimize ▴</button></div><div class="chips2" id="lDigits"></div></div>
   <div class="fld" data-field="units"><div class="fh"><span>Units</span><span class="fsum"></span><button data-hidefield="units">Minimize ▴</button></div><div class="chips2" id="lTemp"></div><div class="chips2" id="lDist"></div></div>
+  <div class="fld" data-field="clocks"><div class="fh"><span>Other cities' clocks</span><span class="fsum"></span><button data-hidefield="clocks">Minimize ▴</button></div>
+    <div id="lClocks"></div>
+    <div class="l-inp"><label class="sr" for="lClockQ">Add a city</label><input id="lClockQ" placeholder="+ Add a city: type its name" autocomplete="off"></div>
+    <div id="lClockSugg"></div>
+    <p class="l-note" id="lClockNote"></p>
+  </div>
   <div class="fld"><div class="fh"><span>Widget</span></div><div class="chips2" id="lSizeChips"></div>
     <label class="opt"><input type="checkbox" id="lShowW"> Show the time and weather widget</label></div>
   <h3>Hidden items</h3><div id="lHidden"></div>
@@ -1957,9 +1987,9 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 /* Time, place and local formats. Everything is saved only in this browser and can be changed. */
 const LOC = (() => {
   const KEY = "apa-locale-v1";
-  const DEF = { place: null, country: "", calAsked: {}, tz: "auto", date: "auto", hour: "auto", week: "auto", cal: "none", digits: "latn", temp: "c", dist: "km",
+  const DEF = { place: null, country: "", calAsked: {}, clocks: [], tz: "auto", date: "auto", hour: "auto", week: "auto", cal: "none", digits: "latn", temp: "c", dist: "km",
     w: { show: true, size: "m", x: null, y: null, hide: {} }, hideField: {} };
-  let L; try { L = { ...structuredClone(DEF), ...(JSON.parse(localStorage.getItem(KEY)) || {}) }; L.calAsked = L.calAsked || {}; L.w = { ...DEF.w, ...L.w, hide: { ...(L.w?.hide || {}) } }; L.hideField = L.hideField || {}; } catch { L = structuredClone(DEF); }
+  let L; try { L = { ...structuredClone(DEF), ...(JSON.parse(localStorage.getItem(KEY)) || {}) }; L.calAsked = L.calAsked || {}; L.clocks = Array.isArray(L.clocks) ? L.clocks : []; L.w = { ...DEF.w, ...L.w, hide: { ...(L.w?.hide || {}) } }; L.hideField = L.hideField || {}; } catch { L = structuredClone(DEF); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(L)); } catch {} };
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
@@ -2066,7 +2096,11 @@ const LOC = (() => {
   const zoneName = (zone) => NEW_NAME[zone] || zone.split("/").pop().replace(/_/g, " ");
   const tzLabel = (zone) => { const o = offset(zone); return `(${o === "GMT" ? "GMT+00:00" : o}) ${zoneName(zone)}`; };
   const countryName = (code) => { try { return new Intl.DisplayNames([lang], { type: "region" }).of(code); } catch { return code; } };
-  const placeLine = (p) => p ? [p.name, p.admin1 && p.admin1 !== p.name ? p.admin1 : "", countryName(p.cc)].filter(Boolean).join(", ") : "";
+  const OLD_REGION = { "Rhône-Alpes": "Auvergne-Rhône-Alpes", "Auvergne": "Auvergne-Rhône-Alpes", "Aquitaine": "Nouvelle-Aquitaine", "Limousin": "Nouvelle-Aquitaine", "Poitou-Charentes": "Nouvelle-Aquitaine",
+    "Languedoc-Roussillon": "Occitanie", "Midi-Pyrénées": "Occitanie", "Alsace": "Grand Est", "Lorraine": "Grand Est", "Champagne-Ardenne": "Grand Est", "Nord-Pas-de-Calais": "Hauts-de-France",
+    "Picardie": "Hauts-de-France", "Basse-Normandie": "Normandie", "Haute-Normandie": "Normandie", "Bourgogne": "Bourgogne-Franche-Comté", "Franche-Comté": "Bourgogne-Franche-Comté", "Centre": "Centre-Val de Loire" };
+  const region = (r, cc) => (cc === "FR" && OLD_REGION[r]) || r || "";
+  const placeLine = (p) => p ? [p.name, p.admin1 && p.admin1 !== p.name ? region(p.admin1, p.cc) : "", countryName(p.cc)].filter(Boolean).join(", ") : "";
 
   /* ---------- weather for the widget ---------- */
   const WXI = { 0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",71:"🌨️",73:"🌨️",75:"❄️",80:"🌦️",81:"🌧️",82:"⛈️",95:"⛈️",96:"⛈️",99:"⛈️" };
@@ -2084,6 +2118,72 @@ const LOC = (() => {
 
   /* ---------- the widget ---------- */
   const W = () => $("wdg");
+  /* ---------- Other cities' clocks (up to 10; phones show the first 5, the rest under "+N more") ---------- */
+  const MAX_CLOCKS = 10, PHONE_CLOCKS = 5;
+  let clocksOpen = false, clocksAll = false, clocksKey = "";
+  function offMin(zone, d) {   // minutes ahead of UTC in that zone at that moment (summer/winter time included)
+    try { const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: zone, hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" }).formatToParts(d).map(x => [x.type, x.value]));
+      return Math.round((Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute) - Math.floor(d.getTime() / 60000) * 60000) / 60000); } catch { return 0; }
+  }
+  const dayKey = (zone, d) => { try { return new Intl.DateTimeFormat("en-CA", { timeZone: zone, year: "numeric", month: "2-digit", day: "2-digit" }).format(d); } catch { return ""; } };
+  function diffText(m) { if (!m) return "same time"; const a = Math.abs(m), h = Math.floor(a / 60), mi = a % 60; return (m > 0 ? "+" : "−") + h + " h" + (mi ? " " + mi : ""); }
+  function workState(zone, cc, d) {   // working hours: Mon–Fri style 9–18 by default, with the weekend of that country
+    let hh = 12, wdn = 1;
+    try { const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: zone, hourCycle: "h23", hour: "numeric", weekday: "short" }).formatToParts(d).map(x => [x.type, x.value]));
+      hh = +p.hour % 24; wdn = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].indexOf(p.weekday) + 1; } catch {}
+    let weekend = [6, 7];
+    try { const lo = new Intl.Locale(new Intl.Locale("und-" + (cc || "FR")).maximize().baseName); const w = lo.getWeekInfo ? lo.getWeekInfo() : lo.weekInfo; if (w?.weekend?.length) weekend = w.weekend; } catch {}
+    if (hh < 7 || hh >= 22) return ["off", "night 🌙"];
+    if (weekend.includes(wdn)) return ["ev", "weekend"];
+    if (hh >= 9 && hh < 18) return ["on", "working hours"];
+    return ["ev", hh < 9 ? "morning" : "evening"];
+  }
+  function clockRows(now) {
+    const phone = innerWidth < 700, list = L.clocks, max = phone && !clocksAll ? PHONE_CLOCKS : list.length, me = tz(), myOff = offMin(me, now), myDay = dayKey(me, now);
+    const rows = list.slice(0, max).map(c => {
+      const [cls, state] = workState(c.tz, c.cc, now), other = dayKey(c.tz, now) !== myDay;
+      const day = other ? new Intl.DateTimeFormat(lang, { timeZone: c.tz, weekday: "short" }).format(now) + " · " : "";
+      return `<div class="wcr"><i class="${cls}" aria-hidden="true"></i><span class="wn"><b>${esc(c.label || c.short || c.name)}</b><small>${esc((c.label ? c.name : c.name.replace((c.short || "") + ", ", "")) + " · " + diffText(offMin(c.tz, now) - myOff))}</small></span>`
+        + `<span class="wt"><b>${esc(time(now, c.tz))}</b><small>${esc(day + state)}</small></span></div>`;
+    }).join("");
+    const more = list.length - max;
+    return rows + (more > 0 ? `<button class="wcm" id="wClMore">+${more} more</button>` : phone && clocksAll && list.length > PHONE_CLOCKS ? `<button class="wcm" id="wClMore">Show fewer</button>` : "");
+  }
+  function addClock(r) {
+    if (L.clocks.length >= MAX_CLOCKS) { toast(`Up to ${MAX_CLOCKS} cities. Remove one to add another.`); return; }
+    L.clocks.push({ id: String(r.id || Date.now()), name: [r.name, r.admin1 && r.admin1 !== r.name ? region(r.admin1, r.country_code) : "", r.country || countryName(r.country_code)].filter(Boolean).join(", "), short: r.name, cc: r.country_code || "", tz: r.timezone || "UTC", label: "" });
+    save(); paint(); renderClockList(); toast(r.name + " added");
+  }
+  function renderClockList() {
+    const box = $("lClocks"); if (!box) return;
+    box.innerHTML = L.clocks.length ? L.clocks.map((c, i) => `<div class="clk" data-ci="${i}"><span class="cw"><label class="sr" for="clkL${i}">Name for ${esc(c.name)}</label>
+        <input id="clkL${i}" data-cl="${i}" value="${esc(c.label)}" placeholder="${esc(c.short || c.name)} (add a name, e.g. Client NY)"><small>${esc(c.name)} · ${esc(tzLabel(c.tz).split(" ")[0])}</small></span>
+        <button data-up="${i}" aria-label="Move ${esc(c.short || c.name)} up" ${i ? "" : "disabled"}>↑</button><button data-dn="${i}" aria-label="Move ${esc(c.short || c.name)} down" ${i < L.clocks.length - 1 ? "" : "disabled"}>↓</button>
+        <button data-rm="${i}" aria-label="Remove ${esc(c.short || c.name)}">✕</button></div>`).join("")
+      : `<p class="${C_NOTE}">Add the cities you work with: clients, offices, family. Each shows its time, the difference with yours, and whether it's working hours there.</p>`;
+    $("lClockNote").textContent = `${L.clocks.length} of ${MAX_CLOCKS}. On phones the first ${PHONE_CLOCKS} show, the others under "+ more". Use ↑ ↓ to choose the order.`;
+    box.querySelectorAll("[data-cl]").forEach(inp => inp.oninput = () => { L.clocks[+inp.dataset.cl].label = inp.value.slice(0, 40); save(); paint(); });
+    box.querySelectorAll("[data-up]").forEach(b => b.onclick = () => { const i = +b.dataset.up; [L.clocks[i - 1], L.clocks[i]] = [L.clocks[i], L.clocks[i - 1]]; save(); paint(); renderClockList(); box.querySelector(`[data-up="${i - 1}"]`)?.focus(); });
+    box.querySelectorAll("[data-dn]").forEach(b => b.onclick = () => { const i = +b.dataset.dn; [L.clocks[i + 1], L.clocks[i]] = [L.clocks[i], L.clocks[i + 1]]; save(); paint(); renderClockList(); box.querySelector(`[data-dn="${i + 1}"]`)?.focus(); });
+    box.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { const i = +b.dataset.rm, c = L.clocks.splice(i, 1)[0]; save(); paint(); renderClockList();
+      toast((c.short || c.name) + " removed", () => { L.clocks.splice(i, 0, c); save(); paint(); renderClockList(); }); });
+    digitizeEl(box);
+  }
+  let clockT = null;
+  async function searchClock() {
+    const q = $("lClockQ").value.trim(), box = $("lClockSugg");
+    if (q.length < 2) { box.innerHTML = ""; return; }
+    try {
+      const j = await (await fetch("https://geocoding-api.open-meteo.com/v1/search?" + new URLSearchParams({ name: q, count: "8", language: lang, format: "json" }))).json();
+      const res = (j.results || []).sort((a, b) => (b.population || 0) - (a.population || 0));
+      if (q !== $("lClockQ").value.trim()) return;
+      box.innerHTML = res.length ? `<div class="sugg">${res.map((r, i) => `<button type="button" data-k="${i}"><b>${esc(r.name)}</b><small>${esc([region(r.admin1, r.country_code), r.country || countryName(r.country_code)].filter(Boolean).join(" · "))} · ${esc(tzLabel(r.timezone || "UTC").split(" ")[0])}</small></button>`).join("")}</div>`
+        : `<p class="${C_NOTE}">No city found. Check the spelling.</p>`;
+      digitizeEl(box);
+      box.querySelectorAll("[data-k]").forEach(b => b.onclick = () => { addClock(res[+b.dataset.k]); box.innerHTML = ""; $("lClockQ").value = ""; $("lClockQ").focus(); });
+    } catch { box.innerHTML = `<p class="${C_NOTE}">The city search is not available right now. Try again in a moment.</p>`; }
+  }
+
   function paint() {
     const w = W(); if (!w) return;
     w.hidden = !L.w.show;
@@ -2098,9 +2198,9 @@ const LOC = (() => {
       || (ipOk() && ip.city ? { name: "~" + ip.city, cc: ip.cc, approx: true } : null);   // "~" = approximate, from the internet connection
     let line = "";
     if (p) {
-      const city = p.isCountry ? "" : p.name, region = s === "l" && p.admin1 && p.admin1 !== p.name ? p.admin1 : "";
+      const city = p.isCountry ? "" : p.name, reg = s === "l" && p.admin1 && p.admin1 !== p.name ? region(p.admin1, p.cc) : "";
       const ctry = f.country ? "" : (p.isCountry ? p.name : (s === "l" ? countryName(p.cc) : p.cc));
-      line = [city, region, ctry].filter(Boolean).join(", ");
+      line = [city, reg, ctry].filter(Boolean).join(", ");
     }
     const tzPart = s === "l" && !f.tz ? tzLabel(tz()).split(" ")[0] : "";
     $("wPlace").textContent = [line, tzPart].filter(Boolean).join(" · ") || (f.tz ? "" : tzLabel(tz()));
@@ -2108,8 +2208,18 @@ const LOC = (() => {
     if (wx) { $("wWxIc").textContent = WXI[wx.code] || "🌡️"; $("wWxT").textContent = temp(wx.t); $("wWxD").textContent = s === "l" ? temp(wx.min, false) + " / " + temp(wx.max, false) : ""; }
     else { $("wWxIc").textContent = ""; $("wWxT").textContent = ""; $("wWxD").textContent = ""; }
     const show = (piece, on) => w.querySelectorAll(`[data-piece="${piece}"]`).forEach(e => e.hidden = !on);
+    // other cities: full list in the large size, a "+N cities" chip that opens it in the medium size
+    const hasCl = L.clocks.length > 0 && !f.clocks && !h.clocks;
+    w.classList.toggle("open", s === "m" && clocksOpen && hasCl);
+    const key = L.clocks.map(c => c.tz + c.label).join("|") + "|" + time(now) + "|" + clocksAll + "|" + (innerWidth < 700) + "|" + L.digits + lang;
+    if (hasCl && (s === "l" || (s === "m" && clocksOpen))) { if (key !== clocksKey) { $("wClocks").innerHTML = clockRows(now); clocksKey = key; const mb = $("wClMore"); if (mb) mb.onclick = (e) => { e.stopPropagation(); clocksAll = !clocksAll; clocksKey = ""; paint(); }; } }
+    else clocksKey = "";
+    let chip = w.querySelector(".wchip");
+    if (hasCl && s === "m") { if (!chip) { chip = document.createElement("button"); chip.className = "wchip"; w.querySelector(".tools").before(chip); chip.onclick = (e) => { e.stopPropagation(); clocksOpen = !clocksOpen; paint(); }; }
+      chip.textContent = clocksOpen ? "Hide cities" : `+${L.clocks.length} ${L.clocks.length > 1 ? "cities" : "city"}`; chip.setAttribute("aria-expanded", String(clocksOpen)); chip.hidden = false; }
+    else if (chip) chip.hidden = true;
     const vis = { clock: !h.clock && !f.hour, date: s === "l" && !h.date && !f.date, place: (s === "m" || s === "l") && !h.place && !!$("wPlace").textContent,
-      weather: (s === "m" || s === "l") && !h.weather && !f.units && !!wx };
+      weather: (s === "m" || s === "l") && !h.weather && !f.units && !!wx, clocks: hasCl && (s === "l" || (s === "m" && clocksOpen)) };
     Object.entries(vis).forEach(([k, on]) => show(k, on));
     // nothing left to show: keep a small clock dot so the widget can be found again
     if (L.w.size !== "min" && !Object.values(vis).some(Boolean)) w.className = "wdg min";
@@ -2135,7 +2245,7 @@ const LOC = (() => {
     // drag from the grip or from any empty part of the widget
     let drag = null;
     w.addEventListener("pointerdown", (e) => {
-      if (e.target.closest(".hx, .tools, .rz, .dot, #wMain, #wWx")) return;
+      if (e.target.closest(".hx, .tools, .rz, .dot, #wMain, #wWx, .wchip, .wcm")) return;
       const r = w.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: false, id: e.pointerId };
       w.setPointerCapture(e.pointerId);
     });
@@ -2226,6 +2336,7 @@ const LOC = (() => {
     "Asia/Tashkent": "Uzbekistan", "Asia/Almaty": "Kazakhstan Astana", "Asia/Yerevan": "Armenia", "Asia/Tbilisi": "Georgia", "Asia/Baku": "Azerbaijan" };
   const CALS = [["none", "None"], ["islamic-umalqura", "Hijri (Umm al-Qura)"], ["islamic", "Hijri (astronomical)"], ["persian", "Persian"], ["chinese", "Chinese"], ["hebrew", "Hebrew"], ["buddhist", "Buddhist"], ["japanese", "Japanese"], ["indian", "Indian national"], ["ethiopic", "Ethiopian"], ["coptic", "Coptic"], ["dangi", "Korean (Dangi)"], ["roc", "Taiwan (Minguo)"]];
   let cCountry, cTz, cCal;
+  const C_NOTE = "l-note";
   /* Country search: official 2- and 3-letter codes (ISO 3166), everyday short names, and names in other languages */
   const ISO3 = Object.fromEntries("AD:AND,AE:ARE,AF:AFG,AG:ATG,AI:AIA,AL:ALB,AM:ARM,AO:AGO,AQ:ATA,AR:ARG,AS:ASM,AT:AUT,AU:AUS,AW:ABW,AX:ALA,AZ:AZE,BA:BIH,BB:BRB,BD:BGD,BE:BEL,BF:BFA,BG:BGR,BH:BHR,BI:BDI,BJ:BEN,BL:BLM,BM:BMU,BN:BRN,BO:BOL,BQ:BES,BR:BRA,BS:BHS,BT:BTN,BV:BVT,BW:BWA,BY:BLR,BZ:BLZ,CA:CAN,CC:CCK,CD:COD,CF:CAF,CG:COG,CH:CHE,CI:CIV,CK:COK,CL:CHL,CM:CMR,CN:CHN,CO:COL,CR:CRI,CU:CUB,CV:CPV,CW:CUW,CX:CXR,CY:CYP,CZ:CZE,DE:DEU,DJ:DJI,DK:DNK,DM:DMA,DO:DOM,DZ:DZA,EC:ECU,EE:EST,EG:EGY,EH:ESH,ER:ERI,ES:ESP,ET:ETH,FI:FIN,FJ:FJI,FK:FLK,FM:FSM,FO:FRO,FR:FRA,GA:GAB,GB:GBR,GD:GRD,GE:GEO,GF:GUF,GG:GGY,GH:GHA,GI:GIB,GL:GRL,GM:GMB,GN:GIN,GP:GLP,GQ:GNQ,GR:GRC,GS:SGS,GT:GTM,GU:GUM,GW:GNB,GY:GUY,HK:HKG,HM:HMD,HN:HND,HR:HRV,HT:HTI,HU:HUN,ID:IDN,IE:IRL,IL:ISR,IM:IMN,IN:IND,IO:IOT,IQ:IRQ,IR:IRN,IS:ISL,IT:ITA,JE:JEY,JM:JAM,JO:JOR,JP:JPN,KE:KEN,KG:KGZ,KH:KHM,KI:KIR,KM:COM,KN:KNA,KP:PRK,KR:KOR,KW:KWT,KY:CYM,KZ:KAZ,LA:LAO,LB:LBN,LC:LCA,LI:LIE,LK:LKA,LR:LBR,LS:LSO,LT:LTU,LU:LUX,LV:LVA,LY:LBY,MA:MAR,MC:MCO,MD:MDA,ME:MNE,MF:MAF,MG:MDG,MH:MHL,MK:MKD,ML:MLI,MM:MMR,MN:MNG,MO:MAC,MP:MNP,MQ:MTQ,MR:MRT,MS:MSR,MT:MLT,MU:MUS,MV:MDV,MW:MWI,MX:MEX,MY:MYS,MZ:MOZ,NA:NAM,NC:NCL,NE:NER,NF:NFK,NG:NGA,NI:NIC,NL:NLD,NO:NOR,NP:NPL,NR:NRU,NU:NIU,NZ:NZL,OM:OMN,PA:PAN,PE:PER,PF:PYF,PG:PNG,PH:PHL,PK:PAK,PL:POL,PM:SPM,PN:PCN,PR:PRI,PS:PSE,PT:PRT,PW:PLW,PY:PRY,QA:QAT,RE:REU,RO:ROU,RS:SRB,RU:RUS,RW:RWA,SA:SAU,SB:SLB,SC:SYC,SD:SDN,SE:SWE,SG:SGP,SH:SHN,SI:SVN,SJ:SJM,SK:SVK,SL:SLE,SM:SMR,SN:SEN,SO:SOM,SR:SUR,SS:SSD,ST:STP,SV:SLV,SX:SXM,SY:SYR,SZ:SWZ,TC:TCA,TD:TCD,TF:ATF,TG:TGO,TH:THA,TJ:TJK,TK:TKL,TL:TLS,TM:TKM,TN:TUN,TO:TON,TR:TUR,TT:TTO,TV:TUV,TW:TWN,TZ:TZA,UA:UKR,UG:UGA,UM:UMI,US:USA,UY:URY,UZ:UZB,VA:VAT,VC:VCT,VE:VEN,VG:VGB,VI:VIR,VN:VNM,VU:VUT,WF:WLF,WS:WSM,YE:YEM,YT:MYT,ZA:ZAF,ZM:ZMB,ZW:ZWE".split(",").map(x => x.split(":")));
   const COUNTRY_ALIAS = { US: "USA America United States of America US", GB: "UK Britain Great Britain England Scotland Wales Northern Ireland GB", AE: "UAE Emirates Dubai",
@@ -2284,7 +2395,8 @@ const LOC = (() => {
     const SUM = { country: () => getCountry() ? countryName(getCountry()) : "Any country", tz: () => tzLabel(tz()), date: () => date(ex31, { zone: "UTC" }),
       hour: () => ({ auto: "Usual", "24": "24 h", "12": "12 h" }[L.hour]), week: () => L.week === "auto" ? "Usual" : wd(+L.week),
       cal: () => L.cal === "none" ? "None" : (CALS.find(c => c[0] === L.cal) || ["", L.cal])[1], digits: () => ({ latn: "123", arab: "١٢٣", arabext: "۱۲۳", deva: "१२३", beng: "১২৩", thai: "๑๒๓" }[L.digits]),
-      units: () => (L.temp === "f" ? "°F" : "°C") + ", " + (L.dist === "mi" ? "miles" : "km") };
+      units: () => (L.temp === "f" ? "°F" : "°C") + ", " + (L.dist === "mi" ? "miles" : "km"),
+      clocks: () => L.clocks.length ? L.clocks.map(c => c.label || c.short || c.name).join(", ") : "none" };
     document.querySelectorAll("#locDrawer [data-field]").forEach(el => {
       const k = el.dataset.field, folded = !!L.hideField[k], b = el.querySelector("[data-hidefield]");
       el.hidden = false; el.classList.toggle("folded", folded);
@@ -2296,6 +2408,7 @@ const LOC = (() => {
       : `<p class="l-note">Nothing is hidden.</p>`;
     $("lHidden").querySelectorAll("[data-unhide]").forEach(cb => cb.onchange = () => { const [t, k] = cb.dataset.unhide.split(":"); if (t === "f") delete L.hideField[k]; else delete L.w.hide[k]; save(); renderDrawer(); paint(); });
     if ($("lShowAll")) $("lShowAll").onclick = () => { L.hideField = {}; L.w.hide = {}; save(); renderDrawer(); paint(); };
+    renderClockList();
     digitizeEl($("locDrawer"));
   }
   let searchT = null;
@@ -2307,7 +2420,7 @@ const LOC = (() => {
       const j = await (await fetch("https://geocoding-api.open-meteo.com/v1/search?" + p)).json();
       const res = (j.results || []).sort((a, b) => (b.population || 0) - (a.population || 0));
       if (q !== $("lCity").value.trim()) return;
-      box.innerHTML = res.length ? `<div class="sugg">${res.map((r, i) => `<button type="button" data-i="${i}"><b>${esc(r.name)}</b><small>${esc([r.admin1, r.country || countryName(r.country_code)].filter(Boolean).join(" · "))} · ${esc(tzLabel(r.timezone || "UTC").split(" ")[0])}</small></button>`).join("")}</div><p class="l-note">Biggest places first. Pick one.</p>`
+      box.innerHTML = res.length ? `<div class="sugg">${res.map((r, i) => `<button type="button" data-i="${i}"><b>${esc(r.name)}</b><small>${esc([region(r.admin1, r.country_code), r.country || countryName(r.country_code)].filter(Boolean).join(" · "))} · ${esc(tzLabel(r.timezone || "UTC").split(" ")[0])}</small></button>`).join("")}</div><p class="l-note">Biggest places first. Pick one.</p>`
         : `<p class="l-note">No city found${getCountry() ? " in " + esc(countryName(getCountry())) : ""}. Check the spelling${getCountry() ? " or clear the country" : ""}.</p>`;
       digitizeEl(box);
       box.querySelectorAll("[data-i]").forEach(b => b.onclick = () => { const r = res[+b.dataset.i];
@@ -2347,6 +2460,7 @@ const LOC = (() => {
 
   function init() {
     wireWidget();
+    $("lClockQ").addEventListener("input", () => { clearTimeout(clockT); clockT = setTimeout(searchClock, 250); });
     // when the page changes language or writing direction: new words, and the widget moves to the reading-start corner if not placed by the user
     new MutationObserver(() => { lang = (document.documentElement.lang || "en").split("-")[0]; Object.keys(DIGITS).forEach(k => delete DIGITS[k]); paint(); if (!$("locDrawer").hidden) renderDrawer(); })
       .observe(document.documentElement, { attributes: true, attributeFilter: ["lang", "dir"] });
