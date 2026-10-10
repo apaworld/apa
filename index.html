@@ -1853,7 +1853,7 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 .wdg .wcr i.on{background:#1f9d63}.wdg .wcr i.ev{background:#d29a2a}
 .wdg .wcr .wn{flex:1;min-width:0}
 .wdg .wcr .wn b{display:block;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wdg .wcr .wn small,.wdg .wcr .wt small{display:block;font-size:.72rem;color:var(--muted);white-space:nowrap}
+.wdg .wcr .wn small,.wdg .wcr .wt small{display:block;font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wdg .wcr .wt{text-align:end;flex-shrink:0}
 .wdg .wcr .wt b{font-size:1.05rem;font-variant-numeric:tabular-nums}
 .wdg .wcm{border:0;background:var(--accent-soft);color:var(--accent);font:inherit;font-weight:700;font-size:.78rem;border-radius:999px;padding:4px 10px;cursor:pointer;align-self:flex-start;margin-top:6px}
@@ -2051,7 +2051,7 @@ const LOC = (() => {
   const regionHc = () => { try { return new Intl.DateTimeFormat(regionLoc().split("-u-")[0], { hour: "numeric" }).resolvedOptions().hourCycle || "h23"; } catch { return "h23"; } };
   const timeLoc = () => `${lang}-u-nu-${L.digits}-hc-` + (L.hour === "24" ? "h23" : L.hour === "12" ? "h12" : (regionHc() === "h11" || regionHc() === "h12" ? "h12" : "h23"));
   const time = (d, zone = tz()) => new Intl.DateTimeFormat(timeLoc(), { timeZone: zone, hour: "2-digit", minute: "2-digit" }).format(d);
-  const weekday = (d, zone = tz()) => { if (typeof d === "string") d = new Date(d + "T12:00:00Z"); return new Intl.DateTimeFormat(loc(), { timeZone: zone, weekday: "short" }).format(d); };
+  const weekday = (d, zone = tz()) => { if (typeof d === "string") d = new Date(d + "T12:00:00Z"); return new Intl.DateTimeFormat(loc(), { timeZone: zone, weekday: "long" }).format(d); };   // full day names: Saturday, Sunday
   // The other calendar, always named so nobody wonders what it is: "Persian: Mehr 17, 1405", "Chinese: 8th month, day 29 · Fire Horse year"
   const CAL_NAMES = { "islamic-umalqura": "Hijri", islamic: "Hijri", persian: "Persian", chinese: "Chinese", dangi: "Korean", hebrew: "Hebrew", buddhist: "Buddhist",
     japanese: "Japanese", indian: "Indian", ethiopic: "Ethiopian", coptic: "Coptic", roc: "Minguo" };
@@ -2150,8 +2150,9 @@ const LOC = (() => {
     const phone = innerWidth < 700, list = L.clocks, max = phone && !clocksAll ? PHONE_CLOCKS : list.length, me = tz(), myOff = offMin(me, now), myDay = dayKey(me, now);
     const rows = list.slice(0, max).map(c => {
       const [cls, state] = workState(c.tz, c.cc, now), other = dayKey(c.tz, now) !== myDay;
-      const day = other ? new Intl.DateTimeFormat(lang, { timeZone: c.tz, weekday: "short" }).format(now) + " · " : "";
-      return `<div class="wcr"><i class="${cls}" aria-hidden="true"></i><span class="wn"><b>${esc(c.label || c.short || c.name)}</b><small>${esc((c.label ? c.name : c.name.replace((c.short || "") + ", ", "")) + " · " + diffText(offMin(c.tz, now) - myOff))}</small></span>`
+      // the exact day in that city, always shown (it can be another day than yours)
+      const day = new Intl.DateTimeFormat(lang, { timeZone: c.tz, weekday: "long" }).format(now) + " · ";
+      return `<div class="wcr"><i class="${cls}" aria-hidden="true"></i><span class="wn"><b>${esc(c.label || c.short || c.name)}</b><small>${esc(diffText(offMin(c.tz, now) - myOff) + " · " + (c.label ? c.name : c.name.replace((c.short || "") + ", ", "")))}</small></span>`
         + `<span class="wt"><b>${esc(time(now, c.tz))}</b><small>${esc(day + state)}</small></span></div>`;
     }).join("");
     const more = list.length - max;
