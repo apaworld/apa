@@ -1837,7 +1837,8 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 .wdg.l{flex-wrap:wrap;width:min(400px,calc(100vw - 16px));border-radius:18px;row-gap:4px;padding:10px 14px}
 .wdg.l [data-piece="place"]{flex-basis:100%;order:6;padding-inline-start:32px}
 .wdg.l [data-piece="place"] .l-sub{white-space:normal}
-.wdg.l .tools{order:7}
+.wdg.l{padding-inline-end:64px}
+.wdg.l .tools{position:absolute;top:8px;inset-inline-end:8px}   /* top corner: showing them never moves the content */
 .wdg .l-sub{font-size:.78rem;color:var(--muted);line-height:1.3}
 .wdg .wx{display:flex;align-items:center;gap:6px;font-weight:700;border:0;background:none;padding:0;cursor:pointer}
 .wdg .wx small{display:block;font-weight:500;color:var(--muted);font-size:.75rem}
@@ -1849,6 +1850,7 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 .wdg .wcl[hidden]{display:none}
 .wdg .wcr{display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px}
 .wdg .wcr:hover{background:var(--soft)}
+.wdg .wcr.dragging{background:var(--accent-soft);box-shadow:0 6px 18px rgba(20,24,40,.18);cursor:grabbing;position:relative;z-index:2}
 .wdg .wcr:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .wdg .wcr:last-child{border-bottom:0}
 .wdg .wcr i{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--muted)}
@@ -1901,6 +1903,12 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 #locDrawer .clk input{display:block;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--paper);margin-top:4px}
 #locDrawer .clk #lChgQ{margin-top:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 #locDrawer .clk #lChgSugg .sugg{margin-top:4px}
+#locDrawer .clk .hdl{cursor:grab;touch-action:none;font-size:1rem}
+#locDrawer .clk.dragging{background:var(--accent-soft);box-shadow:0 6px 18px rgba(20,24,40,.15);border-radius:8px}
+#locDrawer .ord{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+#locDrawer .ord button{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 10px;cursor:pointer;color:var(--ink);font-size:.82rem}
+#locDrawer .ord button:hover{border-color:var(--accent)}
+#locDrawer .ord .hint{font-size:.78rem}
 #locDrawer .clk .cname{all:unset;cursor:pointer;display:block;border-radius:6px}
 #locDrawer .clk .cname:hover b,#locDrawer .clk .cname:focus-visible b{color:var(--accent);text-decoration:underline}
 #locDrawer .clk .cname:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -1977,6 +1985,7 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
       <div class="l-inp"><label class="sr" for="lClockQ">Add or change a city</label><input id="lClockQ" placeholder="Add a city: type its name" autocomplete="off"></div>
       <div id="lClockSugg"></div>
       <p class="l-note" id="lClockNote"></p>
+      <div class="ord"><span>Order:</span><button type="button" id="lOrdAZ">A–Z</button><button type="button" id="lOrdTime">By time</button><span class="hint">or drag the ⠿</span></div>
       <label class="opt"><input type="checkbox" id="lClockWx"> Show the weather for these cities</label>
     </div>
   </div>
@@ -2174,12 +2183,30 @@ const LOC = (() => {
   }
   const dayKey = (zone, d) => { try { return new Intl.DateTimeFormat("en-CA", { timeZone: zone, year: "numeric", month: "2-digit", day: "2-digit" }).format(d); } catch { return ""; } };
   function diffText(m) { if (!m) return "same time"; const a = Math.abs(m), h = Math.floor(a / 60), mi = a % 60; return (m > 0 ? "+" : "−") + h + " h" + (mi ? " " + mi : ""); }
+  // APA corrections, used on top of the browser's world data when a country's rule is missing or out of date (1 = Monday … 7 = Sunday)
+  const WEEKEND_FIX = { NP: [6] };   // Nepal: Saturday only, Sunday is a working day
+  function weekendOf(cc) {
+    if (WEEKEND_FIX[cc]) return WEEKEND_FIX[cc];
+    try { const lo = new Intl.Locale(new Intl.Locale("und-" + (cc || "FR")).maximize().baseName); const w = lo.getWeekInfo ? lo.getWeekInfo() : lo.weekInfo; if (w?.weekend?.length) return w.weekend; } catch {}
+    return [6, 7];
+  }
+  const DOT_HELP = "Green: working hours now · Orange: daytime off (weekend, morning or evening) · Grey: night";
+  function cityHelp(c, now, myOff, state) {   // hover help: everything about this city in one place
+    const d = offMin(c.tz, now) - myOff, a = Math.abs(d), h = Math.floor(a / 60), m = a % 60, ahead = d === 0 ? "same time as you" : `${h} h${m ? " " + m : ""} ${d > 0 ? "ahead of" : "behind"} you`;
+    const names = weekendOf(c.cc).map(n => new Intl.DateTimeFormat(lang, { weekday: "long", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 9, 4 + (n % 7))))).join(" and ");
+    const icon = { on: "🟢", ev: "🟠", off: "⚫" }[state[0]];
+    const w = L.clockWx !== false && cwx[c.id] ? `Weather now: ${WXI[cwx[c.id].code] || ""} ${temp(cwx[c.id].t)}` : "";
+    return [c.label ? `${c.label} (${c.name})` : c.name,
+      `${weekday(now, c.tz)} ${date(now, { zone: c.tz })}, ${time(now, c.tz)} · ${tzLabel(c.tz).split(" ")[0]} · ${ahead}`,
+      `${icon} ${state[1][0].toUpperCase() + state[1].slice(1)} now`,
+      `Weekend in ${countryName(c.cc) || "this country"}: ${names} · usual office hours 9:00–18:00`,
+      w, "Click to change this city"].filter(Boolean).join("\n");
+  }
   function workState(zone, cc, d) {   // working hours: Mon–Fri style 9–18 by default, with the weekend of that country
     let hh = 12, wdn = 1;
     try { const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: zone, hourCycle: "h23", hour: "numeric", weekday: "short" }).formatToParts(d).map(x => [x.type, x.value]));
       hh = +p.hour % 24; wdn = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].indexOf(p.weekday) + 1; } catch {}
-    let weekend = [6, 7];
-    try { const lo = new Intl.Locale(new Intl.Locale("und-" + (cc || "FR")).maximize().baseName); const w = lo.getWeekInfo ? lo.getWeekInfo() : lo.weekInfo; if (w?.weekend?.length) weekend = w.weekend; } catch {}
+    const weekend = weekendOf(cc);
     if (hh < 7 || hh >= 22) return ["off", "night 🌙"];
     if (weekend.includes(wdn)) return ["ev", "weekend"];
     if (hh >= 9 && hh < 18) return ["on", "working hours"];
@@ -2188,17 +2215,53 @@ const LOC = (() => {
   function clockRows(now) {
     const phone = innerWidth < 700, list = L.clocks, max = phone && !clocksAll ? PHONE_CLOCKS : list.length, me = tz(), myOff = offMin(me, now), myDay = dayKey(me, now);
     const rows = list.slice(0, max).map((c, ci) => {
-      const [cls, state] = workState(c.tz, c.cc, now), other = dayKey(c.tz, now) !== myDay;
+      const ws = workState(c.tz, c.cc, now), [cls, state] = ws, other = dayKey(c.tz, now) !== myDay;
       // the exact day in that city, always shown (it can be another day than yours)
       const day = new Intl.DateTimeFormat(lang, { timeZone: c.tz, weekday: "long" }).format(now) + " · ";
-      return `<div class="wcr" role="button" tabindex="0" data-wci="${ci}" title="Change ${esc(c.short || c.name)}" aria-label="${esc((c.label || c.short || c.name) + ", " + time(now, c.tz) + ". Change this city")}"><i class="${cls}" aria-hidden="true"></i><span class="wn"><b>${esc(c.label || c.short || c.name)}</b><small>${esc(diffText(offMin(c.tz, now) - myOff) + " · " + (c.label ? c.name : c.name.replace((c.short || "") + ", ", "")))}</small></span>`
+      return `<div class="wcr" role="button" tabindex="0" data-wci="${ci}" data-idx="${ci}" title="${esc(cityHelp(c, now, myOff, ws))}" aria-label="${esc((c.label || c.short || c.name) + ", " + time(now, c.tz) + ". Change this city")}"><i class="${cls}" aria-hidden="true" title="${esc(DOT_HELP)}"></i><span class="wn"><b>${esc(c.label || c.short || c.name)}</b><small>${esc(diffText(offMin(c.tz, now) - myOff) + " · " + (c.label ? c.name : c.name.replace((c.short || "") + ", ", "")))}</small></span>`
         + (L.clockWx !== false && cwx[c.id] ? `<span class="ww" role="button" tabindex="0" data-wwi="${ci}" title="Weather now in ${esc(c.short || c.name)}: weather settings"><span aria-hidden="true">${WXI[cwx[c.id].code] || "🌡️"}</span> ${esc(temp(cwx[c.id].t))}</span>` : "")
         + `<span class="wt"><b>${esc(time(now, c.tz))}</b><small>${esc(day + state)}</small></span></div>`;
     }).join("");
     const more = list.length - max;
     return rows + (more > 0 ? `<button class="wcm" id="wClMore">+${more} more</button>` : phone && clocksAll && list.length > PHONE_CLOCKS ? `<button class="wcm" id="wClMore">Show fewer</button>` : "");
   }
-  let changeIdx = null, editIdx = null;
+  let changeIdx = null, editIdx = null, reordering = false, holding = false, dragEnd = 0;
+  function makeSortable(box, rowSel, handleSel, onDone) {
+    // while a line is being dragged on a touch screen, the page must not scroll instead
+    box.addEventListener("touchmove", (e) => { if (reordering) e.preventDefault(); }, { passive: false });
+    box.addEventListener("pointerdown", (e) => {
+      const row = e.target.closest(rowSel); if (!row || !box.contains(row) || e.button > 0) return;
+      if (handleSel && !e.target.closest(handleSel)) return;
+      if (e.target.closest("input, .wcm")) return;   // a line can be dragged from anywhere, its weather included
+      const touch = e.pointerType !== "mouse", y0 = e.clientY, x0 = e.clientX; let live = false, timer = null, lastY = y0;
+      holding = true;   // no redraw of the list while a finger or the mouse is pressed on it
+      const start = () => { live = true; reordering = true; row.classList.add("dragging"); try { row.setPointerCapture(e.pointerId); } catch {} navigator.vibrate?.(15); };
+      if (touch && !handleSel) timer = setTimeout(start, 350);
+      const move = (ev) => {
+        if (!live) { if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 8) { if (touch && !handleSel) { clearTimeout(timer); cleanup(); return; } start(); } else return; }
+        ev.preventDefault(); lastY = ev.clientY;
+        const rows = [...box.querySelectorAll(rowSel)], i = rows.indexOf(row);
+        const prev = rows[i - 1], next = rows[i + 1];
+        if (prev && lastY < prev.getBoundingClientRect().top + prev.offsetHeight / 2) prev.before(row);
+        else if (next && lastY > next.getBoundingClientRect().top + next.offsetHeight / 2) next.after(row);
+      };
+      const end = () => { clearTimeout(timer); cleanup();
+        if (!live) return;
+        row.classList.remove("dragging"); reordering = false; dragEnd = Date.now();
+        const order = [...box.querySelectorAll(rowSel)].map(r => +r.dataset.idx);
+        row.dataset.justDragged = "1"; setTimeout(() => delete row.dataset.justDragged, 300);
+        onDone(order);
+      };
+      const cleanup = () => { holding = false; removeEventListener("pointermove", move); removeEventListener("pointerup", end); removeEventListener("pointercancel", end); };
+      addEventListener("pointermove", move, { passive: false }); addEventListener("pointerup", end); addEventListener("pointercancel", end);
+    });
+  }
+  function applyOrder(order) {
+    const before = L.clocks.slice(), rest = before.map((_, i) => i).filter(i => !order.includes(i)), next = order.concat(rest).map(i => before[i]).filter(Boolean);
+    if (next.length !== before.length || next.every((c, i) => c === before[i])) return;
+    L.clocks = next; save(); clocksKey = ""; paint(); renderClockList();
+    toast("Order changed", () => { L.clocks = before; save(); clocksKey = ""; paint(); renderClockList(); });
+  }
   // from the widget: open Time and place right on that city, ready to change it
   function openSetting(id, inCities) {
     open();
@@ -2227,17 +2290,17 @@ const LOC = (() => {
   }
   function renderClockList() {
     const box = $("lClocks"); if (!box) return;
-    box.innerHTML = L.clocks.length ? L.clocks.map((c, i) => `<div class="clk ${changeIdx === i ? "chg" : ""}" data-ci="${i}"><span class="cw">
+    box.innerHTML = L.clocks.length ? L.clocks.map((c, i) => `<div class="clk ${changeIdx === i ? "chg" : ""}" data-ci="${i}" data-idx="${i}"><span class="cw">
         ${changeIdx === i ? `<label class="sr" for="lChgQ">New city instead of ${esc(c.short || c.name)}</label><input id="lChgQ" autocomplete="off" aria-expanded="true" placeholder="New city instead of ${esc(c.short || c.name)}…"><div id="lChgSugg"></div>`
           : `<button type="button" class="cname" data-chg="${i}" title="Click to change this city"><b>${esc(c.short || c.name)}</b><small>${esc(c.name.replace((c.short || "") + ", ", ""))} · ${esc(tzLabel(c.tz).split(" ")[0])}</small></button>`}
         ${c.label || editIdx === i ? `<label class="sr" for="clkL${i}">Your name for ${esc(c.short || c.name)}</label><input id="clkL${i}" data-cl="${i}" value="${esc(c.label)}" placeholder="Your name for it, e.g. Client NY">` : ""}</span>
         <button data-ed="${i}" aria-label="Give ${esc(c.short || c.name)} your own name" title="Your own name">✎</button>
-        <button data-up="${i}" aria-label="Move ${esc(c.short || c.name)} up" ${i ? "" : "disabled"}>↑</button><button data-dn="${i}" aria-label="Move ${esc(c.short || c.name)} down" ${i < L.clocks.length - 1 ? "" : "disabled"}>↓</button>
+        <button class="hdl" data-hdl="${i}" aria-label="Move ${esc(c.short || c.name)}: drag, or use the up and down arrow keys" title="Drag to reorder">⠿</button>
         ${changeIdx === i ? `<button data-cancel="1" aria-label="Cancel the change" title="Cancel">↩</button>` : `<button data-rm="${i}" aria-label="Remove ${esc(c.short || c.name)}">✕</button>`}</div>`).join("")
       : `<p class="${C_NOTE}">Add the cities you work with: clients, offices, family. Each shows its time, the difference with yours, and whether it's working hours there.</p>`;
     const n = L.clocks.length, sum = () => { $("lClockSum").textContent = L.clocks.length ? `Other cities (${L.clocks.length}): ` + L.clocks.map(c => c.label || c.short || c.name).join(", ") : "Other cities"; };
     sum();
-    $("lClockNote").textContent = `${L.clocks.length} of ${MAX_CLOCKS}. On phones the first ${PHONE_CLOCKS} show, the others under "+ more". Use ↑ ↓ to choose the order.`;
+    $("lClockNote").textContent = `${L.clocks.length} of ${MAX_CLOCKS}. On phones the first ${PHONE_CLOCKS} show, the others under "+ more". Drag the cities to choose the order, here or in the widget.`;
     box.querySelectorAll("[data-cl]").forEach(inp => inp.oninput = () => { L.clocks[+inp.dataset.cl].label = inp.value.slice(0, 40); save(); paint(); sum(); });
     box.querySelectorAll("[data-ed]").forEach(b => b.onclick = () => { editIdx = +b.dataset.ed; renderClockList(); $("clkL" + editIdx)?.focus(); });
     box.querySelectorAll("[data-chg]").forEach(b => b.onclick = () => { changeIdx = +b.dataset.chg; editIdx = null; renderClockList(); $("lChgQ")?.focus(); });
@@ -2247,8 +2310,11 @@ const LOC = (() => {
       $("lChgQ").onkeydown = (e) => { if (e.key === "Escape") { e.stopPropagation(); endChange(); renderClockList(); box.querySelector(`[data-chg]`)?.focus(); } };
     }
     box.querySelectorAll("[data-cancel]").forEach(b => b.onclick = () => { endChange(); renderClockList(); });
-    box.querySelectorAll("[data-up]").forEach(b => b.onclick = () => { const i = +b.dataset.up; [L.clocks[i - 1], L.clocks[i]] = [L.clocks[i], L.clocks[i - 1]]; save(); paint(); renderClockList(); box.querySelector(`[data-up="${i - 1}"]`)?.focus(); });
-    box.querySelectorAll("[data-dn]").forEach(b => b.onclick = () => { const i = +b.dataset.dn; [L.clocks[i + 1], L.clocks[i]] = [L.clocks[i], L.clocks[i + 1]]; save(); paint(); renderClockList(); box.querySelector(`[data-dn="${i + 1}"]`)?.focus(); });
+    box.querySelectorAll("[data-hdl]").forEach(b => b.onkeydown = (e) => {
+      const i = +b.dataset.hdl, to = e.key === "ArrowUp" ? i - 1 : e.key === "ArrowDown" ? i + 1 : null;
+      if (to === null || to < 0 || to >= L.clocks.length) return; e.preventDefault();
+      [L.clocks[to], L.clocks[i]] = [L.clocks[i], L.clocks[to]]; save(); clocksKey = ""; paint(); renderClockList(); box.querySelector(`[data-hdl="${to}"]`)?.focus();
+    });
     box.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { const i = +b.dataset.rm, c = L.clocks.splice(i, 1)[0]; save(); paint(); renderClockList();
       toast((c.short || c.name) + " removed", () => { L.clocks.splice(i, 0, c); save(); paint(); renderClockList(); }); });
     digitizeEl(box);
@@ -2297,10 +2363,10 @@ const LOC = (() => {
     const hasCl = L.clocks.length > 0 && !h.clocks;
     w.classList.toggle("open", s === "m" && clocksOpen && hasCl);
     const key = L.clocks.map(c => c.tz + c.label + (cwx[c.id] ? cwx[c.id].t : "")).join("|") + L.clockWx + L.temp + "|" + time(now) + "|" + clocksAll + "|" + (innerWidth < 700) + "|" + L.digits + lang;
-    if (hasCl && (s === "l" || (s === "m" && clocksOpen))) { if (key !== clocksKey) { $("wClocks").innerHTML = clockRows(now); clocksKey = key;
-        $("wClocks").querySelectorAll("[data-wwi]").forEach(r => { const go = (e) => { e.stopPropagation(); openSetting("lClockWx", true); };
+    if (hasCl && (s === "l" || (s === "m" && clocksOpen))) { if (key !== clocksKey && !reordering && !holding) { $("wClocks").innerHTML = clockRows(now); clocksKey = key;
+        $("wClocks").querySelectorAll("[data-wwi]").forEach(r => { const go = (e) => { e.stopPropagation(); if (Date.now() - dragEnd < 400) return; openSetting("lClockWx", true); };
           r.onclick = go; r.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(e); } }; });
-        $("wClocks").querySelectorAll("[data-wci]").forEach(r => { const go = (e) => { if (e.target.closest("[data-wwi]")) return; e.stopPropagation(); openCityChange(+r.dataset.wci); };
+        $("wClocks").querySelectorAll("[data-wci]").forEach(r => { const go = (e) => { if (e.target.closest("[data-wwi]") || Date.now() - dragEnd < 400) return; e.stopPropagation(); openCityChange(+r.dataset.wci); };
           r.onclick = go; r.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(e); } }; }); const mb = $("wClMore"); if (mb) mb.onclick = (e) => { e.stopPropagation(); clocksAll = !clocksAll; clocksKey = ""; paint(); }; } }
     else clocksKey = "";
     let chip = w.querySelector(".wchip");
@@ -2554,6 +2620,12 @@ const LOC = (() => {
     $("lClockWx").onchange = () => { L.clockWx = $("lClockWx").checked; save(); clocksKey = ""; if (L.clockWx) loadClockWx(true).then(paint); else paint(); };
     loadClockWx().then(paint);
 
+    const reorder = (how) => { const before = L.clocks.slice(), now = new Date();
+      L.clocks.sort(how === "az" ? (a, b) => (a.label || a.short || a.name).localeCompare(b.label || b.short || b.name, lang) : (a, b) => offMin(b.tz, now) - offMin(a.tz, now));
+      save(); clocksKey = ""; paint(); renderClockList(); toast(how === "az" ? "Sorted A–Z" : "Sorted by time, furthest ahead first", () => { L.clocks = before; save(); clocksKey = ""; paint(); renderClockList(); }); };
+    $("lOrdAZ").onclick = () => reorder("az"); $("lOrdTime").onclick = () => reorder("time");
+    makeSortable($("lClocks"), ".clk", ".hdl", applyOrder);
+    makeSortable($("wClocks"), ".wcr", null, applyOrder);
     $("lClockToggle").onclick = () => { const open = $("lClockBox").hidden; $("lClockBox").hidden = !open; $("lClockToggle").setAttribute("aria-expanded", String(open)); if (open) $("lClockQ").focus(); };
     if (L.hideField) delete L.hideField.clocks;
     // when the page changes language or writing direction: new words, and the widget moves to the reading-start corner if not placed by the user
