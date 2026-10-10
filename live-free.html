@@ -251,6 +251,13 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
 #locDrawer .note{font-size:.8rem;color:var(--muted);margin:0}
 #locDrawer .fld.folded{background:var(--soft);border-radius:10px;padding:6px 10px}
 #locDrawer .fld.folded > :not(.fh){display:none!important}
+#locDrawer .clt{display:flex;align-items:center;gap:8px;width:100%;text-align:start;border:1px dashed var(--line);background:none;border-radius:10px;padding:9px 12px;margin-top:8px;cursor:pointer;color:var(--ink);font-weight:600;font-size:.9rem}
+#locDrawer .clt:hover{background:var(--soft)}
+#locDrawer .clt .plus{color:var(--accent);font-weight:800}
+#locDrawer .clt #lClockSum{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#locDrawer .clt .chev{color:var(--muted);transition:transform .15s}
+#locDrawer .clt[aria-expanded="true"] .chev{transform:rotate(180deg)}
+#locDrawer .clbox{border:1px solid var(--line);border-top:0;border-radius:0 0 10px 10px;padding:6px 12px 10px;margin-top:-4px;display:flex;flex-direction:column;gap:8px}
 #locDrawer .clk{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--line)}
 #locDrawer .clk input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--paper)}
 #locDrawer .clk small{display:block;color:var(--muted);font-size:.75rem}
@@ -318,6 +325,13 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
       <button class="btn ghost" id="lHere" title="Use my location">📍</button></div>
     <div id="lSugg" aria-live="polite"></div>
     <p class="note" id="lCityNote"></p>
+    <button type="button" class="clt" id="lClockToggle" aria-expanded="false" aria-controls="lClockBox"><span class="plus" aria-hidden="true">＋</span><span id="lClockSum">Other cities</span><span class="chev" aria-hidden="true">▾</span></button>
+    <div id="lClockBox" class="clbox" hidden>
+      <div id="lClocks"></div>
+      <div class="inp"><label class="sr" for="lClockQ">Add a city</label><input id="lClockQ" placeholder="Add a city: type its name" autocomplete="off"></div>
+      <div id="lClockSugg"></div>
+      <p class="note" id="lClockNote"></p>
+    </div>
   </div>
   <div class="fld" data-field="tz">
     <div class="fh"><label for="lTz">Time zone</label><span class="fsum"></span><button data-hidefield="tz">Minimize ▴</button></div>
@@ -333,12 +347,6 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
       <div class="sugg cbl" id="lCalList" role="listbox" aria-label="Calendars" hidden></div></div></div>
   <div class="fld" data-field="digits"><div class="fh"><span>Digits</span><span class="fsum"></span><button data-hidefield="digits">Minimize ▴</button></div><div class="chips2" id="lDigits"></div></div>
   <div class="fld" data-field="units"><div class="fh"><span>Units</span><span class="fsum"></span><button data-hidefield="units">Minimize ▴</button></div><div class="chips2" id="lTemp"></div><div class="chips2" id="lDist"></div></div>
-  <div class="fld" data-field="clocks"><div class="fh"><span>Other cities' clocks</span><span class="fsum"></span><button data-hidefield="clocks">Minimize ▴</button></div>
-    <div id="lClocks"></div>
-    <div class="inp"><label class="sr" for="lClockQ">Add a city</label><input id="lClockQ" placeholder="+ Add a city: type its name" autocomplete="off"></div>
-    <div id="lClockSugg"></div>
-    <p class="note" id="lClockNote"></p>
-  </div>
   <div class="fld"><div class="fh"><span>Widget</span></div><div class="chips2" id="lSizeChips"></div>
     <label class="opt"><input type="checkbox" id="lShowW"> Show the time and weather widget</label></div>
   <h3>Hidden items</h3><div id="lHidden"></div>
@@ -529,8 +537,10 @@ const LOC = (() => {
         <button data-up="${i}" aria-label="Move ${esc(c.short || c.name)} up" ${i ? "" : "disabled"}>↑</button><button data-dn="${i}" aria-label="Move ${esc(c.short || c.name)} down" ${i < L.clocks.length - 1 ? "" : "disabled"}>↓</button>
         <button data-rm="${i}" aria-label="Remove ${esc(c.short || c.name)}">✕</button></div>`).join("")
       : `<p class="${C_NOTE}">Add the cities you work with: clients, offices, family. Each shows its time, the difference with yours, and whether it's working hours there.</p>`;
+    const n = L.clocks.length, sum = () => { $("lClockSum").textContent = L.clocks.length ? `Other cities (${L.clocks.length}): ` + L.clocks.map(c => c.label || c.short || c.name).join(", ") : "Other cities"; };
+    sum();
     $("lClockNote").textContent = `${L.clocks.length} of ${MAX_CLOCKS}. On phones the first ${PHONE_CLOCKS} show, the others under "+ more". Use ↑ ↓ to choose the order.`;
-    box.querySelectorAll("[data-cl]").forEach(inp => inp.oninput = () => { L.clocks[+inp.dataset.cl].label = inp.value.slice(0, 40); save(); paint(); });
+    box.querySelectorAll("[data-cl]").forEach(inp => inp.oninput = () => { L.clocks[+inp.dataset.cl].label = inp.value.slice(0, 40); save(); paint(); sum(); });
     box.querySelectorAll("[data-up]").forEach(b => b.onclick = () => { const i = +b.dataset.up; [L.clocks[i - 1], L.clocks[i]] = [L.clocks[i], L.clocks[i - 1]]; save(); paint(); renderClockList(); box.querySelector(`[data-up="${i - 1}"]`)?.focus(); });
     box.querySelectorAll("[data-dn]").forEach(b => b.onclick = () => { const i = +b.dataset.dn; [L.clocks[i + 1], L.clocks[i]] = [L.clocks[i], L.clocks[i + 1]]; save(); paint(); renderClockList(); box.querySelector(`[data-dn="${i + 1}"]`)?.focus(); });
     box.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { const i = +b.dataset.rm, c = L.clocks.splice(i, 1)[0]; save(); paint(); renderClockList();
@@ -577,7 +587,7 @@ const LOC = (() => {
     else { $("wWxIc").textContent = ""; $("wWxT").textContent = ""; $("wWxD").textContent = ""; }
     const show = (piece, on) => w.querySelectorAll(`[data-piece="${piece}"]`).forEach(e => e.hidden = !on);
     // other cities: full list in the large size, a "+N cities" chip that opens it in the medium size
-    const hasCl = L.clocks.length > 0 && !f.clocks && !h.clocks;
+    const hasCl = L.clocks.length > 0 && !h.clocks;
     w.classList.toggle("open", s === "m" && clocksOpen && hasCl);
     const key = L.clocks.map(c => c.tz + c.label).join("|") + "|" + time(now) + "|" + clocksAll + "|" + (innerWidth < 700) + "|" + L.digits + lang;
     if (hasCl && (s === "l" || (s === "m" && clocksOpen))) { if (key !== clocksKey) { $("wClocks").innerHTML = clockRows(now); clocksKey = key; const mb = $("wClMore"); if (mb) mb.onclick = (e) => { e.stopPropagation(); clocksAll = !clocksAll; clocksKey = ""; paint(); }; } }
@@ -829,6 +839,8 @@ const LOC = (() => {
   function init() {
     wireWidget();
     $("lClockQ").addEventListener("input", () => { clearTimeout(clockT); clockT = setTimeout(searchClock, 250); });
+    $("lClockToggle").onclick = () => { const open = $("lClockBox").hidden; $("lClockBox").hidden = !open; $("lClockToggle").setAttribute("aria-expanded", String(open)); if (open) $("lClockQ").focus(); };
+    if (L.hideField) delete L.hideField.clocks;
     // when the page changes language or writing direction: new words, and the widget moves to the reading-start corner if not placed by the user
     new MutationObserver(() => { lang = (document.documentElement.lang || "en").split("-")[0]; Object.keys(DIGITS).forEach(k => delete DIGITS[k]); paint(); if (!$("locDrawer").hidden) renderDrawer(); })
       .observe(document.documentElement, { attributes: true, attributeFilter: ["lang", "dir"] });
