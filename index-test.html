@@ -1855,6 +1855,7 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 .wdg .wcr .wn b{display:block;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wdg .wcr .wn small,.wdg .wcr .wt small{display:block;font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wdg .wcr .wt{text-align:end;flex-shrink:0}
+.wdg .wcr .ww{flex-shrink:0;font-size:.88rem;font-weight:700;white-space:nowrap}
 .wdg .wcr .wt b{font-size:1.05rem;font-variant-numeric:tabular-nums}
 .wdg .wcm{border:0;background:var(--accent-soft);color:var(--accent);font:inherit;font-weight:700;font-size:.78rem;border-radius:999px;padding:4px 10px;cursor:pointer;align-self:flex-start;margin-top:6px}
 .wdg.m.open .wcl,.wdg.l .wcl{display:flex}
@@ -1963,6 +1964,7 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
       <div class="l-inp"><label class="sr" for="lClockQ">Add a city</label><input id="lClockQ" placeholder="Add a city: type its name" autocomplete="off"></div>
       <div id="lClockSugg"></div>
       <p class="l-note" id="lClockNote"></p>
+      <label class="opt"><input type="checkbox" id="lClockWx"> Show the weather for these cities</label>
     </div>
   </div>
   <div class="fld" data-field="tz">
@@ -2124,6 +2126,30 @@ const LOC = (() => {
     } catch { wx = null; }
   }
 
+  /* Weather for the other cities: one request for all of them, refreshed every 30 minutes */
+  let cwx = {}, cwxAt = 0;
+  async function findPos(c) {   // cities added before positions were saved: look them up once
+    try { const j = await (await fetch("https://geocoding-api.open-meteo.com/v1/get?id=" + encodeURIComponent(c.id))).json();
+      if (j && j.latitude != null) { c.lat = j.latitude; c.lon = j.longitude; return; } } catch {}
+    try { const j = await (await fetch("https://geocoding-api.open-meteo.com/v1/search?" + new URLSearchParams({ name: c.short || c.name, count: "10", format: "json" }))).json();
+      const r = (j.results || []).find(x => x.country_code === c.cc && x.timezone === c.tz) || (j.results || []).find(x => x.country_code === c.cc);
+      if (r) { c.lat = r.latitude; c.lon = r.longitude; } } catch {}
+  }
+  async function loadClockWx(force) {
+    if (L.clockWx === false || !L.clocks.length) return;
+    if (!force && Date.now() - cwxAt < 30 * 60000) return;
+    for (const c of L.clocks) if (c.lat == null) await findPos(c);
+    save();
+    const list = L.clocks.filter(c => c.lat != null); if (!list.length) return;
+    try {
+      const q = new URLSearchParams({ latitude: list.map(c => c.lat).join(","), longitude: list.map(c => c.lon).join(","), current: "temperature_2m,weather_code", timezone: "auto" });
+      let j = await (await fetch("https://api.open-meteo.com/v1/forecast?" + q)).json(); if (!Array.isArray(j)) j = [j];
+      cwx = {}; list.forEach((c, i) => { const cur = j[i]?.current; if (cur) cwx[c.id] = { t: cur.temperature_2m, code: cur.weather_code }; });
+      cwxAt = Date.now(); clocksKey = "";
+    } catch {}
+  }
+  setInterval(() => loadClockWx().then(paint), 5 * 60000);
+
   /* ---------- the widget ---------- */
   const W = () => $("wdg");
   /* ---------- Other cities' clocks (up to 10; phones show the first 5, the rest under "+N more") ---------- */
@@ -2153,6 +2179,7 @@ const LOC = (() => {
       // the exact day in that city, always shown (it can be another day than yours)
       const day = new Intl.DateTimeFormat(lang, { timeZone: c.tz, weekday: "long" }).format(now) + " · ";
       return `<div class="wcr"><i class="${cls}" aria-hidden="true"></i><span class="wn"><b>${esc(c.label || c.short || c.name)}</b><small>${esc(diffText(offMin(c.tz, now) - myOff) + " · " + (c.label ? c.name : c.name.replace((c.short || "") + ", ", "")))}</small></span>`
+        + (L.clockWx !== false && cwx[c.id] ? `<span class="ww" title="Weather now in ${esc(c.short || c.name)}"><span aria-hidden="true">${WXI[cwx[c.id].code] || "🌡️"}</span> ${esc(temp(cwx[c.id].t))}</span>` : "")
         + `<span class="wt"><b>${esc(time(now, c.tz))}</b><small>${esc(day + state)}</small></span></div>`;
     }).join("");
     const more = list.length - max;
@@ -2160,8 +2187,8 @@ const LOC = (() => {
   }
   function addClock(r) {
     if (L.clocks.length >= MAX_CLOCKS) { toast(`Up to ${MAX_CLOCKS} cities. Remove one to add another.`); return; }
-    L.clocks.push({ id: String(r.id || Date.now()), name: [r.name, r.admin1 && r.admin1 !== r.name ? region(r.admin1, r.country_code) : "", r.country || countryName(r.country_code)].filter(Boolean).join(", "), short: r.name, cc: r.country_code || "", tz: r.timezone || "UTC", label: "" });
-    save(); paint(); renderClockList(); toast(r.name + " added");
+    L.clocks.push({ id: String(r.id || Date.now()), name: [r.name, r.admin1 && r.admin1 !== r.name ? region(r.admin1, r.country_code) : "", r.country || countryName(r.country_code)].filter(Boolean).join(", "), short: r.name, cc: r.country_code || "", tz: r.timezone || "UTC", label: "", lat: r.latitude, lon: r.longitude });
+    save(); cwxAt = 0; loadClockWx().then(() => { clocksKey = ""; paint(); }); paint(); renderClockList(); toast(r.name + " added");
   }
   function renderClockList() {
     const box = $("lClocks"); if (!box) return;
@@ -2222,7 +2249,7 @@ const LOC = (() => {
     // other cities: full list in the large size, a "+N cities" chip that opens it in the medium size
     const hasCl = L.clocks.length > 0 && !h.clocks;
     w.classList.toggle("open", s === "m" && clocksOpen && hasCl);
-    const key = L.clocks.map(c => c.tz + c.label).join("|") + "|" + time(now) + "|" + clocksAll + "|" + (innerWidth < 700) + "|" + L.digits + lang;
+    const key = L.clocks.map(c => c.tz + c.label + (cwx[c.id] ? cwx[c.id].t : "")).join("|") + L.clockWx + L.temp + "|" + time(now) + "|" + clocksAll + "|" + (innerWidth < 700) + "|" + L.digits + lang;
     if (hasCl && (s === "l" || (s === "m" && clocksOpen))) { if (key !== clocksKey) { $("wClocks").innerHTML = clockRows(now); clocksKey = key; const mb = $("wClMore"); if (mb) mb.onclick = (e) => { e.stopPropagation(); clocksAll = !clocksAll; clocksKey = ""; paint(); }; } }
     else clocksKey = "";
     let chip = w.querySelector(".wchip");
@@ -2472,6 +2499,9 @@ const LOC = (() => {
   function init() {
     wireWidget();
     $("lClockQ").addEventListener("input", () => { clearTimeout(clockT); clockT = setTimeout(searchClock, 250); });
+    $("lClockWx").checked = L.clockWx !== false;
+    $("lClockWx").onchange = () => { L.clockWx = $("lClockWx").checked; save(); clocksKey = ""; if (L.clockWx) loadClockWx(true).then(paint); else paint(); };
+    loadClockWx().then(paint);
     $("lClockToggle").onclick = () => { const open = $("lClockBox").hidden; $("lClockBox").hidden = !open; $("lClockToggle").setAttribute("aria-expanded", String(open)); if (open) $("lClockQ").focus(); };
     if (L.hideField) delete L.hideField.clocks;
     // when the page changes language or writing direction: new words, and the widget moves to the reading-start corner if not placed by the user
