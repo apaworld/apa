@@ -186,7 +186,17 @@ html[lang="ar"] .doc .doc-title,html[lang="zh"] .doc .doc-title{letter-spacing:0
 /* top bar user */
 body.wide footer{max-width:880px}
 .top-r{display:flex;align-items:center;gap:10px}
-.top-user{display:flex;align-items:center;gap:8px}
+.top-user{display:flex;align-items:center;gap:8px;position:relative}
+#logoutBtn{display:none}   /* Log out now lives in the menu under the photo */
+.um-chev{font-size:.7rem;color:var(--muted)}
+.user-menu{position:absolute;top:calc(100% + 8px);inset-inline-end:0;z-index:40;min-width:240px;background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px rgba(20,24,40,.16);padding:6px}
+.user-menu[hidden]{display:none}
+.user-menu .um-head{padding:10px 12px 8px;display:flex;flex-direction:column;gap:2px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.user-menu .um-head small{color:var(--muted);font-size:.82rem;overflow:hidden;text-overflow:ellipsis}
+.user-menu button{display:block;width:100%;text-align:start;border:0;background:none;padding:10px 12px;border-radius:9px;cursor:pointer;font:inherit;color:var(--ink)}
+.user-menu button:hover,.user-menu button:focus-visible{background:var(--accent-soft)}
+.user-menu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.user-menu .um-out{color:#c0322b}
 .avatar-btn{display:flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;padding:4px 6px;border-radius:999px;font-weight:600}
 .avatar-btn:hover{background:var(--soft)}
 @media (max-width:560px){#topName{display:none}}
@@ -206,6 +216,7 @@ body.wide footer{max-width:880px}
 html[lang="ar"] .cab-hello,html[lang="zh"] .cab-hello{letter-spacing:0}
 .cab-meta{margin:0;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.93rem}
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:26px;overflow-x:auto;scrollbar-width:none}
+@media (min-width:700px){.tabs{flex-wrap:wrap;overflow:visible}}   /* on computers every tab stays visible; on phones the row scrolls */
 .tabs button{background:none;border:0;padding:12px 14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
 .tabs button:hover{color:var(--ink)}
@@ -273,13 +284,22 @@ html[lang="ar"] .cab-hello,html[lang="zh"] .cab-hello{letter-spacing:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
-<body>
+<body data-widget-place="bottom">
 <header class="top">
   <div class="mark"><i aria-hidden="true"></i><span>Apacom</span></div>
   <div class="top-r">
   <div class="top-user" id="topUser" hidden>
-    <button type="button" class="avatar-btn" id="topAvatarBtn"><span class="avatar sm" id="topAvatar"></span><span id="topName"></span></button>
+    <button type="button" class="avatar-btn" id="topAvatarBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu"><span class="avatar sm" id="topAvatar"></span><span id="topName"></span><span class="um-chev" aria-hidden="true">▾</span></button>
     <button type="button" class="btn ghost sm" id="logoutBtn" data-t="logout"></button>
+    <div class="user-menu" id="userMenu" role="menu" aria-labelledby="topAvatarBtn" hidden>
+      <div class="um-head"><b id="umName"></b><small id="umEmail"></small></div>
+      <button type="button" role="menuitem" data-go="account"></button>
+      <button type="button" role="menuitem" data-go="profile"></button>
+      <button type="button" role="menuitem" data-go="place"></button>
+      <button type="button" role="menuitem" data-go="privacy"></button>
+      <hr>
+      <button type="button" role="menuitem" data-go="logout" class="um-out"></button>
+    </div>
   </div>
   <button type="button" class="btn ghost sm" id="topAuth" data-t="signInLink" hidden></button>
   <div class="lang">
@@ -512,6 +532,17 @@ html[lang="ar"] .cab-hello,html[lang="zh"] .cab-hello{letter-spacing:0}
     </div>
   </section>
 
+  <section id="tab-place" role="tabpanel" aria-labelledby="tabbtn-place" hidden>
+    <div class="sec">
+      <h2 data-t="placeTitle"></h2>
+      <p class="sub" data-t="placeSub"></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button type="button" class="btn" id="placeOpen" data-t="placeOpen"></button>
+        <a class="btn ghost" href="live-free.html" data-t="placeDash" style="text-decoration:none;display:inline-flex;align-items:center"></a>
+      </div>
+    </div>
+  </section>
+
   <section id="tab-privacy" role="tabpanel" aria-labelledby="tabbtn-privacy" hidden>
     <div class="sec">
       <h2 data-t="consentTitle"></h2>
@@ -662,7 +693,7 @@ skills:{en:["Course finder","Finds free and certified courses worldwide that emp
 /* ============ cabinet strings ============ */
 const CUI = {
 en:{signInTitle:"Sign in",signInBtn:"Sign in",noAccount:"New to Apacom?",createLink:"Create an account",haveAccount:"Already have an account?",signInLink:"Sign in",errLogin:"Email or password is incorrect.",logout:"Log out",cancel:"Cancel",save:"Save",saved:"Saved.",
-tabAgent:"My agent",tabProfile:"Situation and goals",tabAccount:"Account",tabPrivacy:"Privacy and data",hello:"Hello, {name}",memberSince:"Member since {date}",
+tabAgent:"My agent",tabProfile:"Situation and goals",tabAccount:"Account",tabPrivacy:"Privacy and data",tabPlace:"Time and place",placeTitle:"Time and place",placeSub:"Your city, time zone and how dates, times and numbers are shown. Changes apply everywhere in APA.",placeOpen:"Open time and place settings",placeDash:"Open the live dashboard",hello:"Hello, {name}",memberSince:"Member since {date}",
 d_social:"Social life",d_economic:"Money and work",d_health:"Health",d_learning:"Education",soon:"Coming soon",soonText:"APA will cover this area in a future version. Your profile is already ready for it.",
 domainAgents:"Helper agents on this",noGoalsDomain:"You haven't picked any goals in this area yet.",addGoals:"Add goals",answersTitle:"Answers from APA",askLabel:"Ask APA",askPh:"Ask a question about this area, or leave it empty for a general update.",askBtn:"Ask APA",asking:"APA is thinking…",noAnswers:"No answers yet. Ask APA to get your first one.",askUnavailable:"Answers will appear here once APA's server is connected.",askErr:"APA couldn't answer right now. Try again in a minute.",youAsked:"You asked: {q}",whatToDo:"What to do",removeAnswer:"Remove",
 editSit:"Edit situation and goals",notAnswered:"Not answered",sumChallenge:"Hardest right now",sumDream:"Happier this year",sumHorizon:"When",
@@ -672,7 +703,7 @@ pwTitle:"Password",newPw:"New password",pwChanged:"Password changed.",checkinTit
 consentTitle:"Your consent",consentText:"You accepted the Terms and Conditions (version {v}) on {date}.",exportTitle:"Download my data",exportSub:"Get a copy of everything APA stores about you, as a JSON file.",exportBtn:"Download my data",exportErr:"The download didn't start. Try again.",
 deleteTitle:"Delete account",deleteSub:"This permanently deletes your profile, answers and photo. Your email becomes free to register again.",deleteBtn:"Delete my account",deleteConfirm:"Enter your password to confirm",deleteFinal:"Delete permanently",deleted:"Your account was deleted."},
 fr:{signInTitle:"Se connecter",signInBtn:"Se connecter",noAccount:"Nouveau sur Apacom ?",createLink:"Créer un compte",haveAccount:"Vous avez déjà un compte ?",signInLink:"Se connecter",errLogin:"E-mail ou mot de passe incorrect.",logout:"Se déconnecter",cancel:"Annuler",save:"Enregistrer",saved:"Enregistré.",
-tabAgent:"Mon agent",tabProfile:"Situation et objectifs",tabAccount:"Compte",tabPrivacy:"Confidentialité et données",hello:"Bonjour, {name}",memberSince:"Membre depuis le {date}",
+tabAgent:"Mon agent",tabProfile:"Situation et objectifs",tabAccount:"Compte",tabPrivacy:"Confidentialité et données",tabPlace:"Heure et lieu",placeTitle:"Heure et lieu",placeSub:"Votre ville, votre fuseau horaire et l’affichage des dates, heures et nombres. Les changements s’appliquent partout dans APA.",placeOpen:"Ouvrir les réglages heure et lieu",placeDash:"Ouvrir le tableau de bord en direct",hello:"Bonjour, {name}",memberSince:"Membre depuis le {date}",
 d_social:"Vie sociale",d_economic:"Argent et travail",d_health:"Santé",d_learning:"Éducation",soon:"Bientôt",soonText:"APA couvrira ce domaine dans une prochaine version. Votre profil est déjà prêt.",
 domainAgents:"Agents à l’œuvre",noGoalsDomain:"Vous n’avez encore choisi aucun objectif dans ce domaine.",addGoals:"Ajouter des objectifs",answersTitle:"Réponses d’APA",askLabel:"Demander à APA",askPh:"Posez une question sur ce domaine, ou laissez vide pour un point général.",askBtn:"Demander à APA",asking:"APA réfléchit…",noAnswers:"Aucune réponse pour l’instant. Demandez à APA pour obtenir la première.",askUnavailable:"Les réponses apparaîtront ici dès que le serveur d’APA sera connecté.",askErr:"APA n’a pas pu répondre. Réessayez dans une minute.",youAsked:"Votre question : {q}",whatToDo:"À faire",removeAnswer:"Supprimer",
 editSit:"Modifier ma situation et mes objectifs",notAnswered:"Non renseigné",sumChallenge:"Le plus difficile",sumDream:"Plus heureux cette année",sumHorizon:"Quand",
@@ -682,7 +713,7 @@ pwTitle:"Mot de passe",newPw:"Nouveau mot de passe",pwChanged:"Mot de passe modi
 consentTitle:"Votre consentement",consentText:"Vous avez accepté les conditions (version {v}) le {date}.",exportTitle:"Télécharger mes données",exportSub:"Obtenez une copie de tout ce qu’APA conserve sur vous, au format JSON.",exportBtn:"Télécharger mes données",exportErr:"Le téléchargement n’a pas démarré. Réessayez.",
 deleteTitle:"Supprimer le compte",deleteSub:"Cette action supprime définitivement votre profil, vos réponses et votre photo. Votre e-mail pourra de nouveau être utilisé.",deleteBtn:"Supprimer mon compte",deleteConfirm:"Saisissez votre mot de passe pour confirmer",deleteFinal:"Supprimer définitivement",deleted:"Votre compte a été supprimé."},
 zh:{signInTitle:"登录",signInBtn:"登录",noAccount:"第一次使用 Apacom？",createLink:"创建账户",haveAccount:"已有账户？",signInLink:"登录",errLogin:"邮箱或密码不正确。",logout:"退出登录",cancel:"取消",save:"保存",saved:"已保存。",
-tabAgent:"我的智能体",tabProfile:"现状与目标",tabAccount:"账户",tabPrivacy:"隐私与数据",hello:"您好，{name}",memberSince:"注册于 {date}",
+tabAgent:"我的智能体",tabProfile:"现状与目标",tabAccount:"账户",tabPrivacy:"隐私与数据",tabPlace:"时间与地点",placeTitle:"时间与地点",placeSub:"您的城市、时区，以及日期、时间和数字的显示方式。更改将应用于 APA 的所有页面。",placeOpen:"打开时间与地点设置",placeDash:"打开实时面板",hello:"您好，{name}",memberSince:"注册于 {date}",
 d_social:"社交生活",d_economic:"财务与工作",d_health:"健康",d_learning:"教育",soon:"即将推出",soonText:"APA 将在后续版本中覆盖这一领域，您的资料已为此做好准备。",
 domainAgents:"负责此领域的助手智能体",noGoalsDomain:"您还没有在此领域选择目标。",addGoals:"添加目标",answersTitle:"APA 的回答",askLabel:"问 APA",askPh:"就此领域提问，或留空以获取总体建议。",askBtn:"问 APA",asking:"APA 正在思考…",noAnswers:"还没有回答。向 APA 提问，获取第一条建议。",askUnavailable:"连接 APA 服务器后，回答会显示在这里。",askErr:"APA 暂时无法回答，请稍后再试。",youAsked:"您的问题：{q}",whatToDo:"行动步骤",removeAnswer:"删除",
 editSit:"修改现状与目标",notAnswered:"未填写",sumChallenge:"目前最困难的",sumDream:"今年的幸福愿望",sumHorizon:"时间",
@@ -692,7 +723,7 @@ pwTitle:"密码",newPw:"新密码",pwChanged:"密码已更改。",checkinTitle:"
 consentTitle:"您的同意记录",consentText:"您已于 {date} 同意条款和条件（版本 {v}）。",exportTitle:"下载我的数据",exportSub:"以 JSON 文件形式获取 APA 保存的关于您的全部数据。",exportBtn:"下载我的数据",exportErr:"下载未开始，请重试。",
 deleteTitle:"删除账户",deleteSub:"这将永久删除您的资料、回答和照片，您的邮箱可以重新注册。",deleteBtn:"删除我的账户",deleteConfirm:"请输入密码以确认",deleteFinal:"永久删除",deleted:"您的账户已删除。"},
 ar:{signInTitle:"تسجيل الدخول",signInBtn:"تسجيل الدخول",noAccount:"جديد على Apacom؟",createLink:"إنشاء حساب",haveAccount:"لديك حساب بالفعل؟",signInLink:"تسجيل الدخول",errLogin:"البريد الإلكتروني أو كلمة المرور غير صحيحة.",logout:"تسجيل الخروج",cancel:"إلغاء",save:"حفظ",saved:"تم الحفظ.",
-tabAgent:"وكيلي",tabProfile:"الوضع والأهداف",tabAccount:"الحساب",tabPrivacy:"الخصوصية والبيانات",hello:"مرحبًا، {name}",memberSince:"عضو منذ {date}",
+tabAgent:"وكيلي",tabProfile:"الوضع والأهداف",tabAccount:"الحساب",tabPrivacy:"الخصوصية والبيانات",tabPlace:"الوقت والمكان",placeTitle:"الوقت والمكان",placeSub:"مدينتك ومنطقتك الزمنية وطريقة عرض التواريخ والأوقات والأرقام. تُطبَّق التغييرات في كل أنحاء APA.",placeOpen:"فتح إعدادات الوقت والمكان",placeDash:"فتح لوحة المعلومات المباشرة",hello:"مرحبًا، {name}",memberSince:"عضو منذ {date}",
 d_social:"الحياة الاجتماعية",d_economic:"المال والعمل",d_health:"الصحة",d_learning:"التعليم",soon:"قريبًا",soonText:"سيغطي APA هذا المجال في إصدار قادم، وملفك جاهز له بالفعل.",
 domainAgents:"الوكلاء المساعدون في هذا المجال",noGoalsDomain:"لم تختر أي هدف في هذا المجال بعد.",addGoals:"إضافة أهداف",answersTitle:"إجابات APA",askLabel:"اسأل APA",askPh:"اطرح سؤالًا عن هذا المجال، أو اتركه فارغًا للحصول على تحديث عام.",askBtn:"اسأل APA",asking:"APA يفكّر…",noAnswers:"لا توجد إجابات بعد. اسأل APA لتحصل على أول إجابة.",askUnavailable:"ستظهر الإجابات هنا بعد ربط خادم APA.",askErr:"تعذّر على APA الإجابة الآن. حاول مجددًا بعد دقيقة.",youAsked:"سؤالك: {q}",whatToDo:"ما يجب فعله",removeAnswer:"حذف",
 editSit:"تعديل الوضع والأهداف",notAnswered:"لم تتم الإجابة",sumChallenge:"الأصعب الآن",sumDream:"ما يسعدك هذا العام",sumHorizon:"متى",
@@ -1013,8 +1044,8 @@ function renderSteps(){
 function setOk(id, key, vars){ const el=$(id); if(!key){ el.textContent=""; delete el.dataset.k; return; } el.dataset.k=key; el.dataset.v=JSON.stringify(vars||null); el.textContent=t(key,vars); clearTimeout(el._t); el._t=setTimeout(()=>setOk(id),6000); }
 /* all dates use the French standard DD/MM/YYYY and 24-hour time, in every language */
 const pad2 = n => String(n).padStart(2,"0");
-function fmtDate(iso){ const d=new Date(iso); if(isNaN(d)) return ""; return pad2(d.getDate())+"/"+pad2(d.getMonth()+1)+"/"+d.getFullYear(); }
-function fmtTime(iso){ const d=new Date(iso); if(isNaN(d)) return ""; return fmtDate(iso)+" "+pad2(d.getHours())+":"+pad2(d.getMinutes()); }
+function fmtDate(iso){ const d=new Date(iso); if(isNaN(d)) return ""; if(typeof LOC!=="undefined") return LOC.date(d); return pad2(d.getDate())+"/"+pad2(d.getMonth()+1)+"/"+d.getFullYear(); }
+function fmtTime(iso){ const d=new Date(iso); if(isNaN(d)) return ""; if(typeof LOC!=="undefined") return LOC.date(d)+" "+LOC.time(d); return fmtDate(iso)+" "+pad2(d.getHours())+":"+pad2(d.getMinutes()); }
 function genCode(){ const n=crypto.getRandomValues(new Uint32Array(1))[0]; return {code:String(n%1000000).padStart(6,"0"), expires:Date.now()+600000, tries:5}; }
 function checkCode(v, c){ if(Date.now()>v.expires) return "errExpired"; if(v.tries<=0) return "errLocked"; if(c!==v.code){ v.tries--; return v.tries>0?"errCode":"errLocked"; } return null; }
 const pwOk = p => p.length>=8 && /[a-z]/i.test(p) && /\d/.test(p);
@@ -1158,7 +1189,26 @@ function paintAvatar(el, p){
   else el.textContent = p ? initials(p) : "";
 }
 function renderTopUser(){ if(st.profile){ paintAvatar($("topAvatar"), st.profile); $("topName").textContent = st.profile.firstName; } }
-$("topAvatarBtn").onclick = ()=>{ if(st.profile) openCabinet(st.tab||"today"); };
+/* Menu under the photo: account pages and Log out, from any page */
+const UM_LABEL = { account:"tabAccount", profile:"tabProfile", place:"tabPlace", privacy:"tabPrivacy", logout:"logout" };
+function umOpen(){
+  if(!st.profile) return;
+  $("umName").textContent = (st.profile.firstName||"")+" "+(st.profile.lastName||""); $("umEmail").textContent = st.profile.email||"";
+  $("userMenu").querySelectorAll("[data-go]").forEach(b=>b.textContent=t(UM_LABEL[b.dataset.go]));
+  $("userMenu").hidden=false; $("topAvatarBtn").setAttribute("aria-expanded","true");
+  $("userMenu").querySelector("[data-go]").focus();
+}
+function umClose(refocus){ if($("userMenu").hidden) return; $("userMenu").hidden=true; $("topAvatarBtn").setAttribute("aria-expanded","false"); if(refocus) $("topAvatarBtn").focus(); }
+$("topAvatarBtn").onclick = (e)=>{ e.stopPropagation(); $("userMenu").hidden ? umOpen() : umClose(true); };
+$("userMenu").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ const g=b.dataset.go; umClose(false); if(g==="logout") logout(); else openCabinet(g); });
+$("userMenu").addEventListener("keydown", e=>{
+  const items=[...$("userMenu").querySelectorAll("[data-go]")], i=items.indexOf(document.activeElement);
+  if(e.key==="ArrowDown"){ e.preventDefault(); items[(i+1)%items.length].focus(); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); items[(i-1+items.length)%items.length].focus(); }
+  else if(e.key==="Escape"){ e.preventDefault(); umClose(true); }
+  else if(e.key==="Tab"){ umClose(false); }
+});
+document.addEventListener("click", e=>{ if(!$("userMenu").hidden && !$("userMenu").contains(e.target)) umClose(false); });
 
 /* ============ cabinet ============ */
 const DOMAINS = [
@@ -1167,7 +1217,7 @@ const DOMAINS = [
   {key:"health",   soon:true},
   {key:"learning", soon:true}
 ];
-const TABS = ["today","agent","inbox","profile","account","privacy"];
+const TABS = ["today","agent","inbox","profile","account","place","privacy"];
 let sampleNs=null, downloadsNs=null;
 (async()=>{ try{ if(window.claude && window.claude.use){
   [sampleNs, downloadsNs] = await Promise.all([claude.use("sample"), claude.use("downloads")]);
@@ -1755,6 +1805,611 @@ Store.ready.then(async ()=>{
   }catch(e){}
 });
 detectCountry().then(d=>{ if(d){ st.detected=d; if(!st.country){ st.country=d.code; } renderCountryValue(); } });
+</script>
+<style>
+/* Base styles for the time and place module inside the main app (scoped, so the app's own styles are untouched) */
+#locDrawer [hidden],#wdg [hidden],#calAsk[hidden],#toast[hidden],#locBg[hidden]{display:none!important}
+body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
+#locBg.backdrop{position:fixed;inset:0;background:rgba(10,12,20,.45);z-index:50}
+#locDrawer.drawer{position:fixed;z-index:51;top:0;bottom:0;inset-inline-end:0;width:min(360px,92vw);background:var(--paper);border-inline-start:1px solid var(--line);
+  padding:max(18px,env(safe-area-inset-top,0px)) 20px max(18px,env(safe-area-inset-bottom,0px));overflow:auto;box-shadow:-10px 0 40px rgba(0,0,0,.15);box-sizing:border-box;font-size:16px}
+#locDrawer h2{font-size:1.15rem;margin:0}
+#locDrawer h3{font-size:.85rem;margin:20px 0 8px;color:var(--muted);font-weight:700}
+#locDrawer .dh{display:flex;align-items:center;justify-content:space-between}
+#locDrawer .ib{border:0;background:none;cursor:pointer;color:var(--muted);width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:1rem}
+#locDrawer .ib:hover{background:var(--soft);color:var(--ink)}
+#locDrawer .opt{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer}
+#locDrawer .opt input{width:18px;height:18px;accent-color:var(--accent)}
+#locDrawer .l-btn,#calAsk .l-btn{border:0;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;white-space:nowrap}
+#locDrawer .l-btn.ghost,#calAsk .l-btn.ghost{background:none;color:var(--ink);border:1px solid var(--line);font-weight:600}
+#locDrawer .l-link{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer}
+#locDrawer input,#locDrawer select,#locDrawer button{font:inherit;color:inherit}
+</style>
+<!-- ===== Time, place and local formats: widget + settings ===== -->
+<style>
+.wdg{position:fixed;z-index:30;background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 28px rgba(20,24,40,.14);padding:8px 10px;display:flex;align-items:center;gap:10px;touch-action:none;user-select:none;max-width:calc(100vw - 16px)}
+.wdg.s,.wdg.m{border-radius:999px}
+.wdg .grip{border:0;background:none;color:var(--muted);cursor:grab;width:22px;height:36px;padding:0;display:grid;place-items:center}
+.wdg .main{border:0;background:none;padding:0;cursor:pointer;text-align:start;display:flex;flex-direction:column;gap:1px}
+.wdg .time{font-size:1.25rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.1}
+.wdg.l .time{font-size:1.8rem}
+.wdg .time,.wdg .l-sub{white-space:nowrap}
+.wdg.l{flex-wrap:wrap;width:min(400px,calc(100vw - 16px));border-radius:18px;row-gap:4px;padding:10px 14px}
+.wdg.l [data-piece="place"]{flex-basis:100%;order:6;padding-inline-start:32px}
+.wdg.l [data-piece="place"] .l-sub{white-space:normal}
+.wdg.l .tools{order:7}
+.wdg .l-sub{font-size:.78rem;color:var(--muted);line-height:1.3}
+.wdg .wx{display:flex;align-items:center;gap:6px;font-weight:700;border:0;background:none;padding:0;cursor:pointer}
+.wdg .wx small{display:block;font-weight:500;color:var(--muted);font-size:.75rem}
+.wdg .sep{width:1px;align-self:stretch;background:var(--line)}
+.wdg .pc{position:relative;display:flex;align-items:center}
+.wdg .hx{position:absolute;top:-10px;inset-inline-end:-12px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--muted);font-size:.7rem;line-height:1;padding:0;cursor:pointer;display:none;place-items:center}
+.wdg:hover .hx,.wdg:focus-within .hx,.wdg.edit .hx{display:grid}
+.wdg .tools{display:none;gap:2px}
+.wdg:hover .tools,.wdg:focus-within .tools,.wdg.edit .tools{display:flex}
+.wdg .tools button{border:0;background:none;color:var(--muted);width:28px;height:28px;border-radius:8px;cursor:pointer;padding:0;font-size:.9rem}
+.wdg .tools button:hover{background:var(--soft);color:var(--ink)}
+.wdg .rz{position:absolute;inset-inline-end:2px;bottom:2px;width:16px;height:16px;cursor:nwse-resize;border:0;background:none;padding:0}
+.wdg .rz::after{content:"";position:absolute;inset-inline-end:3px;bottom:3px;width:8px;height:8px;border-inline-end:2px solid var(--muted);border-bottom:2px solid var(--muted);border-end-end-radius:3px;opacity:.7}
+.wdg.min{border-radius:50%;padding:0;width:44px;height:44px;justify-content:center}
+.wdg.min > :not(.dot){display:none!important}
+.wdg .dot{display:none;border:0;background:none;width:44px;height:44px;border-radius:50%;cursor:pointer;color:var(--accent);font-size:1.2rem}
+.wdg.min .dot{display:block}
+.toast{position:fixed;z-index:60;left:50%;transform:translateX(-50%);bottom:max(20px,env(safe-area-inset-bottom,0px));background:#15171c;color:#fff;border-radius:10px;padding:10px 14px;display:flex;gap:14px;align-items:center;font-size:.92rem;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.toast button{border:0;background:none;color:#a9b4ff;font-weight:700;cursor:pointer;padding:0}
+.calask{position:fixed;z-index:55;inset-inline-end:16px;bottom:max(16px,env(safe-area-inset-bottom,0px));width:min(360px,calc(100vw - 32px));background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 36px rgba(20,24,40,.18);padding:14px 16px}
+.calask p{margin:0 0 10px;font-size:.95rem}
+.calask .row2{display:flex;gap:8px;flex-wrap:wrap}
+.calask .fine{margin:10px 0 0;font-size:.78rem;color:var(--muted)}
+#locDrawer .fld{display:flex;flex-direction:column;gap:6px;margin:14px 0 0}
+#locDrawer .fh{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:700}
+#locDrawer .fh button{border:0;background:none;color:var(--accent);font-weight:600;font-size:.8rem;cursor:pointer;padding:4px 0}
+#locDrawer .l-note{font-size:.8rem;color:var(--muted);margin:0}
+#locDrawer .fld.folded{background:var(--soft);border-radius:10px;padding:6px 10px}
+#locDrawer .fld.folded > :not(.fh){display:none!important}
+#locDrawer .fsum{color:var(--muted);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#locDrawer .fld.folded .fh{justify-content:flex-start;gap:0}
+#locDrawer .fld.folded .fh > :first-child{white-space:nowrap}
+#locDrawer .fld.folded .fh button{margin-inline-start:auto;white-space:nowrap}
+#locDrawer .fld:not(.folded) .fsum{display:none}
+#locDrawer .l-row{display:flex;gap:8px;align-items:center}
+#locDrawer .l-inp{display:flex;align-items:center;border:1px solid #c9ccd3;border-radius:10px;padding:0 4px 0 0;flex:1;min-width:0;background:var(--paper)}
+#locDrawer .l-inp:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+#locDrawer .l-inp input,#locDrawer .l-inp select{flex:1;min-width:0;border:0;background:none;padding:9px 10px;font-size:.95rem}
+#locDrawer .l-inp input:focus,#locDrawer .l-inp select:focus{outline:none}
+#locDrawer .clr{border:0;background:none;color:var(--muted);width:28px;height:28px;cursor:pointer;border-radius:6px}
+#locDrawer .sugg{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:4px}
+#locDrawer .sugg button{display:block;width:100%;text-align:start;border:0;border-bottom:1px solid var(--line);background:var(--paper);padding:8px 12px;cursor:pointer}
+#locDrawer .sugg button:last-child{border-bottom:0}
+#locDrawer .sugg button:hover,#locDrawer .sugg button:focus-visible{background:var(--accent-soft)}
+#locDrawer .sugg b{display:block}
+#locDrawer .sugg small{color:var(--muted)}
+#locDrawer .cbx{position:relative}
+#locDrawer .cbl{max-height:260px;overflow:auto;margin-top:4px}
+#locDrawer .cbl [aria-selected="true"]{background:var(--accent-soft)}
+#locDrawer .cbl .cur{font-weight:700}
+#locDrawer input{unicode-bidi:plaintext}
+#locDrawer .chips2{display:flex;flex-wrap:wrap;gap:6px}
+#locDrawer .chips2 button{border:1px solid #c9ccd3;background:var(--paper);border-radius:9px;padding:7px 10px;cursor:pointer;font-size:.88rem}
+#locDrawer .chips2 button[aria-pressed="true"]{border:2px solid var(--accent);background:var(--accent-soft);font-weight:700;padding:6px 9px}
+#locDrawer .warn{background:#fff4e5;border:1px solid #f0c27a;color:#4a3200;border-radius:12px;padding:10px 12px;margin-top:14px;font-size:.85rem}
+#locDrawer .warn b{display:block;color:#6b4300;margin-bottom:4px}
+#locDrawer .warn .chips2{margin-top:8px}
+@media (prefers-color-scheme:dark){#locDrawer .warn{background:#3a2a10;border-color:#7a5a20;color:#f3dfb8}#locDrawer .warn b{color:#ffd68a}}
+</style>
+
+<div class="wdg m" id="wdg" role="region" aria-label="Time and weather" hidden>
+  <button class="grip" id="wGrip" aria-label="Move the time and weather widget (drag, or use the arrow keys)" title="Drag to move">⠿</button>
+  <span class="pc" data-piece="clock"><button class="main" id="wMain" aria-label="Open time and place settings"><span class="time" id="wTime">--:--</span></button><button class="hx" data-hide="clock" aria-label="Hide the clock" title="Hide the clock">✕</button></span>
+  <span class="pc" data-piece="date"><span class="l-sub" id="wDate"></span><button class="hx" data-hide="date" aria-label="Hide the date" title="Hide the date">✕</button></span>
+  <span class="pc" data-piece="place"><span class="l-sub" id="wPlace"></span><button class="hx" data-hide="place" aria-label="Hide the place" title="Hide the place">✕</button></span>
+  <span class="sep" data-piece="weather"></span>
+  <span class="pc" data-piece="weather"><button class="wx" id="wWx" aria-label="Open time and place settings"><span id="wWxIc" aria-hidden="true"></span><span><span id="wWxT"></span><small id="wWxD"></small></span></button><button class="hx" data-hide="weather" aria-label="Hide the weather" title="Hide the weather">✕</button></span>
+  <span class="tools"><button id="wSize" aria-label="Change the size" title="Change the size">⤢</button><button id="wMin" aria-label="Minimize" title="Minimize">–</button></span>
+  <button class="rz" id="wRz" aria-label="Resize: drag, or press to change the size" title="Drag to resize"></button>
+  <button class="dot" id="wDot" aria-label="Show the time and weather widget">🕐</button>
+</div>
+
+<div class="backdrop d" id="locBg" hidden></div>
+<aside class="drawer" id="locDrawer" role="dialog" aria-modal="true" aria-labelledby="locTitle" hidden>
+  <div class="dh"><h2 id="locTitle">Time and place</h2><button class="ib x" id="locX" aria-label="Close time and place">✕</button></div>
+  <div id="locWarn"></div>
+  <div class="fld" data-field="country">
+    <div class="fh"><label for="lCountry">Country</label><span class="fsum"></span><button data-hidefield="country">Minimize ▴</button></div>
+    <div class="cbx"><div class="l-inp"><input id="lCountry" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lCountryList" autocomplete="off" placeholder="Any country: type to search"><button class="clr" id="lCountryClr" aria-label="Clear the country">✕</button></div>
+      <div class="sugg cbl" id="lCountryList" role="listbox" aria-label="Countries" hidden></div></div>
+    <p class="l-note">Optional: narrows the city list. Cities always show their country.</p>
+  </div>
+  <div class="fld">
+    <div class="fh"><label for="lCity">City</label></div>
+    <div class="l-row"><div class="l-inp"><input id="lCity" autocomplete="off" placeholder="Type a city"><button class="clr" id="lCityClr" aria-label="Clear the city">✕</button></div>
+      <button class="l-btn ghost" id="lHere" title="Use my location">📍</button></div>
+    <div id="lSugg" aria-live="polite"></div>
+    <p class="l-note" id="lCityNote"></p>
+  </div>
+  <div class="fld" data-field="tz">
+    <div class="fh"><label for="lTz">Time zone</label><span class="fsum"></span><button data-hidefield="tz">Minimize ▴</button></div>
+    <div class="cbx"><div class="l-inp"><input id="lTz" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lTzList" autocomplete="off" placeholder="Type to search: Paris, Hanoi, New York…"><button class="clr" id="lTzClr" aria-label="Back to automatic time zone">✕</button></div>
+      <div class="sugg cbl" id="lTzList" role="listbox" aria-label="Time zones" hidden></div></div>
+    <button class="l-link" id="lTzNow" style="align-self:flex-start">Use current time zone</button>
+  </div>
+  <div class="fld" data-field="date"><div class="fh"><span>Date format</span><span class="fsum"></span><button data-hidefield="date">Minimize ▴</button></div><div class="chips2" id="lDate"></div></div>
+  <div class="fld" data-field="hour"><div class="fh"><span>Time</span><span class="fsum"></span><button data-hidefield="hour">Minimize ▴</button></div><div class="chips2" id="lHour"></div></div>
+  <div class="fld" data-field="week"><div class="fh"><span>Week starts on</span><span class="fsum"></span><button data-hidefield="week">Minimize ▴</button></div><div class="chips2" id="lWeek"></div></div>
+  <div class="fld" data-field="cal"><div class="fh"><label for="lCal">Also show another calendar</label><span class="fsum"></span><button data-hidefield="cal">Minimize ▴</button></div>
+    <div class="cbx"><div class="l-inp"><input id="lCal" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lCalList" autocomplete="off" placeholder="None: type to search"><button class="clr" id="lCalClr" aria-label="No other calendar">✕</button></div>
+      <div class="sugg cbl" id="lCalList" role="listbox" aria-label="Calendars" hidden></div></div></div>
+  <div class="fld" data-field="digits"><div class="fh"><span>Digits</span><span class="fsum"></span><button data-hidefield="digits">Minimize ▴</button></div><div class="chips2" id="lDigits"></div></div>
+  <div class="fld" data-field="units"><div class="fh"><span>Units</span><span class="fsum"></span><button data-hidefield="units">Minimize ▴</button></div><div class="chips2" id="lTemp"></div><div class="chips2" id="lDist"></div></div>
+  <div class="fld"><div class="fh"><span>Widget</span></div><div class="chips2" id="lSizeChips"></div>
+    <label class="opt"><input type="checkbox" id="lShowW"> Show the time and weather widget</label></div>
+  <h3>Hidden items</h3><div id="lHidden"></div>
+  <h3>Reset</h3><button class="l-btn ghost" id="lReset">Reset time, place and formats</button>
+</aside>
+<div class="calask" id="calAsk" role="dialog" aria-labelledby="calAskT" hidden>
+  <p id="calAskT"></p>
+  <div class="row2"><button class="l-btn" id="calYes">Yes, show it</button><button class="l-btn ghost" id="calNo">No thanks</button></div>
+  <p class="fine">You can change this anytime in Time and place.</p>
+</div>
+<div class="toast" id="toast" role="status" hidden><span id="toastT"></span><button id="toastU">Undo</button></div>
+
+<script>
+/* Time, place and local formats. Everything is saved only in this browser and can be changed. */
+const LOC = (() => {
+  const KEY = "apa-locale-v1";
+  const DEF = { place: null, country: "", calAsked: {}, tz: "auto", date: "auto", hour: "auto", week: "auto", cal: "none", digits: "latn", temp: "c", dist: "km",
+    w: { show: true, size: "m", x: null, y: null, hide: {} }, hideField: {} };
+  let L; try { L = { ...structuredClone(DEF), ...(JSON.parse(localStorage.getItem(KEY)) || {}) }; L.calAsked = L.calAsked || {}; L.w = { ...DEF.w, ...L.w, hide: { ...(L.w?.hide || {}) } }; L.hideField = L.hideField || {}; } catch { L = structuredClone(DEF); }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(L)); } catch {} };
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+  const deviceTz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; } })();
+  let lang = (document.documentElement.lang || navigator.language || "en").split("-")[0];   // follows the page language (updated on change)
+  let ip = null;
+  let gps = null;   // { name, cc, lat, lon } from the device's location, for this visit only (never saved)           // { cc, country, city, tz, lat, lon } from the connection, if available
+  const listeners = [];
+
+  // For countries with several time zones: the zone of the capital or the biggest city, until the user picks a city
+  const MAIN_TZ = { US: ["America/New_York"], CA: ["America/Toronto"], RU: ["Europe/Moscow"], BR: ["America/Sao_Paulo"], AU: ["Australia/Sydney"], MX: ["America/Mexico_City"],
+    ID: ["Asia/Jakarta"], KZ: ["Asia/Almaty"], CN: ["Asia/Shanghai"], AR: ["America/Buenos_Aires", "America/Argentina/Buenos_Aires"], CD: ["Africa/Kinshasa"], ES: ["Europe/Madrid"],
+    PT: ["Europe/Lisbon"], CL: ["America/Santiago"], EC: ["America/Guayaquil"], DE: ["Europe/Berlin"], MN: ["Asia/Ulan_Bator", "Asia/Ulaanbaatar"], UA: ["Europe/Kiev", "Europe/Kyiv"],
+    NZ: ["Pacific/Auckland"], KI: ["Pacific/Tarawa"], FM: ["Pacific/Ponape", "Pacific/Pohnpei"], MY: ["Asia/Kuala_Lumpur"], UZ: ["Asia/Tashkent"], PG: ["Pacific/Port_Moresby"],
+    GL: ["America/Godthab", "America/Nuuk"], CY: ["Asia/Nicosia"], PS: ["Asia/Gaza"], VN: ["Asia/Saigon", "Asia/Ho_Chi_Minh"], IN: ["Asia/Calcutta", "Asia/Kolkata"], PF: ["Pacific/Tahiti"] };
+  const countryZones = (c) => c ? Object.keys(TZ_CC).filter(z => TZ_CC[z] === c && zones.includes(z)) : [];
+  function autoTz() {
+    if (L.place?.tz) return L.place.tz;
+    if (L.country) { const zs = countryZones(L.country); if (zs.includes(deviceTz)) return deviceTz;
+      const main = (MAIN_TZ[L.country] || []).find(z => zs.includes(z)); if (main) return main; if (zs.length) return zs[0]; }
+    return deviceTz;
+  }
+  const tz = () => L.tz !== "auto" ? L.tz : autoTz();
+  // Which country each time zone belongs to (from the world time zone database)
+  const TZ_CC = Object.fromEntries("Africa/Abidjan:CI,Africa/Accra:GH,Africa/Addis_Ababa:ET,Africa/Algiers:DZ,Africa/Asmara:ER,Africa/Bamako:ML,Africa/Bangui:CF,Africa/Banjul:GM,Africa/Bissau:GW,Africa/Blantyre:MW,Africa/Brazzaville:CG,Africa/Bujumbura:BI,Africa/Cairo:EG,Africa/Casablanca:MA,Africa/Ceuta:ES,Africa/Conakry:GN,Africa/Dakar:SN,Africa/Dar_es_Salaam:TZ,Africa/Djibouti:DJ,Africa/Douala:CM,Africa/El_Aaiun:EH,Africa/Freetown:SL,Africa/Gaborone:BW,Africa/Harare:ZW,Africa/Johannesburg:ZA,Africa/Juba:SS,Africa/Kampala:UG,Africa/Khartoum:SD,Africa/Kigali:RW,Africa/Kinshasa:CD,Africa/Lagos:NG,Africa/Libreville:GA,Africa/Lome:TG,Africa/Luanda:AO,Africa/Lubumbashi:CD,Africa/Lusaka:ZM,Africa/Malabo:GQ,Africa/Maputo:MZ,Africa/Maseru:LS,Africa/Mbabane:SZ,Africa/Mogadishu:SO,Africa/Monrovia:LR,Africa/Nairobi:KE,Africa/Ndjamena:TD,Africa/Niamey:NE,Africa/Nouakchott:MR,Africa/Ouagadougou:BF,Africa/Porto-Novo:BJ,Africa/Sao_Tome:ST,Africa/Tripoli:LY,Africa/Tunis:TN,Africa/Windhoek:NA,America/Adak:US,America/Anchorage:US,America/Anguilla:AI,America/Antigua:AG,America/Araguaina:BR,America/Argentina/Buenos_Aires:AR,America/Argentina/Catamarca:AR,America/Argentina/Cordoba:AR,America/Argentina/Jujuy:AR,America/Argentina/La_Rioja:AR,America/Argentina/Mendoza:AR,America/Argentina/Rio_Gallegos:AR,America/Argentina/Salta:AR,America/Argentina/San_Juan:AR,America/Argentina/San_Luis:AR,America/Argentina/Tucuman:AR,America/Argentina/Ushuaia:AR,America/Aruba:AW,America/Asuncion:PY,America/Atikokan:CA,America/Bahia:BR,America/Bahia_Banderas:MX,America/Barbados:BB,America/Belem:BR,America/Belize:BZ,America/Blanc-Sablon:CA,America/Boa_Vista:BR,America/Bogota:CO,America/Boise:US,America/Cambridge_Bay:CA,America/Campo_Grande:BR,America/Cancun:MX,America/Caracas:VE,America/Cayenne:GF,America/Cayman:KY,America/Chicago:US,America/Chihuahua:MX,America/Ciudad_Juarez:MX,America/Costa_Rica:CR,America/Coyhaique:CL,America/Creston:CA,America/Cuiaba:BR,America/Curacao:CW,America/Danmarkshavn:GL,America/Dawson:CA,America/Dawson_Creek:CA,America/Denver:US,America/Detroit:US,America/Dominica:DM,America/Edmonton:CA,America/Eirunepe:BR,America/El_Salvador:SV,America/Fort_Nelson:CA,America/Fortaleza:BR,America/Glace_Bay:CA,America/Goose_Bay:CA,America/Grand_Turk:TC,America/Grenada:GD,America/Guadeloupe:GP,America/Guatemala:GT,America/Guayaquil:EC,America/Guyana:GY,America/Halifax:CA,America/Havana:CU,America/Hermosillo:MX,America/Indiana/Indianapolis:US,America/Indiana/Knox:US,America/Indiana/Marengo:US,America/Indiana/Petersburg:US,America/Indiana/Tell_City:US,America/Indiana/Vevay:US,America/Indiana/Vincennes:US,America/Indiana/Winamac:US,America/Inuvik:CA,America/Iqaluit:CA,America/Jamaica:JM,America/Juneau:US,America/Kentucky/Louisville:US,America/Kentucky/Monticello:US,America/Kralendijk:BQ,America/La_Paz:BO,America/Lima:PE,America/Los_Angeles:US,America/Lower_Princes:SX,America/Maceio:BR,America/Managua:NI,America/Manaus:BR,America/Marigot:MF,America/Martinique:MQ,America/Matamoros:MX,America/Mazatlan:MX,America/Menominee:US,America/Merida:MX,America/Metlakatla:US,America/Mexico_City:MX,America/Miquelon:PM,America/Moncton:CA,America/Monterrey:MX,America/Montevideo:UY,America/Montserrat:MS,America/Nassau:BS,America/New_York:US,America/Nome:US,America/Noronha:BR,America/North_Dakota/Beulah:US,America/North_Dakota/Center:US,America/North_Dakota/New_Salem:US,America/Nuuk:GL,America/Ojinaga:MX,America/Panama:PA,America/Paramaribo:SR,America/Phoenix:US,America/Port-au-Prince:HT,America/Port_of_Spain:TT,America/Porto_Velho:BR,America/Puerto_Rico:PR,America/Punta_Arenas:CL,America/Rankin_Inlet:CA,America/Recife:BR,America/Regina:CA,America/Resolute:CA,America/Rio_Branco:BR,America/Santarem:BR,America/Santiago:CL,America/Santo_Domingo:DO,America/Sao_Paulo:BR,America/Scoresbysund:GL,America/Sitka:US,America/St_Barthelemy:BL,America/St_Johns:CA,America/St_Kitts:KN,America/St_Lucia:LC,America/St_Thomas:VI,America/St_Vincent:VC,America/Swift_Current:CA,America/Tegucigalpa:HN,America/Thule:GL,America/Tijuana:MX,America/Toronto:CA,America/Tortola:VG,America/Vancouver:CA,America/Whitehorse:CA,America/Winnipeg:CA,America/Yakutat:US,Antarctica/Casey:AQ,Antarctica/Davis:AQ,Antarctica/DumontDUrville:AQ,Antarctica/Macquarie:AU,Antarctica/Mawson:AQ,Antarctica/McMurdo:AQ,Antarctica/Palmer:AQ,Antarctica/Rothera:AQ,Antarctica/Syowa:AQ,Antarctica/Troll:AQ,Antarctica/Vostok:AQ,Arctic/Longyearbyen:SJ,Asia/Aden:YE,Asia/Almaty:KZ,Asia/Amman:JO,Asia/Anadyr:RU,Asia/Aqtau:KZ,Asia/Aqtobe:KZ,Asia/Ashgabat:TM,Asia/Atyrau:KZ,Asia/Baghdad:IQ,Asia/Bahrain:BH,Asia/Baku:AZ,Asia/Bangkok:TH,Asia/Barnaul:RU,Asia/Beirut:LB,Asia/Bishkek:KG,Asia/Brunei:BN,Asia/Chita:RU,Asia/Colombo:LK,Asia/Damascus:SY,Asia/Dhaka:BD,Asia/Dili:TL,Asia/Dubai:AE,Asia/Dushanbe:TJ,Asia/Famagusta:CY,Asia/Gaza:PS,Asia/Hebron:PS,Asia/Ho_Chi_Minh:VN,Asia/Hong_Kong:HK,Asia/Hovd:MN,Asia/Irkutsk:RU,Asia/Jakarta:ID,Asia/Jayapura:ID,Asia/Jerusalem:IL,Asia/Kabul:AF,Asia/Kamchatka:RU,Asia/Karachi:PK,Asia/Kathmandu:NP,Asia/Khandyga:RU,Asia/Kolkata:IN,Asia/Krasnoyarsk:RU,Asia/Kuala_Lumpur:MY,Asia/Kuching:MY,Asia/Kuwait:KW,Asia/Macau:MO,Asia/Magadan:RU,Asia/Makassar:ID,Asia/Manila:PH,Asia/Muscat:OM,Asia/Nicosia:CY,Asia/Novokuznetsk:RU,Asia/Novosibirsk:RU,Asia/Omsk:RU,Asia/Oral:KZ,Asia/Phnom_Penh:KH,Asia/Pontianak:ID,Asia/Pyongyang:KP,Asia/Qatar:QA,Asia/Qostanay:KZ,Asia/Qyzylorda:KZ,Asia/Riyadh:SA,Asia/Sakhalin:RU,Asia/Samarkand:UZ,Asia/Seoul:KR,Asia/Shanghai:CN,Asia/Singapore:SG,Asia/Srednekolymsk:RU,Asia/Taipei:TW,Asia/Tashkent:UZ,Asia/Tbilisi:GE,Asia/Tehran:IR,Asia/Thimphu:BT,Asia/Tokyo:JP,Asia/Tomsk:RU,Asia/Ulaanbaatar:MN,Asia/Urumqi:CN,Asia/Ust-Nera:RU,Asia/Vientiane:LA,Asia/Vladivostok:RU,Asia/Yakutsk:RU,Asia/Yangon:MM,Asia/Yekaterinburg:RU,Asia/Yerevan:AM,Atlantic/Azores:PT,Atlantic/Bermuda:BM,Atlantic/Canary:ES,Atlantic/Cape_Verde:CV,Atlantic/Faroe:FO,Atlantic/Madeira:PT,Atlantic/Reykjavik:IS,Atlantic/South_Georgia:GS,Atlantic/St_Helena:SH,Atlantic/Stanley:FK,Australia/Adelaide:AU,Australia/Brisbane:AU,Australia/Broken_Hill:AU,Australia/Darwin:AU,Australia/Eucla:AU,Australia/Hobart:AU,Australia/Lindeman:AU,Australia/Lord_Howe:AU,Australia/Melbourne:AU,Australia/Perth:AU,Australia/Sydney:AU,Europe/Amsterdam:NL,Europe/Andorra:AD,Europe/Astrakhan:RU,Europe/Athens:GR,Europe/Belgrade:RS,Europe/Berlin:DE,Europe/Bratislava:SK,Europe/Brussels:BE,Europe/Bucharest:RO,Europe/Budapest:HU,Europe/Busingen:DE,Europe/Chisinau:MD,Europe/Copenhagen:DK,Europe/Dublin:IE,Europe/Gibraltar:GI,Europe/Guernsey:GG,Europe/Helsinki:FI,Europe/Isle_of_Man:IM,Europe/Istanbul:TR,Europe/Jersey:JE,Europe/Kaliningrad:RU,Europe/Kirov:RU,Europe/Kyiv:UA,Europe/Lisbon:PT,Europe/Ljubljana:SI,Europe/London:GB,Europe/Luxembourg:LU,Europe/Madrid:ES,Europe/Malta:MT,Europe/Mariehamn:AX,Europe/Minsk:BY,Europe/Monaco:MC,Europe/Moscow:RU,Europe/Oslo:NO,Europe/Paris:FR,Europe/Podgorica:ME,Europe/Prague:CZ,Europe/Riga:LV,Europe/Rome:IT,Europe/Samara:RU,Europe/San_Marino:SM,Europe/Sarajevo:BA,Europe/Saratov:RU,Europe/Simferopol:UA,Europe/Skopje:MK,Europe/Sofia:BG,Europe/Stockholm:SE,Europe/Tallinn:EE,Europe/Tirane:AL,Europe/Ulyanovsk:RU,Europe/Vaduz:LI,Europe/Vatican:VA,Europe/Vienna:AT,Europe/Vilnius:LT,Europe/Volgograd:RU,Europe/Warsaw:PL,Europe/Zagreb:HR,Europe/Zurich:CH,Indian/Antananarivo:MG,Indian/Chagos:IO,Indian/Christmas:CX,Indian/Cocos:CC,Indian/Comoro:KM,Indian/Kerguelen:TF,Indian/Mahe:SC,Indian/Maldives:MV,Indian/Mauritius:MU,Indian/Mayotte:YT,Indian/Reunion:RE,Pacific/Apia:WS,Pacific/Auckland:NZ,Pacific/Bougainville:PG,Pacific/Chatham:NZ,Pacific/Chuuk:FM,Pacific/Easter:CL,Pacific/Efate:VU,Pacific/Fakaofo:TK,Pacific/Fiji:FJ,Pacific/Funafuti:TV,Pacific/Galapagos:EC,Pacific/Gambier:PF,Pacific/Guadalcanal:SB,Pacific/Guam:GU,Pacific/Honolulu:US,Pacific/Kanton:KI,Pacific/Kiritimati:KI,Pacific/Kosrae:FM,Pacific/Kwajalein:MH,Pacific/Majuro:MH,Pacific/Marquesas:PF,Pacific/Midway:UM,Pacific/Nauru:NR,Pacific/Niue:NU,Pacific/Norfolk:NF,Pacific/Noumea:NC,Pacific/Pago_Pago:AS,Pacific/Palau:PW,Pacific/Pitcairn:PN,Pacific/Pohnpei:FM,Pacific/Port_Moresby:PG,Pacific/Rarotonga:CK,Pacific/Saipan:MP,Pacific/Tahiti:PF,Pacific/Tarawa:KI,Pacific/Tongatapu:TO,Pacific/Wake:UM,Pacific/Wallis:WF,Asia/Calcutta:IN,America/Godthab:GL,Asia/Saigon:VN,Europe/Kiev:UA,Asia/Katmandu:NP,Asia/Rangoon:MM,Atlantic/Faeroe:FO,Pacific/Enderbury:KI,Pacific/Ponape:FM,Pacific/Truk:FM,America/Buenos_Aires:AR,Asia/Ulan_Bator:MN,Europe/Uzhgorod:UA,America/Coral_Harbour:CA,Asia/Thimbu:BT,Asia/Dacca:BD,Africa/Asmera:ER,America/Indianapolis:US,America/Louisville:US,America/Catamarca:AR,America/Cordoba:AR,America/Jujuy:AR,America/Mendoza:AR,Asia/Chongqing:CN,Asia/Harbin:CN,Asia/Macao:MO,Asia/Ujung_Pandang:ID,Europe/Zaporozhye:UA,America/Nuuk:GL,Europe/Kyiv:UA,Asia/Kolkata:IN,Asia/Ho_Chi_Minh:VN,Asia/Kathmandu:NP,Asia/Yangon:MM".split(",").map(x => x.split(":")));
+  // the connection's place is trusted only when it agrees with the device's clock (a VPN can move it far away)
+  const ipOk = () => !!ip && !!ip.tz && offset(ip.tz) === offset(deviceTz);
+  const devRegion = (() => { try { return new Intl.Locale(navigator.language).maximize().region || ""; } catch { return (navigator.language.split("-")[1] || "").toUpperCase(); } })();
+  // Country used for the usual formats, from the most to the least reliable clue:
+  // the chosen city, the connection (if it matches the clock), the time zone, then the browser's language setting.
+  const cc = () => L.place?.cc || L.country || (ipOk() ? ip.cc : "") || TZ_CC[L.tz !== "auto" ? L.tz : deviceTz] || devRegion || ip?.cc || "FR";
+  const hc = () => L.hour === "24" ? "-hc-h23" : L.hour === "12" ? "-hc-h12" : "";
+  const loc = () => `${lang}-u-nu-${L.digits}` + hc();      // words (weekdays, months) in the user's language
+  const regionLoc = () => {                                    // number order of dates and clocks as used in the country
+    let base = "en-" + cc(); try { const m = new Intl.Locale("und-" + cc()).maximize(); base = m.language + "-" + m.region; } catch {}   // e.g. ja-JP, fr-FR (no script part: some engines then ignore the region)
+    return `${base}-u-ca-gregory-nu-${L.digits}` + hc();   // the main date is always the international calendar; another one is only added if chosen
+  };
+  const parts = (d, opt) => Object.fromEntries(new Intl.DateTimeFormat(loc(), { timeZone: tz(), ...opt }).formatToParts(d).map(p => [p.type, p.value]));
+
+  // dates: "auto" = usual format for the country; others are fixed orders
+  const ORDERS = { "dmy/": ["d","m","y","/"], "mdy/": ["m","d","y","/"], "ymd/": ["y","m","d","/"], "ymd-": ["y","m","d","-"], "dmy.": ["d","m","y","."], "ymd.": ["y","m","d","."] };
+  function date(d, opt = {}) {
+    if (typeof d === "string") d = /^\d{4}-\d\d-\d\d$/.test(d) ? new Date(d + "T12:00:00Z") : new Date(d);
+    if (isNaN(d)) return "–";
+    const zone = opt.zone ?? tz();
+    if (L.date === "auto") return new Intl.DateTimeFormat(regionLoc(), { timeZone: zone, day: "2-digit", month: "2-digit", year: "numeric" }).format(d);
+    const p = Object.fromEntries(new Intl.DateTimeFormat(regionLoc(), { timeZone: zone, day: "2-digit", month: "2-digit", year: "numeric" }).formatToParts(d).map(x => [x.type, x.value]));
+    const [a, b, c, sep] = ORDERS[L.date]; const v = { d: p.day, m: p.month, y: p.year };
+    return [v[a], v[b], v[c]].join(sep) + (L.date === "ymd." ? "." : "");
+  }
+  const regionHc = () => { try { return new Intl.DateTimeFormat(regionLoc().split("-u-")[0], { hour: "numeric" }).resolvedOptions().hourCycle || "h23"; } catch { return "h23"; } };
+  const timeLoc = () => `${lang}-u-nu-${L.digits}-hc-` + (L.hour === "24" ? "h23" : L.hour === "12" ? "h12" : (regionHc() === "h11" || regionHc() === "h12" ? "h12" : "h23"));
+  const time = (d, zone = tz()) => new Intl.DateTimeFormat(timeLoc(), { timeZone: zone, hour: "2-digit", minute: "2-digit" }).format(d);
+  const weekday = (d, zone = tz()) => { if (typeof d === "string") d = new Date(d + "T12:00:00Z"); return new Intl.DateTimeFormat(loc(), { timeZone: zone, weekday: "short" }).format(d); };
+  // The other calendar, always named so nobody wonders what it is: "Persian: Mehr 17, 1405", "Chinese: 8th month, day 29 · Fire Horse year"
+  const CAL_NAMES = { "islamic-umalqura": "Hijri", islamic: "Hijri", persian: "Persian", chinese: "Chinese", dangi: "Korean", hebrew: "Hebrew", buddhist: "Buddhist",
+    japanese: "Japanese", indian: "Indian", ethiopic: "Ethiopian", coptic: "Coptic", roc: "Minguo" };
+  const STEM = { "甲": "Wood", "乙": "Wood", "丙": "Fire", "丁": "Fire", "戊": "Earth", "己": "Earth", "庚": "Metal", "辛": "Metal", "壬": "Water", "癸": "Water" };
+  const BRANCH = { "子": "Rat", "丑": "Ox", "寅": "Tiger", "卯": "Rabbit", "辰": "Dragon", "巳": "Snake", "午": "Horse", "未": "Goat", "申": "Monkey", "酉": "Rooster", "戌": "Dog", "亥": "Pig" };
+  const ord = (n) => { const v = n % 100; return n + (v >= 11 && v <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[n % 10] || "th")); };
+  function extraCal(d) {
+    if (L.cal === "none") return "";
+    const name = CAL_NAMES[L.cal] || L.cal;
+    try {
+      if (L.cal === "chinese" || L.cal === "dangi") {
+        const p = Object.fromEntries(new Intl.DateTimeFormat(`en-u-ca-${L.cal}`, { timeZone: tz(), month: "numeric", day: "numeric", year: "numeric" }).formatToParts(d).map(x => [x.type, x.value]));
+        const yz = new Intl.DateTimeFormat(`zh-u-ca-chinese`, { timeZone: tz(), year: "numeric" }).formatToParts(d).find(x => x.type === "yearName")?.value || "";
+        const leap = /bis|leap/i.test(p.month) ? "leap " : "", m = parseInt(p.month, 10), day = parseInt(p.day, 10);
+        const animal = yz.length === 2 && STEM[yz[0]] && BRANCH[yz[1]] ? ` · ${STEM[yz[0]]} ${BRANCH[yz[1]]} year` : "";
+        return `${name}: ${leap}${ord(m)} month, day ${day}${animal}`;
+      }
+      const v = new Intl.DateTimeFormat(`${lang}-u-ca-${L.cal}-nu-${L.digits}`, { timeZone: tz(), day: "numeric", month: "long", year: "numeric" }).format(d);
+      return name + ": " + v.replace(/\s*ERA\d\b/g, "");   // some calendars come with a raw era code (Ethiopian, Coptic)
+    } catch { return ""; }
+  }
+  const DIGITS = {};
+  const digitMap = (sys) => DIGITS[sys] || (DIGITS[sys] = (() => { try { const f = new Intl.NumberFormat("en-u-nu-" + sys, { useGrouping: false }); return [..."0123456789"].map(d => f.format(+d)); } catch { return null; } })());
+  const digitize = (str) => { const m = L.digits === "latn" ? null : digitMap(L.digits); return m ? String(str).replace(/[0-9]/g, d => m[+d]) : String(str); };
+  function digitizeEl(el) {   // every text inside el follows the chosen digits (also back to 123), except bits marked data-keep-digits
+    if (!el) return;
+    const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: (n) => n.parentElement?.closest("[data-keep-digits]") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+    const ARAB_RUN = /[\u0660-\u0669](?:[\u0660-\u0669\u066B\u066C.,:\/\-]*[\u0660-\u0669])?/g;
+    for (let n; (n = tw.nextNode());) {
+      const old = n.nodeValue;
+      if (!/[0-9\u0660-\u0669\u06F0-\u06F9\u0966-\u096F\u09E6-\u09EF\u0E50-\u0E59]/.test(old)) continue;
+      let v = digitize(undigit(old.replace(/[\u2066\u2069]/g, "")));
+      // Arabic digits count as right-to-left text: keep each number in its place with a left-to-right isolate
+      if (L.digits === "arab") v = v.replace(ARAB_RUN, (m) => "\u2066" + m + "\u2069");
+      if (v !== old) n.nodeValue = v;
+    }
+  }
+
+  const price = (n, cur = "EUR", dec = 3) => { try { return new Intl.NumberFormat(regionLoc(), { style: "currency", currency: cur, minimumFractionDigits: dec, maximumFractionDigits: dec }).format(n); } catch { return "€" + n.toFixed(dec); } };
+  const num = (n, dec = 0) => new Intl.NumberFormat(regionLoc(), { maximumFractionDigits: dec, minimumFractionDigits: dec }).format(n);
+  const temp = (c, unit = true) => (L.temp === "f" ? num(c * 9 / 5 + 32) : num(c)) + "°" + (unit ? (L.temp === "f" ? "F" : "C") : "");
+  const dist = (m) => L.dist === "mi" ? (m < 1609 ? num(Math.max(10, Math.round(m * 3.28084 / 10) * 10)) + " ft" : num(m / 1609.34, m < 16093 ? 1 : 0) + " mi")
+                                      : (m < 1000 ? num(Math.max(10, Math.round(m / 10) * 10)) + " m" : num(m / 1000, m < 10000 ? 1 : 0) + " km");
+  const offset = (zone, d = new Date()) => { try { return new Intl.DateTimeFormat("en-US", { timeZone: zone, timeZoneName: "longOffset" }).formatToParts(d).find(p => p.type === "timeZoneName").value.replace("GMT", "GMT") || "GMT"; } catch { return "GMT"; } };
+  // Browsers still list some time zones under their old names; show today's names.
+  const NEW_NAME = { "America/Godthab": "Nuuk", "Europe/Kiev": "Kyiv", "Asia/Calcutta": "Kolkata", "Asia/Saigon": "Ho Chi Minh", "Asia/Katmandu": "Kathmandu",
+    "Asia/Rangoon": "Yangon", "Atlantic/Faeroe": "Faroe", "Pacific/Enderbury": "Kanton", "Pacific/Ponape": "Pohnpei", "Pacific/Truk": "Chuuk",
+    "America/Buenos_Aires": "Buenos Aires", "Asia/Ulan_Bator": "Ulaanbaatar", "Europe/Uzhgorod": "Uzhhorod", "America/Coral_Harbour": "Atikokan",
+    "Asia/Thimbu": "Thimphu", "Asia/Dacca": "Dhaka", "Africa/Asmera": "Asmara", "America/Indianapolis": "Indianapolis", "America/Louisville": "Louisville" };
+  const zoneName = (zone) => NEW_NAME[zone] || zone.split("/").pop().replace(/_/g, " ");
+  const tzLabel = (zone) => { const o = offset(zone); return `(${o === "GMT" ? "GMT+00:00" : o}) ${zoneName(zone)}`; };
+  const countryName = (code) => { try { return new Intl.DisplayNames([lang], { type: "region" }).of(code); } catch { return code; } };
+  const placeLine = (p) => p ? [p.name, p.admin1 && p.admin1 !== p.name ? p.admin1 : "", countryName(p.cc)].filter(Boolean).join(", ") : "";
+
+  /* ---------- weather for the widget ---------- */
+  const WXI = { 0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",71:"🌨️",73:"🌨️",75:"❄️",80:"🌦️",81:"🌧️",82:"⛈️",95:"⛈️",96:"⛈️",99:"⛈️" };
+  let wx = null, wxAt = 0;
+  async function loadWx(force) {
+    const p = L.place || (gps && (!L.country || gps.cc === L.country) ? gps : null) || (ipOk() && (!L.country || ip.cc === L.country) && ip.lat != null ? ip : null);
+    if (!p || p.lat == null) { wx = null; return; }
+    if (!force && wx && wx.key === p.lat + "," + p.lon && Date.now() - wxAt < 15 * 60000) return;
+    try {
+      const q = new URLSearchParams({ latitude: p.lat, longitude: p.lon, current: "temperature_2m,weather_code", daily: "temperature_2m_max,temperature_2m_min", forecast_days: "1", timezone: "auto" });
+      const r = await fetch("https://api.open-meteo.com/v1/forecast?" + q); const j = await r.json();
+      wx = { key: p.lat + "," + p.lon, t: j.current.temperature_2m, code: j.current.weather_code, min: j.daily.temperature_2m_min[0], max: j.daily.temperature_2m_max[0] }; wxAt = Date.now();
+    } catch { wx = null; }
+  }
+
+  /* ---------- the widget ---------- */
+  const W = () => $("wdg");
+  function paint() {
+    const w = W(); if (!w) return;
+    w.hidden = !L.w.show;
+    w.className = "wdg " + (L.w.size === "min" ? "min" : L.w.size);
+    // what is shown: widget pieces closed with ✕, and sections folded in Settings (folding hides their information on screen)
+    const now = new Date(), s = L.w.size, h = L.w.hide, f = L.hideField;
+    $("wTime").textContent = time(now);
+    const extra = s === "l" && !f.cal ? extraCal(now) : "";
+    $("wDate").textContent = weekday(now) + " " + date(now) + (extra ? " · " + extra : "");
+    const p = L.place || (gps && (!L.country || gps.cc === L.country) ? gps : null)
+      || (L.country && !(ipOk() && ip.cc === L.country) ? { name: countryName(L.country), cc: "", isCountry: true } : null)
+      || (ipOk() && ip.city ? { name: "~" + ip.city, cc: ip.cc, approx: true } : null);   // "~" = approximate, from the internet connection
+    let line = "";
+    if (p) {
+      const city = p.isCountry ? "" : p.name, region = s === "l" && p.admin1 && p.admin1 !== p.name ? p.admin1 : "";
+      const ctry = f.country ? "" : (p.isCountry ? p.name : (s === "l" ? countryName(p.cc) : p.cc));
+      line = [city, region, ctry].filter(Boolean).join(", ");
+    }
+    const tzPart = s === "l" && !f.tz ? tzLabel(tz()).split(" ")[0] : "";
+    $("wPlace").textContent = [line, tzPart].filter(Boolean).join(" · ") || (f.tz ? "" : tzLabel(tz()));
+    $("wPlace").title = p?.approx ? "Approximate place, from your internet connection. Choose your city in Time and place, or use your location." : "";
+    if (wx) { $("wWxIc").textContent = WXI[wx.code] || "🌡️"; $("wWxT").textContent = temp(wx.t); $("wWxD").textContent = s === "l" ? temp(wx.min, false) + " / " + temp(wx.max, false) : ""; }
+    else { $("wWxIc").textContent = ""; $("wWxT").textContent = ""; $("wWxD").textContent = ""; }
+    const show = (piece, on) => w.querySelectorAll(`[data-piece="${piece}"]`).forEach(e => e.hidden = !on);
+    const vis = { clock: !h.clock && !f.hour, date: s === "l" && !h.date && !f.date, place: (s === "m" || s === "l") && !h.place && !!$("wPlace").textContent,
+      weather: (s === "m" || s === "l") && !h.weather && !f.units && !!wx };
+    Object.entries(vis).forEach(([k, on]) => show(k, on));
+    // nothing left to show: keep a small clock dot so the widget can be found again
+    if (L.w.size !== "min" && !Object.values(vis).some(Boolean)) w.className = "wdg min";
+    digitizeEl(w);
+    place();
+  }
+
+  function place() {   // keep the widget on screen; default corner follows the writing direction
+    const w = W(); if (!w || w.hidden) return;
+    const rtl = getComputedStyle(document.documentElement).direction === "rtl";
+    const bw = w.offsetWidth, bh = w.offsetHeight, vw = innerWidth, vh = innerHeight;
+    // default place: top corner on the dashboard, bottom corner on pages with forms (set by the page with data-widget-place="bottom")
+    const bottom = document.body.dataset.widgetPlace === "bottom" || vw < 700;
+    let x = L.w.x == null ? (rtl ? 12 : vw - bw - 12) : L.w.x * vw, y = L.w.y == null ? (bottom ? vh - bh - 16 : 70) : L.w.y * vh;
+    x = Math.min(Math.max(8, x), vw - bw - 8); y = Math.min(Math.max(8, y), vh - bh - 8);
+    w.style.left = x + "px"; w.style.top = y + "px";
+  }
+  function setPos(x, y) { L.w.x = x / innerWidth; L.w.y = y / innerHeight; save(); place(); }
+  const SIZES = ["s", "m", "l"];
+  function setSize(s) { L.w.size = s; save(); paint(); }
+  function wireWidget() {
+    const w = W();
+    // drag from the grip or from any empty part of the widget
+    let drag = null;
+    w.addEventListener("pointerdown", (e) => {
+      if (e.target.closest(".hx, .tools, .rz, .dot, #wMain, #wWx")) return;
+      const r = w.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: false, id: e.pointerId };
+      w.setPointerCapture(e.pointerId);
+    });
+    w.addEventListener("pointermove", (e) => { if (!drag) return; drag.moved = true; w.style.left = (e.clientX - drag.dx) + "px"; w.style.top = (e.clientY - drag.dy) + "px"; });
+    const end = (e) => { if (!drag) return; const r = w.getBoundingClientRect(); if (drag.moved) setPos(r.left, r.top); drag = null; };
+    w.addEventListener("pointerup", end); w.addEventListener("pointercancel", end);
+    $("wGrip").addEventListener("keydown", (e) => {
+      const st = e.shiftKey ? 40 : 10, r = w.getBoundingClientRect();
+      const mv = { ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st] }[e.key];
+      if (mv) { e.preventDefault(); setPos(r.left + mv[0], r.top + mv[1]); }
+    });
+    // resize from the corner: drag outwards for bigger, inwards for smaller; a press cycles sizes
+    let rz = null;
+    $("wRz").addEventListener("pointerdown", (e) => { e.stopPropagation(); rz = { x: e.clientX, y: e.clientY, i: SIZES.indexOf(L.w.size), done: false }; $("wRz").setPointerCapture(e.pointerId); });
+    $("wRz").addEventListener("pointermove", (e) => {
+      if (!rz) return; const rtl = getComputedStyle(document.documentElement).direction === "rtl";
+      const d = ((e.clientX - rz.x) * (rtl ? -1 : 1) + (e.clientY - rz.y)) / 2, j = Math.max(0, Math.min(2, rz.i + Math.round(d / 50)));
+      if (SIZES[j] !== L.w.size) { rz.done = true; setSize(SIZES[j]); }
+    });
+    $("wRz").addEventListener("pointerup", () => { if (rz && !rz.done) setSize(SIZES[(SIZES.indexOf(L.w.size) + 1) % 3]); rz = null; });
+    $("wSize").onclick = () => setSize(SIZES[(SIZES.indexOf(L.w.size) + 1) % 3]);
+    $("wMin").onclick = () => { L.w.prev = L.w.size; setSize("min"); $("wDot").focus(); };
+    $("wDot").onclick = () => { setSize(L.w.prev && L.w.prev !== "min" ? L.w.prev : "m"); };
+    $("wMain").onclick = open; $("wWx").onclick = open;
+    w.querySelectorAll("[data-hide]").forEach(b => b.onclick = () => hidePiece(b.dataset.hide));
+    addEventListener("resize", place);
+  }
+  const PIECE_NAMES = { clock: "Clock", date: "Date", place: "Place", weather: "Weather" };
+  let undo = null, toastTimer = null;
+  function toast(text, fn) {
+    $("toastT").textContent = text; $("toast").hidden = false; undo = fn; clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { $("toast").hidden = true; undo = null; }, 6000);
+  }
+  function hidePiece(k) { L.w.hide[k] = true; save(); paint(); toast(PIECE_NAMES[k] + " hidden", () => { delete L.w.hide[k]; save(); paint(); renderDrawer(); }); }
+
+  /* ---------- settings drawer ---------- */
+  const COUNTRIES = "AF AX AL DZ AS AD AO AI AQ AG AR AM AW AU AT AZ BS BH BD BB BY BE BZ BJ BM BT BO BQ BA BW BR IO BN BG BF BI CV KH CM CA KY CF TD CL CN CX CC CO KM CG CD CK CR CI HR CU CW CY CZ DK DJ DM DO EC EG SV GQ ER EE SZ ET FK FO FJ FI FR GF PF GA GM GE DE GH GI GR GL GD GP GU GT GG GN GW GY HT VA HN HK HU IS IN ID IR IQ IE IM IL IT JM JP JE JO KZ KE KI KP KR KW KG LA LV LB LS LR LY LI LT LU MO MG MW MY MV ML MT MH MQ MR MU YT MX FM MD MC MN ME MS MA MZ MM NA NR NP NL NC NZ NI NE NG NU NF MK MP NO OM PK PW PS PA PG PY PE PH PN PL PT PR QA RE RO RU RW BL SH KN LC MF PM VC WS SM ST SA SN RS SC SL SG SX SK SI SB SO ZA GS SS ES LK SD SR SJ SE CH SY TW TJ TZ TH TL TG TK TO TT TN TR TM TC TV UG UA AE GB US UY UZ VU VE VN VG VI WF EH YE ZM ZW".split(" ");
+  let zones = []; try { zones = Intl.supportedValuesOf("timeZone"); } catch { zones = [deviceTz, "UTC"]; }
+  if (!zones.includes(deviceTz)) zones.push(deviceTz);
+  // the Country field: saved, used for the usual formats and to narrow the city search
+  const getCountry = () => L.place?.cc || L.country || "";
+  /* Searchable menu: type to filter, arrows to move, Enter to pick, Esc to close. */
+  const undigit = (x) => String(x).replace(/[\u0660-\u0669]/g, c => c.charCodeAt(0) - 0x660).replace(/[\u06F0-\u06F9]/g, c => c.charCodeAt(0) - 0x6F0)
+    .replace(/[\u0966-\u096F]/g, c => c.charCodeAt(0) - 0x966).replace(/[\u09E6-\u09EF]/g, c => c.charCodeAt(0) - 0x9E6).replace(/[\u0E50-\u0E59]/g, c => c.charCodeAt(0) - 0xE50);
+  const norm = (x) => undigit(String(x || "").replace(/[\u2066-\u2069]/g, "")).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+  function combo(id, getItems, onPick, shown) {
+    const inp = $(id), box = $(id + "List"); let items = [], act = -1;
+    const draw = () => {
+      const q = norm(inp.value === digitize(shown()) ? "" : inp.value);
+      items = getItems().filter(it => !q || norm(it.label + " " + (it.sub || "") + " " + (it.keys || "")).includes(q));   // the full list, A to Z
+      if (q) {   // best matches first: an exact code or name ("usa", "uk"), then names starting with the text, then the rest
+        const rank = (it) => { const lab = norm(it.label), words = norm(it.label + " " + (it.keys || "")).split(/[\s,()\-·]+/);
+          return (it.codes || []).includes(q) ? -1 : words.includes(q) ? 0 : lab.startsWith(q) ? 1 : words.some(w => w.startsWith(q)) ? 2 : 3; };
+        items = items.map((it, i) => [rank(it), i, it]).sort((x, y) => x[0] - y[0] || x[1] - y[1]).map(x => x[2]);
+      }
+      act = items.length ? 0 : -1;
+      box.innerHTML = items.length ? items.map((it, i) => `<button type="button" role="option" id="${id}-o${i}" aria-selected="${i === act}" data-i="${i}" class="${it.cur ? "cur" : ""}"><b>${esc(it.label)}</b>${it.sub ? `<small>${esc(it.sub)}</small>` : ""}</button>`).join("")
+        : `<p class="l-note" style="padding:8px 12px">No match. Try another spelling${id === "lTz" ? ", a big city nearby, or choose your city above: its time zone is set automatically" : ""}.</p>`;
+      digitizeEl(box); box.hidden = false; inp.setAttribute("aria-expanded", "true"); mark();
+      box.querySelectorAll("[data-i]").forEach(b => b.onmousedown = (e) => { e.preventDefault(); pick(+b.dataset.i); });
+    };
+    const mark = () => { box.querySelectorAll("[data-i]").forEach((b, i) => b.setAttribute("aria-selected", String(i === act)));
+      if (act >= 0) { inp.setAttribute("aria-activedescendant", id + "-o" + act); $(id + "-o" + act)?.scrollIntoView({ block: "nearest" }); } };
+    const hide = () => { box.hidden = true; inp.setAttribute("aria-expanded", "false"); inp.removeAttribute("aria-activedescendant"); };
+    const pick = (i) => { const it = items[i]; if (!it) return; hide(); onPick(it.v); inp.value = digitize(shown()); };
+    inp.addEventListener("focus", () => { inp.select(); draw(); });
+    inp.addEventListener("click", () => { if (inp.value === digitize(shown())) inp.select(); if (box.hidden) draw(); });   // clicking again after a choice starts a new search
+    inp.addEventListener("input", draw);
+    inp.addEventListener("blur", () => setTimeout(() => { hide(); inp.value = digitize(shown()); }, 120));
+    inp.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown") { e.preventDefault(); if (box.hidden) draw(); else { act = Math.min(items.length - 1, act + 1); mark(); } }
+      else if (e.key === "ArrowUp") { e.preventDefault(); act = Math.max(0, act - 1); mark(); }
+      else if (e.key === "Enter") { e.preventDefault(); if (!box.hidden && act >= 0) pick(act); }
+      else if (e.key === "Escape" && !box.hidden) { e.stopPropagation(); hide(); inp.value = digitize(shown()); }
+    });
+    return { refresh: () => { if (document.activeElement !== inp) inp.value = digitize(shown()); } };
+  }
+  // Well-known cities whose time zone has another city's name (time zones are named after one city per region)
+  const TZ_ALIAS = { "Asia/Ho_Chi_Minh": "Hanoi Vietnam Saigon", "Asia/Saigon": "Hanoi Vietnam Ho Chi Minh Saigon", "America/Godthab": "Nuuk Greenland Godthab", "America/Nuuk": "Greenland Godthab", "Europe/Kiev": "Kyiv Ukraine Kiev", "Asia/Calcutta": "Kolkata Delhi New Delhi Mumbai Bombay India Bangalore Chennai",
+    "Asia/Rangoon": "Yangon Myanmar", "Asia/Katmandu": "Kathmandu Nepal", "America/Buenos_Aires": "Argentina", "Asia/Shanghai": "Beijing Peking China Guangzhou Shenzhen Chongqing", "Asia/Kolkata": "Delhi New Delhi Mumbai Bombay India Bangalore Chennai Calcutta",
+    "America/New_York": "Washington Boston Miami Atlanta USA", "America/Chicago": "Houston Dallas USA", "America/Los_Angeles": "San Francisco Seattle USA", "America/Denver": "USA",
+    "Europe/Paris": "France Lyon Marseille", "Europe/Berlin": "Germany Munich Hamburg", "Europe/London": "UK England Manchester", "Europe/Moscow": "Russia Saint Petersburg",
+    "Asia/Dubai": "UAE Abu Dhabi", "Asia/Riyadh": "Saudi Arabia Jeddah Mecca", "Africa/Casablanca": "Morocco Rabat Marrakesh", "Africa/Algiers": "Algeria Oran", "Africa/Tunis": "Tunisia",
+    "Africa/Cairo": "Egypt Alexandria", "Africa/Lagos": "Nigeria Abuja", "Africa/Johannesburg": "South Africa Cape Town Pretoria", "Asia/Karachi": "Pakistan Islamabad Lahore",
+    "Asia/Dhaka": "Bangladesh", "Asia/Bangkok": "Thailand", "Asia/Jakarta": "Indonesia", "Asia/Manila": "Philippines", "Asia/Tokyo": "Japan Osaka", "Asia/Seoul": "Korea",
+    "Asia/Tehran": "Iran", "Europe/Istanbul": "Turkey Ankara", "Australia/Sydney": "Australia Canberra Melbourne", "America/Sao_Paulo": "Brazil Rio Brasilia",
+    "America/Argentina/Buenos_Aires": "Argentina", "America/Mexico_City": "Mexico", "America/Toronto": "Canada Ottawa Montreal", "Asia/Kiev": "Ukraine Kyiv", "Europe/Kyiv": "Ukraine Kiev",
+    "Asia/Tashkent": "Uzbekistan", "Asia/Almaty": "Kazakhstan Astana", "Asia/Yerevan": "Armenia", "Asia/Tbilisi": "Georgia", "Asia/Baku": "Azerbaijan" };
+  const CALS = [["none", "None"], ["islamic-umalqura", "Hijri (Umm al-Qura)"], ["islamic", "Hijri (astronomical)"], ["persian", "Persian"], ["chinese", "Chinese"], ["hebrew", "Hebrew"], ["buddhist", "Buddhist"], ["japanese", "Japanese"], ["indian", "Indian national"], ["ethiopic", "Ethiopian"], ["coptic", "Coptic"], ["dangi", "Korean (Dangi)"], ["roc", "Taiwan (Minguo)"]];
+  let cCountry, cTz, cCal;
+  /* Country search: official 2- and 3-letter codes (ISO 3166), everyday short names, and names in other languages */
+  const ISO3 = Object.fromEntries("AD:AND,AE:ARE,AF:AFG,AG:ATG,AI:AIA,AL:ALB,AM:ARM,AO:AGO,AQ:ATA,AR:ARG,AS:ASM,AT:AUT,AU:AUS,AW:ABW,AX:ALA,AZ:AZE,BA:BIH,BB:BRB,BD:BGD,BE:BEL,BF:BFA,BG:BGR,BH:BHR,BI:BDI,BJ:BEN,BL:BLM,BM:BMU,BN:BRN,BO:BOL,BQ:BES,BR:BRA,BS:BHS,BT:BTN,BV:BVT,BW:BWA,BY:BLR,BZ:BLZ,CA:CAN,CC:CCK,CD:COD,CF:CAF,CG:COG,CH:CHE,CI:CIV,CK:COK,CL:CHL,CM:CMR,CN:CHN,CO:COL,CR:CRI,CU:CUB,CV:CPV,CW:CUW,CX:CXR,CY:CYP,CZ:CZE,DE:DEU,DJ:DJI,DK:DNK,DM:DMA,DO:DOM,DZ:DZA,EC:ECU,EE:EST,EG:EGY,EH:ESH,ER:ERI,ES:ESP,ET:ETH,FI:FIN,FJ:FJI,FK:FLK,FM:FSM,FO:FRO,FR:FRA,GA:GAB,GB:GBR,GD:GRD,GE:GEO,GF:GUF,GG:GGY,GH:GHA,GI:GIB,GL:GRL,GM:GMB,GN:GIN,GP:GLP,GQ:GNQ,GR:GRC,GS:SGS,GT:GTM,GU:GUM,GW:GNB,GY:GUY,HK:HKG,HM:HMD,HN:HND,HR:HRV,HT:HTI,HU:HUN,ID:IDN,IE:IRL,IL:ISR,IM:IMN,IN:IND,IO:IOT,IQ:IRQ,IR:IRN,IS:ISL,IT:ITA,JE:JEY,JM:JAM,JO:JOR,JP:JPN,KE:KEN,KG:KGZ,KH:KHM,KI:KIR,KM:COM,KN:KNA,KP:PRK,KR:KOR,KW:KWT,KY:CYM,KZ:KAZ,LA:LAO,LB:LBN,LC:LCA,LI:LIE,LK:LKA,LR:LBR,LS:LSO,LT:LTU,LU:LUX,LV:LVA,LY:LBY,MA:MAR,MC:MCO,MD:MDA,ME:MNE,MF:MAF,MG:MDG,MH:MHL,MK:MKD,ML:MLI,MM:MMR,MN:MNG,MO:MAC,MP:MNP,MQ:MTQ,MR:MRT,MS:MSR,MT:MLT,MU:MUS,MV:MDV,MW:MWI,MX:MEX,MY:MYS,MZ:MOZ,NA:NAM,NC:NCL,NE:NER,NF:NFK,NG:NGA,NI:NIC,NL:NLD,NO:NOR,NP:NPL,NR:NRU,NU:NIU,NZ:NZL,OM:OMN,PA:PAN,PE:PER,PF:PYF,PG:PNG,PH:PHL,PK:PAK,PL:POL,PM:SPM,PN:PCN,PR:PRI,PS:PSE,PT:PRT,PW:PLW,PY:PRY,QA:QAT,RE:REU,RO:ROU,RS:SRB,RU:RUS,RW:RWA,SA:SAU,SB:SLB,SC:SYC,SD:SDN,SE:SWE,SG:SGP,SH:SHN,SI:SVN,SJ:SJM,SK:SVK,SL:SLE,SM:SMR,SN:SEN,SO:SOM,SR:SUR,SS:SSD,ST:STP,SV:SLV,SX:SXM,SY:SYR,SZ:SWZ,TC:TCA,TD:TCD,TF:ATF,TG:TGO,TH:THA,TJ:TJK,TK:TKL,TL:TLS,TM:TKM,TN:TUN,TO:TON,TR:TUR,TT:TTO,TV:TUV,TW:TWN,TZ:TZA,UA:UKR,UG:UGA,UM:UMI,US:USA,UY:URY,UZ:UZB,VA:VAT,VC:VCT,VE:VEN,VG:VGB,VI:VIR,VN:VNM,VU:VUT,WF:WLF,WS:WSM,YE:YEM,YT:MYT,ZA:ZAF,ZM:ZMB,ZW:ZWE".split(",").map(x => x.split(":")));
+  const COUNTRY_ALIAS = { US: "USA America United States of America US", GB: "UK Britain Great Britain England Scotland Wales Northern Ireland GB", AE: "UAE Emirates Dubai",
+    SA: "KSA Saudi", NL: "Holland Netherlands", CZ: "Czech Republic Czechia", KR: "South Korea Korea", KP: "North Korea DPRK", RU: "Russia Russian Federation",
+    CD: "DRC DR Congo Congo-Kinshasa Zaire", CG: "Congo-Brazzaville Republic of the Congo", CI: "Ivory Coast Cote d'Ivoire", MM: "Burma", SZ: "Swaziland Eswatini",
+    MK: "Macedonia North Macedonia", VA: "Vatican Holy See", TR: "Turkey Türkiye", VN: "Viet Nam", LA: "Laos", SY: "Syria", IR: "Iran Persia", MD: "Moldova",
+    BO: "Bolivia", TZ: "Tanzania", VE: "Venezuela", PS: "Palestine", TW: "Taiwan", CV: "Cape Verde Cabo Verde", TL: "East Timor Timor-Leste", BA: "Bosnia",
+    DO: "Dominican Republic", CF: "CAR Central African Republic", VG: "BVI British Virgin Islands", VI: "USVI US Virgin Islands", FM: "Micronesia",
+    BN: "Brunei", LY: "Libya", HK: "Hong Kong", MO: "Macau Macao", PH: "Philippines Pilipinas", NZ: "Aotearoa", IN: "Bharat Hindustan", CH: "Swiss", DE: "Deutschland" };
+  const OTHER_LANGS = ["en", "fr", "es", "de", "ar", "zh", "ru", "pt", "it", "tr", "fa", "hi", "ja", "ko", "vi", "uk", "pl", "nl"];
+  const nameIn = {}; OTHER_LANGS.forEach(l => { try { nameIn[l] = new Intl.DisplayNames([l], { type: "region" }); } catch {} });
+  const countryKeys = (c) => [c, ISO3[c] || "", COUNTRY_ALIAS[c] || "", ...Object.values(nameIn).map(d => { try { return d.of(c); } catch { return ""; } })].join(" ");
+  function chips(el, opts, cur, on) {
+    $(el).innerHTML = opts.map(([v, t]) => `<button type="button" aria-pressed="${String(v) === String(cur)}" data-v="${esc(v)}" ${el === "lDigits" ? "data-keep-digits" : ""}>${esc(t)}</button>`).join("");
+    $(el).querySelectorAll("button").forEach(b => b.onclick = () => { on(b.dataset.v); renderDrawer(); changed(); });
+  }
+  function renderDrawer() {
+    const now = new Date();
+    // warning when the device and the connection disagree
+    const ipTz = ip?.tz;
+    $("locWarn").innerHTML = ipTz && ipTz !== deviceTz && L.tz === "auto" && !L.place && !L.country && offset(ipTz) !== offset(deviceTz)
+      ? `<div class="warn" role="status"><b>Two different places detected</b>Your device is set to ${esc(tzLabel(deviceTz))}, but your connection seems to come from ${esc(ip.country || ip.cc)}, ${esc(tzLabel(ipTz))}. A VPN, a proxy or a nearby border can cause this.
+         <div class="chips2"><button type="button" id="keepDev">Keep my device time</button><button type="button" id="useIp">Use ${esc(ip.city || ip.country)} time</button></div></div>` : "";
+    if ($("keepDev")) { $("keepDev").onclick = () => { L.tz = deviceTz; save(); renderDrawer(); changed(); }; $("useIp").onclick = () => { L.tz = ipTz; save(); renderDrawer(); changed(); }; }
+    // country
+    cCountry.refresh();
+    const czs = countryZones(L.country);
+    $("lCityNote").textContent = L.place ? "Now: " + placeLine(L.place) + " · " + tzLabel(L.place.tz)
+      : L.country ? (czs.length > 1 ? countryName(L.country) + " has several time zones (the clock shows " + zoneName(autoTz()) + " for now). Pick your city, or your time zone below, so it is right." : "Pick your city in " + countryName(L.country) + " for the local weather.")
+      : (ipOk() && ip.city ? "Detected from your connection: " + ip.city + ", " + countryName(ip.cc) + ". Pick your city to be sure." : "Pick your city for the right weather and time zone.");
+    if (!$("lCity").value && L.place) $("lCity").value = L.place.name;
+    cTz.refresh();
+    // formats
+    // The example is 31 December so nobody can mix up the day and the month.
+    const ex = new Date("2026-12-31T12:00:00Z"), exFmt = (k) => { const s0 = L.date; L.date = k; const v = date(ex, { zone: "UTC" }); L.date = s0; return v; };
+    const ORDER_NAMES = { "dmy/": "day/month/year", "mdy/": "month/day/year", "ymd/": "year/month/day", "ymd-": "year-month-day", "dmy.": "day.month.year", "ymd.": "year.month.day" };
+    chips("lDate", [["auto", "Usual for " + countryName(cc()) + ": " + exFmt("auto")], ...Object.keys(ORDERS).map(k => [k, exFmt(k)])], L.date, v => { L.date = v; save(); });
+    $("lDate").querySelectorAll("button").forEach(b => { const n = ORDER_NAMES[b.dataset.v]; if (n) { b.title = n; b.setAttribute("aria-label", b.textContent + ", " + n); } });
+    if (!$("lDateEx")) $("lDate").insertAdjacentHTML("afterend", '<p class="l-note" id="lDateEx">Example: 31 December 2026, so you can see which number is the day.</p>');
+    chips("lHour", [["auto", "Usual"], ["24", "24 h (" + (() => { const s = L.hour; L.hour = "24"; const v = time(now); L.hour = s; return v; })() + ")"], ["12", "12 h (" + (() => { const s = L.hour; L.hour = "12"; const v = time(now); L.hour = s; return v; })() + ")"]], L.hour, v => { L.hour = v; save(); });
+    const wd = (i) => new Intl.DateTimeFormat(lang, { weekday: "long", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 9, 4 + i)));   // 04/10/2026 is a Sunday
+    // usual first day for the country (from the browser's world data): 1 = Monday … 7 = Sunday
+    const firstDay = (() => { try { const lo = new Intl.Locale(regionLoc().split("-u-")[0]); const w = lo.getWeekInfo ? lo.getWeekInfo() : lo.weekInfo; return w?.firstDay; } catch { return null; } })();
+    const usualDay = firstDay ? wd(firstDay % 7) : "";
+    // order chosen for APA: Monday, Saturday, Sunday
+    chips("lWeek", [["auto", usualDay ? "Usual for " + countryName(cc()) + ": " + usualDay : "Usual"], ["1", wd(1)], ["6", wd(6)], ["0", wd(0)]], L.week, v => { L.week = v; save(); });
+    cCal.refresh();
+    chips("lDigits", [["latn", "123 Western"], ["arab", "١٢٣ Arabic"], ["arabext", "۱۲۳ Persian, Urdu"], ["deva", "१२३ Hindi, Marathi, Nepali"], ["beng", "১২৩ Bengali"], ["thai", "๑๒๓ Thai"]], L.digits, v => { L.digits = v; save(); });
+    chips("lTemp", [["c", "°C"], ["f", "°F"]], L.temp, v => { L.temp = v; save(); });
+    chips("lDist", [["km", "km"], ["mi", "miles"]], L.dist, v => { L.dist = v; save(); });
+    chips("lSizeChips", [["s", "Small"], ["m", "Medium"], ["l", "Large"], ["min", "Minimized"]], L.w.size, v => { setSize(v); });
+    $("lShowW").checked = L.w.show;
+    // hidden fields and pieces
+    // a hidden field folds into one line (title + current value + Show); its setting keeps working
+    const ex31 = new Date("2026-12-31T12:00:00Z");
+    const SUM = { country: () => getCountry() ? countryName(getCountry()) : "Any country", tz: () => tzLabel(tz()), date: () => date(ex31, { zone: "UTC" }),
+      hour: () => ({ auto: "Usual", "24": "24 h", "12": "12 h" }[L.hour]), week: () => L.week === "auto" ? "Usual" : wd(+L.week),
+      cal: () => L.cal === "none" ? "None" : (CALS.find(c => c[0] === L.cal) || ["", L.cal])[1], digits: () => ({ latn: "123", arab: "١٢٣", arabext: "۱۲۳", deva: "१२३", beng: "১২৩", thai: "๑๒๓" }[L.digits]),
+      units: () => (L.temp === "f" ? "°F" : "°C") + ", " + (L.dist === "mi" ? "miles" : "km") };
+    document.querySelectorAll("#locDrawer [data-field]").forEach(el => {
+      const k = el.dataset.field, folded = !!L.hideField[k], b = el.querySelector("[data-hidefield]");
+      el.hidden = false; el.classList.toggle("folded", folded);
+      if (b) { b.textContent = folded ? "Expand ▾" : "Minimize ▴"; b.setAttribute("aria-label", (folded ? "Expand " : "Minimize ") + (el.querySelector(".fh > :first-child")?.textContent || "")); b.setAttribute("aria-expanded", String(!folded)); }
+      const sm = el.querySelector(".fsum"); if (sm && SUM[k]) { sm.textContent = ": " + SUM[k](); if (k === "digits") sm.setAttribute("data-keep-digits", ""); }
+    });
+    const hidden = Object.keys(L.w.hide).filter(k => L.w.hide[k]).map(k => ["w:" + k, "Widget: " + PIECE_NAMES[k]]);
+    $("lHidden").innerHTML = hidden.length ? hidden.map(([k, t]) => `<label class="opt"><input type="checkbox" data-unhide="${k}"> ${esc(t)}</label>`).join("") + `<button class="l-link" id="lShowAll">Show everything again</button>`
+      : `<p class="l-note">Nothing is hidden.</p>`;
+    $("lHidden").querySelectorAll("[data-unhide]").forEach(cb => cb.onchange = () => { const [t, k] = cb.dataset.unhide.split(":"); if (t === "f") delete L.hideField[k]; else delete L.w.hide[k]; save(); renderDrawer(); paint(); });
+    if ($("lShowAll")) $("lShowAll").onclick = () => { L.hideField = {}; L.w.hide = {}; save(); renderDrawer(); paint(); };
+    digitizeEl($("locDrawer"));
+  }
+  let searchT = null;
+  async function searchCity() {
+    const q = $("lCity").value.trim(), box = $("lSugg");
+    if (q.length < 2) { box.innerHTML = ""; return; }
+    try {
+      const p = new URLSearchParams({ name: q, count: "10", language: lang, format: "json" }); if (getCountry()) p.set("countryCode", getCountry());
+      const j = await (await fetch("https://geocoding-api.open-meteo.com/v1/search?" + p)).json();
+      const res = (j.results || []).sort((a, b) => (b.population || 0) - (a.population || 0));
+      if (q !== $("lCity").value.trim()) return;
+      box.innerHTML = res.length ? `<div class="sugg">${res.map((r, i) => `<button type="button" data-i="${i}"><b>${esc(r.name)}</b><small>${esc([r.admin1, r.country || countryName(r.country_code)].filter(Boolean).join(" · "))} · ${esc(tzLabel(r.timezone || "UTC").split(" ")[0])}</small></button>`).join("")}</div><p class="l-note">Biggest places first. Pick one.</p>`
+        : `<p class="l-note">No city found${getCountry() ? " in " + esc(countryName(getCountry())) : ""}. Check the spelling${getCountry() ? " or clear the country" : ""}.</p>`;
+      digitizeEl(box);
+      box.querySelectorAll("[data-i]").forEach(b => b.onclick = () => { const r = res[+b.dataset.i];
+        L.place = { id: r.id, name: r.name, admin1: r.admin1 || "", cc: r.country_code, lat: r.latitude, lon: r.longitude, tz: r.timezone || deviceTz }; L.country = r.country_code; cCountry.refresh();
+        save(); box.innerHTML = ""; $("lCity").value = r.name; loadWx(true).then(() => { paint(); changed(); }); renderDrawer(); });
+    } catch { box.innerHTML = `<p class="l-note">The city search is not available right now. Try again in a moment.</p>`; }
+  }
+  function hereToPlace() {
+    if (!navigator.geolocation) return;
+    $("lCityNote").textContent = "Finding your position…";
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude: lat, longitude: lon } = pos.coords;
+      try {   // the nearest named place, worldwide
+        const j = await (await fetch("https://api.open-meteo.com/v1/forecast?" + new URLSearchParams({ latitude: lat, longitude: lon, current: "temperature_2m", timezone: "auto" }))).json();
+        L.place = { id: null, name: "My location", admin1: "", cc: ip?.cc || cc(), lat, lon, tz: j.timezone || deviceTz };
+        save(); await loadWx(true); paint(); renderDrawer(); changed();
+      } catch { $("lCityNote").textContent = "Your position could not be used. Type your city instead."; }
+    }, () => { $("lCityNote").textContent = "Location permission was refused. Type your city instead."; }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 });
+  }
+  let last = null;
+  function open() { last = document.activeElement; renderDrawer(); $("locDrawer").hidden = false; $("locBg").hidden = false; $("locX").focus(); }
+  function close() { $("locDrawer").hidden = true; $("locBg").hidden = true; $("lSugg").innerHTML = ""; (last || document.body).focus?.(); }
+  /* Countries where a second calendar is part of daily life: offer it once, never switch it on by itself */
+  const LOCAL_CAL = { IR: "persian", AF: "persian", SA: "islamic-umalqura", IL: "hebrew", TH: "buddhist", ET: "ethiopic" };
+  function askCalendar() {
+    const c = cc(), cal = LOCAL_CAL[c];
+    L.calAsked = L.calAsked || {};
+    if (!cal || L.cal !== "none" || L.calAsked[c] || !$("calAsk").hidden) return;
+    const s0 = L.cal; L.cal = cal; const today = extraCal(new Date()).replace(/^[^:]+:\s*/, ""); L.cal = s0;
+    $("calAskT").textContent = `In ${countryName(c)}, the ${CAL_NAMES[cal]} calendar is common. Show it next to the date? Today is ${today}.`;
+    digitizeEl($("calAskT"));
+    const done = (yes) => { L.calAsked[c] = true; if (yes) L.cal = cal; save(); $("calAsk").hidden = true; changed(); if (!$("locDrawer").hidden) renderDrawer(); };
+    $("calYes").onclick = () => done(true); $("calNo").onclick = () => done(false);
+    $("calAsk").hidden = false;
+  }
+  function changed() { paint(); listeners.forEach(f => { try { f(); } catch {} }); askCalendar(); }
+
+  function init() {
+    wireWidget();
+    // when the page changes language or writing direction: new words, and the widget moves to the reading-start corner if not placed by the user
+    new MutationObserver(() => { lang = (document.documentElement.lang || "en").split("-")[0]; Object.keys(DIGITS).forEach(k => delete DIGITS[k]); paint(); if (!$("locDrawer").hidden) renderDrawer(); })
+      .observe(document.documentElement, { attributes: true, attributeFilter: ["lang", "dir"] });
+    $("locX").onclick = close; $("locBg").onclick = close;
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || $("locDrawer").hidden) return;
+      if (e.target?.getAttribute?.("aria-expanded") === "true") return;   // first Esc closes the open list only (the menu handles it)
+      e.stopImmediatePropagation(); close();
+    }, true);
+    const keysCache = {}; const ck = (c) => keysCache[c] || (keysCache[c] = countryKeys(c));
+    const names = () => COUNTRIES.map(c => ({ v: c, label: countryName(c), keys: ck(c), codes: [c.toLowerCase(), (ISO3[c] || "").toLowerCase(), ...(c === "GB" ? ["uk"] : [])], cur: c === getCountry() })).sort((a, b) => a.label.localeCompare(b.label, lang));
+    const setCountry = (v) => {
+      L.country = v;
+      if (L.place && L.place.cc !== v) { L.place = null; $("lCity").value = ""; }   // a city in another country no longer fits
+      if (v && L.tz !== "auto" && TZ_CC[L.tz] && TZ_CC[L.tz] !== v) L.tz = "auto";       // nor a time zone of another country
+      loadWx(true).then(paint);
+      save(); searchCity(); renderDrawer(); changed();
+    };
+    cCountry = combo("lCountry", () => [{ v: "", label: "Any country", cur: !getCountry() }, ...names()], setCountry, () => getCountry() ? countryName(getCountry()) : "");
+    $("lCountryClr").onclick = () => {
+      const before = { country: L.country, place: L.place, tz: L.tz };
+      L.country = ""; L.place = null; L.tz = "auto"; $("lCity").value = ""; save(); loadWx(true).then(paint); renderDrawer(); changed(); cCountry.refresh();
+      toast("Back to your device's place and time", () => { Object.assign(L, before); save(); loadWx(true).then(paint); renderDrawer(); changed(); cCountry.refresh(); });
+    };
+    const zoneItems = () => { const cur = L.tz;
+      const mine = new Set(countryZones(L.place?.cc || L.country));
+      return [{ v: "auto", label: "Automatic", sub: tzLabel(autoTz()), cur: cur === "auto" },
+        ...zones.filter(z => mine.has(z)).map(z => ({ v: z, label: tzLabel(z), sub: "In " + countryName(L.place?.cc || L.country) + " · " + zoneName(z), keys: zoneName(z) + " " + (TZ_ALIAS[z] || ""), cur: cur === z })).sort((a, b) => a.label.localeCompare(b.label)),
+        ...zones.filter(z => !mine.has(z)).map(z => ({ v: z, label: tzLabel(z), sub: z.split("/")[0] + " · " + zoneName(z), keys: zoneName(z) + " " + z.split("/").pop().replace(/_/g, " ") + " " + (TZ_ALIAS[z] || ""), cur: cur === z })).sort((a, b) => a.label.localeCompare(b.label))]; };
+    cTz = combo("lTz", zoneItems, (v) => { L.tz = v; save(); changed(); renderDrawer();
+        const c = L.place?.cc || L.country; if (v !== "auto" && c && TZ_CC[v] && TZ_CC[v] !== c) toast("This time zone is in " + countryName(TZ_CC[v]) + ", not " + countryName(c), () => { L.tz = "auto"; save(); changed(); renderDrawer(); }); }, () => L.tz === "auto" ? "Automatic: " + tzLabel(autoTz()) : tzLabel(L.tz));
+    $("lTzClr").onclick = () => { L.tz = "auto"; save(); changed(); renderDrawer(); };
+    const calItems = () => { const now = new Date(); return CALS.map(([v, t]) => ({ v, label: t, sub: v === "none" ? "" : (() => { const s0 = L.cal; L.cal = v; const x = extraCal(now); L.cal = s0; return "Today: " + x.replace(/^[^:]+:\s*/, ""); })(), cur: v === L.cal })); };
+    cCal = combo("lCal", calItems, (v) => { L.cal = v; save(); changed(); }, () => L.cal === "none" ? "" : (CALS.find(c => c[0] === L.cal) || ["", L.cal])[1]);
+    $("lCalClr").onclick = () => { L.cal = "none"; save(); changed(); cCal.refresh(); };
+    $("lCity").oninput = () => { clearTimeout(searchT); searchT = setTimeout(searchCity, 300); };
+    $("lCityClr").onclick = () => { $("lCity").value = ""; $("lSugg").innerHTML = ""; L.place = null; save(); loadWx(true).then(paint); renderDrawer(); changed(); $("lCity").focus(); };
+    $("lHere").onclick = hereToPlace;
+    $("lTzNow").onclick = () => { L.tz = deviceTz; save(); changed(); renderDrawer(); };
+    $("lShowW").onchange = () => { L.w.show = $("lShowW").checked; save(); paint(); };
+    document.querySelectorAll("#locDrawer [data-hidefield]").forEach(b => b.onclick = () => { const k = b.dataset.hidefield;
+      if (L.hideField[k]) { delete L.hideField[k]; save(); renderDrawer(); paint(); return; }
+      L.hideField[k] = true; save(); renderDrawer(); paint();
+      toast("Minimized here, and hidden on screen", () => { delete L.hideField[k]; save(); renderDrawer(); paint(); }); });
+    $("toastU").onclick = () => { if (undo) undo(); $("toast").hidden = true; undo = null; };
+    $("lReset").onclick = () => { if (!confirm("Reset time, place and formats?")) return; L = structuredClone(DEF); save(); $("lCity").value = ""; cCountry.refresh(); loadWx(true).then(paint); renderDrawer(); changed(); };
+    paint();
+    setInterval(paint, 15000);
+    setInterval(() => loadWx().then(paint), 15 * 60000);
+    // the connection's country (may be wrong with a VPN): used only as a first guess and for the warning
+    fetch("https://ipapi.co/json/").then(r => r.json()).then(j => {
+      if (j && j.country_code) ip = { cc: j.country_code, country: j.country_name, city: j.city, tz: j.timezone, lat: j.latitude, lon: j.longitude };
+    }).catch(() => {}).finally(() => { loadWx(true).then(paint); askCalendar(); });
+  }
+  // the page found a precise position (e.g. "Use my location"): use it for the widget too, unless the user chose a city
+  function setDetected(p) { gps = p && p.lat != null ? { name: p.name, cc: p.cc || "", lat: p.lat, lon: p.lon } : null; loadWx(true).then(paint); }
+  return { init, open, setDetected, date, time, weekday, temp, dist, tz, digitize, digitizeEl, price, onChange: (f) => listeners.push(f), get place() { return L.place; } };
+})();
+document.addEventListener("DOMContentLoaded", LOC.init);
+</script>
+<script>
+document.getElementById("placeOpen").addEventListener("click", () => LOC.open());
+LOC.onChange(() => { try { if (st.view === "cab") renderCabinet(); } catch {} });
 </script>
 </body>
 </html>
