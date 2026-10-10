@@ -1847,7 +1847,9 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 .wdg .pc:hover > .hx,.wdg .pc:focus-within > .hx,.wdg.edit .hx{display:grid}
 .wdg .wcl{flex-basis:100%;width:100%;min-width:0;order:8;display:flex;flex-direction:column;border-top:1px solid var(--line);margin-top:4px;padding-top:2px}
 .wdg .wcl[hidden]{display:none}
-.wdg .wcr{display:flex;align-items:center;gap:10px;padding:7px 2px;border-bottom:1px solid var(--line)}
+.wdg .wcr{display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px}
+.wdg .wcr:hover{background:var(--soft)}
+.wdg .wcr:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .wdg .wcr:last-child{border-bottom:0}
 .wdg .wcr i{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--muted)}
 .wdg .wcr i.on{background:#1f9d63}.wdg .wcr i.ev{background:#d29a2a}
@@ -1855,7 +1857,9 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 .wdg .wcr .wn b{display:block;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wdg .wcr .wn small,.wdg .wcr .wt small{display:block;font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wdg .wcr .wt{text-align:end;flex-shrink:0}
-.wdg .wcr .ww{flex-shrink:0;font-size:.88rem;font-weight:700;white-space:nowrap}
+.wdg .wcr .ww{flex-shrink:0;font-size:.88rem;font-weight:700;white-space:nowrap;border-radius:6px;padding:2px 4px;cursor:pointer}
+.wdg .wcr .ww:hover{background:var(--accent-soft)}
+.wdg .wcr .ww:focus-visible{outline:2px solid var(--accent)}
 .wdg .wcr .wt b{font-size:1.05rem;font-variant-numeric:tabular-nums}
 .wdg .wcm{border:0;background:var(--accent-soft);color:var(--accent);font:inherit;font-weight:700;font-size:.78rem;border-radius:999px;padding:4px 10px;cursor:pointer;align-self:flex-start;margin-top:6px}
 .wdg.m.open .wcl,.wdg.l .wcl{display:flex}
@@ -1884,6 +1888,8 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 #locDrawer .l-note{font-size:.8rem;color:var(--muted);margin:0}
 #locDrawer .fld.folded{background:var(--soft);border-radius:10px;padding:6px 10px}
 #locDrawer .fld.folded > :not(.fh){display:none!important}
+#locDrawer .flash{animation:apaflash 1.6s ease-out}
+@keyframes apaflash{0%,40%{background:var(--accent-soft);box-shadow:0 0 0 3px var(--accent-soft)}100%{background:transparent;box-shadow:none}}
 #locDrawer .clt{display:flex;align-items:center;gap:8px;width:100%;text-align:start;border:1px dashed var(--line);background:none;border-radius:10px;padding:9px 12px;margin-top:8px;cursor:pointer;color:var(--ink);font-weight:600;font-size:.9rem}
 #locDrawer .clt:hover{background:var(--soft)}
 #locDrawer .clt .plus{color:var(--accent);font-weight:800}
@@ -1892,12 +1898,19 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 #locDrawer .clt[aria-expanded="true"] .chev{transform:rotate(180deg)}
 #locDrawer .clbox{border:1px solid var(--line);border-top:0;border-radius:0 0 10px 10px;padding:6px 12px 10px;margin-top:-4px;display:flex;flex-direction:column;gap:8px}
 #locDrawer .clk{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--line)}
-#locDrawer .clk input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--paper)}
+#locDrawer .clk input{display:block;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--paper);margin-top:4px}
+#locDrawer .clk #lChgQ{margin-top:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+#locDrawer .clk #lChgSugg .sugg{margin-top:4px}
+#locDrawer .clk .cname{all:unset;cursor:pointer;display:block;border-radius:6px}
+#locDrawer .clk .cname:hover b,#locDrawer .clk .cname:focus-visible b{color:var(--accent);text-decoration:underline}
+#locDrawer .clk .cname:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#locDrawer .clk.chg{background:var(--accent-soft);border-radius:8px;padding-inline:6px}
+#locDrawer .clk button{flex-shrink:0}
 #locDrawer .clk small{display:block;color:var(--muted);font-size:.75rem}
 #locDrawer .clk .cw{flex:1;min-width:0}
-#locDrawer .clk button{border:0;background:none;color:var(--muted);width:28px;height:28px;border-radius:8px;cursor:pointer}
-#locDrawer .clk button:hover{background:var(--soft);color:var(--ink)}
-#locDrawer .clk button[disabled]{opacity:.3;cursor:default}
+#locDrawer .clk > button{border:0;background:none;color:var(--muted);width:28px;height:28px;border-radius:8px;cursor:pointer}
+#locDrawer .clk > button:hover{background:var(--soft);color:var(--ink)}
+#locDrawer .clk > button[disabled]{opacity:.3;cursor:default}
 #locDrawer .fsum{color:var(--muted);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #locDrawer .fld.folded .fh{justify-content:flex-start;gap:0}
 #locDrawer .fld.folded .fh > :first-child{white-space:nowrap}
@@ -1961,7 +1974,7 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
     <button type="button" class="clt" id="lClockToggle" aria-expanded="false" aria-controls="lClockBox"><span class="plus" aria-hidden="true">＋</span><span id="lClockSum">Other cities</span><span class="chev" aria-hidden="true">▾</span></button>
     <div id="lClockBox" class="clbox" hidden>
       <div id="lClocks"></div>
-      <div class="l-inp"><label class="sr" for="lClockQ">Add a city</label><input id="lClockQ" placeholder="Add a city: type its name" autocomplete="off"></div>
+      <div class="l-inp"><label class="sr" for="lClockQ">Add or change a city</label><input id="lClockQ" placeholder="Add a city: type its name" autocomplete="off"></div>
       <div id="lClockSugg"></div>
       <p class="l-note" id="lClockNote"></p>
       <label class="opt"><input type="checkbox" id="lClockWx"> Show the weather for these cities</label>
@@ -2174,33 +2187,66 @@ const LOC = (() => {
   }
   function clockRows(now) {
     const phone = innerWidth < 700, list = L.clocks, max = phone && !clocksAll ? PHONE_CLOCKS : list.length, me = tz(), myOff = offMin(me, now), myDay = dayKey(me, now);
-    const rows = list.slice(0, max).map(c => {
+    const rows = list.slice(0, max).map((c, ci) => {
       const [cls, state] = workState(c.tz, c.cc, now), other = dayKey(c.tz, now) !== myDay;
       // the exact day in that city, always shown (it can be another day than yours)
       const day = new Intl.DateTimeFormat(lang, { timeZone: c.tz, weekday: "long" }).format(now) + " · ";
-      return `<div class="wcr"><i class="${cls}" aria-hidden="true"></i><span class="wn"><b>${esc(c.label || c.short || c.name)}</b><small>${esc(diffText(offMin(c.tz, now) - myOff) + " · " + (c.label ? c.name : c.name.replace((c.short || "") + ", ", "")))}</small></span>`
-        + (L.clockWx !== false && cwx[c.id] ? `<span class="ww" title="Weather now in ${esc(c.short || c.name)}"><span aria-hidden="true">${WXI[cwx[c.id].code] || "🌡️"}</span> ${esc(temp(cwx[c.id].t))}</span>` : "")
+      return `<div class="wcr" role="button" tabindex="0" data-wci="${ci}" title="Change ${esc(c.short || c.name)}" aria-label="${esc((c.label || c.short || c.name) + ", " + time(now, c.tz) + ". Change this city")}"><i class="${cls}" aria-hidden="true"></i><span class="wn"><b>${esc(c.label || c.short || c.name)}</b><small>${esc(diffText(offMin(c.tz, now) - myOff) + " · " + (c.label ? c.name : c.name.replace((c.short || "") + ", ", "")))}</small></span>`
+        + (L.clockWx !== false && cwx[c.id] ? `<span class="ww" role="button" tabindex="0" data-wwi="${ci}" title="Weather now in ${esc(c.short || c.name)}: weather settings"><span aria-hidden="true">${WXI[cwx[c.id].code] || "🌡️"}</span> ${esc(temp(cwx[c.id].t))}</span>` : "")
         + `<span class="wt"><b>${esc(time(now, c.tz))}</b><small>${esc(day + state)}</small></span></div>`;
     }).join("");
     const more = list.length - max;
     return rows + (more > 0 ? `<button class="wcm" id="wClMore">+${more} more</button>` : phone && clocksAll && list.length > PHONE_CLOCKS ? `<button class="wcm" id="wClMore">Show fewer</button>` : "");
   }
+  let changeIdx = null, editIdx = null;
+  // from the widget: open Time and place right on that city, ready to change it
+  function openSetting(id, inCities) {
+    open();
+    if (inCities) { $("lClockBox").hidden = false; $("lClockToggle").setAttribute("aria-expanded", "true"); }
+    const el = $(id); if (!el) return;
+    const fld = el.closest("[data-field]"); if (fld && L.hideField[fld.dataset.field]) { delete L.hideField[fld.dataset.field]; save(); renderDrawer(); }   // a minimized field opens
+    const box = el.closest(".fld, label, .clbox") || el;
+    box.scrollIntoView({ block: "center" }); box.classList.add("flash"); setTimeout(() => box.classList.remove("flash"), 1600);
+    setTimeout(() => (el.matches("input, button, select") ? el : el.querySelector("button, input"))?.focus(), 50);
+  }
+  function openCityChange(i) {
+    open(); $("lClockBox").hidden = false; $("lClockToggle").setAttribute("aria-expanded", "true");
+    changeIdx = i; editIdx = null; renderClockList();
+    const row = $("lClocks").querySelector(`[data-ci="${i}"]`); row?.scrollIntoView({ block: "center" }); setTimeout(() => $("lChgQ")?.focus(), 50);
+  }
+  function endChange() { changeIdx = null; }
   function addClock(r) {
+    if (changeIdx !== null && L.clocks[changeIdx]) {
+      const old = L.clocks[changeIdx];
+      L.clocks[changeIdx] = { id: String(r.id || Date.now()), name: [r.name, r.admin1 && r.admin1 !== r.name ? region(r.admin1, r.country_code) : "", r.country || countryName(r.country_code)].filter(Boolean).join(", "), short: r.name, cc: r.country_code || "", tz: r.timezone || "UTC", label: "", lat: r.latitude, lon: r.longitude };
+      endChange(); save(); cwxAt = 0; loadClockWx().then(() => { clocksKey = ""; paint(); }); paint(); renderClockList(); toast(`${old.short || old.name} → ${r.name}`); return;
+    }
     if (L.clocks.length >= MAX_CLOCKS) { toast(`Up to ${MAX_CLOCKS} cities. Remove one to add another.`); return; }
     L.clocks.push({ id: String(r.id || Date.now()), name: [r.name, r.admin1 && r.admin1 !== r.name ? region(r.admin1, r.country_code) : "", r.country || countryName(r.country_code)].filter(Boolean).join(", "), short: r.name, cc: r.country_code || "", tz: r.timezone || "UTC", label: "", lat: r.latitude, lon: r.longitude });
     save(); cwxAt = 0; loadClockWx().then(() => { clocksKey = ""; paint(); }); paint(); renderClockList(); toast(r.name + " added");
   }
   function renderClockList() {
     const box = $("lClocks"); if (!box) return;
-    box.innerHTML = L.clocks.length ? L.clocks.map((c, i) => `<div class="clk" data-ci="${i}"><span class="cw"><label class="sr" for="clkL${i}">Name for ${esc(c.name)}</label>
-        <input id="clkL${i}" data-cl="${i}" value="${esc(c.label)}" placeholder="${esc(c.short || c.name)} (add a name, e.g. Client NY)"><small>${esc(c.name)} · ${esc(tzLabel(c.tz).split(" ")[0])}</small></span>
+    box.innerHTML = L.clocks.length ? L.clocks.map((c, i) => `<div class="clk ${changeIdx === i ? "chg" : ""}" data-ci="${i}"><span class="cw">
+        ${changeIdx === i ? `<label class="sr" for="lChgQ">New city instead of ${esc(c.short || c.name)}</label><input id="lChgQ" autocomplete="off" aria-expanded="true" placeholder="New city instead of ${esc(c.short || c.name)}…"><div id="lChgSugg"></div>`
+          : `<button type="button" class="cname" data-chg="${i}" title="Click to change this city"><b>${esc(c.short || c.name)}</b><small>${esc(c.name.replace((c.short || "") + ", ", ""))} · ${esc(tzLabel(c.tz).split(" ")[0])}</small></button>`}
+        ${c.label || editIdx === i ? `<label class="sr" for="clkL${i}">Your name for ${esc(c.short || c.name)}</label><input id="clkL${i}" data-cl="${i}" value="${esc(c.label)}" placeholder="Your name for it, e.g. Client NY">` : ""}</span>
+        <button data-ed="${i}" aria-label="Give ${esc(c.short || c.name)} your own name" title="Your own name">✎</button>
         <button data-up="${i}" aria-label="Move ${esc(c.short || c.name)} up" ${i ? "" : "disabled"}>↑</button><button data-dn="${i}" aria-label="Move ${esc(c.short || c.name)} down" ${i < L.clocks.length - 1 ? "" : "disabled"}>↓</button>
-        <button data-rm="${i}" aria-label="Remove ${esc(c.short || c.name)}">✕</button></div>`).join("")
+        ${changeIdx === i ? `<button data-cancel="1" aria-label="Cancel the change" title="Cancel">↩</button>` : `<button data-rm="${i}" aria-label="Remove ${esc(c.short || c.name)}">✕</button>`}</div>`).join("")
       : `<p class="${C_NOTE}">Add the cities you work with: clients, offices, family. Each shows its time, the difference with yours, and whether it's working hours there.</p>`;
     const n = L.clocks.length, sum = () => { $("lClockSum").textContent = L.clocks.length ? `Other cities (${L.clocks.length}): ` + L.clocks.map(c => c.label || c.short || c.name).join(", ") : "Other cities"; };
     sum();
     $("lClockNote").textContent = `${L.clocks.length} of ${MAX_CLOCKS}. On phones the first ${PHONE_CLOCKS} show, the others under "+ more". Use ↑ ↓ to choose the order.`;
     box.querySelectorAll("[data-cl]").forEach(inp => inp.oninput = () => { L.clocks[+inp.dataset.cl].label = inp.value.slice(0, 40); save(); paint(); sum(); });
+    box.querySelectorAll("[data-ed]").forEach(b => b.onclick = () => { editIdx = +b.dataset.ed; renderClockList(); $("clkL" + editIdx)?.focus(); });
+    box.querySelectorAll("[data-chg]").forEach(b => b.onclick = () => { changeIdx = +b.dataset.chg; editIdx = null; renderClockList(); $("lChgQ")?.focus(); });
+    if ($("lChgQ")) {
+      let t = null;
+      $("lChgQ").oninput = () => { clearTimeout(t); t = setTimeout(() => cityPick($("lChgQ"), $("lChgSugg"), addClock), 250); };
+      $("lChgQ").onkeydown = (e) => { if (e.key === "Escape") { e.stopPropagation(); endChange(); renderClockList(); box.querySelector(`[data-chg]`)?.focus(); } };
+    }
+    box.querySelectorAll("[data-cancel]").forEach(b => b.onclick = () => { endChange(); renderClockList(); });
     box.querySelectorAll("[data-up]").forEach(b => b.onclick = () => { const i = +b.dataset.up; [L.clocks[i - 1], L.clocks[i]] = [L.clocks[i], L.clocks[i - 1]]; save(); paint(); renderClockList(); box.querySelector(`[data-up="${i - 1}"]`)?.focus(); });
     box.querySelectorAll("[data-dn]").forEach(b => b.onclick = () => { const i = +b.dataset.dn; [L.clocks[i + 1], L.clocks[i]] = [L.clocks[i], L.clocks[i + 1]]; save(); paint(); renderClockList(); box.querySelector(`[data-dn="${i + 1}"]`)?.focus(); });
     box.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { const i = +b.dataset.rm, c = L.clocks.splice(i, 1)[0]; save(); paint(); renderClockList();
@@ -2208,17 +2254,18 @@ const LOC = (() => {
     digitizeEl(box);
   }
   let clockT = null;
-  async function searchClock() {
-    const q = $("lClockQ").value.trim(), box = $("lClockSugg");
+  const searchClock = () => cityPick($("lClockQ"), $("lClockSugg"), (r) => { addClock(r); $("lClockQ").value = ""; $("lClockQ").focus(); });
+  async function cityPick(inp, box, onPick) {
+    const q = inp.value.trim();
     if (q.length < 2) { box.innerHTML = ""; return; }
     try {
       const j = await (await fetch("https://geocoding-api.open-meteo.com/v1/search?" + new URLSearchParams({ name: q, count: "8", language: lang, format: "json" }))).json();
       const res = (j.results || []).sort((a, b) => (b.population || 0) - (a.population || 0));
-      if (q !== $("lClockQ").value.trim()) return;
+      if (q !== inp.value.trim()) return;
       box.innerHTML = res.length ? `<div class="sugg">${res.map((r, i) => `<button type="button" data-k="${i}"><b>${esc(r.name)}</b><small>${esc([region(r.admin1, r.country_code), r.country || countryName(r.country_code)].filter(Boolean).join(" · "))} · ${esc(tzLabel(r.timezone || "UTC").split(" ")[0])}</small></button>`).join("")}</div>`
         : `<p class="${C_NOTE}">No city found. Check the spelling.</p>`;
       digitizeEl(box);
-      box.querySelectorAll("[data-k]").forEach(b => b.onclick = () => { addClock(res[+b.dataset.k]); box.innerHTML = ""; $("lClockQ").value = ""; $("lClockQ").focus(); });
+      box.querySelectorAll("[data-k]").forEach(b => b.onclick = () => { box.innerHTML = ""; onPick(res[+b.dataset.k]); });
     } catch { box.innerHTML = `<p class="${C_NOTE}">The city search is not available right now. Try again in a moment.</p>`; }
   }
 
@@ -2250,7 +2297,11 @@ const LOC = (() => {
     const hasCl = L.clocks.length > 0 && !h.clocks;
     w.classList.toggle("open", s === "m" && clocksOpen && hasCl);
     const key = L.clocks.map(c => c.tz + c.label + (cwx[c.id] ? cwx[c.id].t : "")).join("|") + L.clockWx + L.temp + "|" + time(now) + "|" + clocksAll + "|" + (innerWidth < 700) + "|" + L.digits + lang;
-    if (hasCl && (s === "l" || (s === "m" && clocksOpen))) { if (key !== clocksKey) { $("wClocks").innerHTML = clockRows(now); clocksKey = key; const mb = $("wClMore"); if (mb) mb.onclick = (e) => { e.stopPropagation(); clocksAll = !clocksAll; clocksKey = ""; paint(); }; } }
+    if (hasCl && (s === "l" || (s === "m" && clocksOpen))) { if (key !== clocksKey) { $("wClocks").innerHTML = clockRows(now); clocksKey = key;
+        $("wClocks").querySelectorAll("[data-wwi]").forEach(r => { const go = (e) => { e.stopPropagation(); openSetting("lClockWx", true); };
+          r.onclick = go; r.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(e); } }; });
+        $("wClocks").querySelectorAll("[data-wci]").forEach(r => { const go = (e) => { if (e.target.closest("[data-wwi]")) return; e.stopPropagation(); openCityChange(+r.dataset.wci); };
+          r.onclick = go; r.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(e); } }; }); const mb = $("wClMore"); if (mb) mb.onclick = (e) => { e.stopPropagation(); clocksAll = !clocksAll; clocksKey = ""; paint(); }; } }
     else clocksKey = "";
     let chip = w.querySelector(".wchip");
     if (hasCl && s === "m") { if (!chip) { chip = document.createElement("button"); chip.className = "wchip"; w.querySelector(".tools").before(chip); chip.onclick = (e) => { e.stopPropagation(); clocksOpen = !clocksOpen; paint(); }; }
@@ -2283,7 +2334,7 @@ const LOC = (() => {
     // drag from the grip or from any empty part of the widget
     let drag = null;
     w.addEventListener("pointerdown", (e) => {
-      if (e.target.closest(".hx, .tools, .rz, .dot, #wMain, #wWx, .wchip, .wcm")) return;
+      if (e.target.closest(".hx, .tools, .rz, .dot, #wMain, #wWx, .wchip, .wcm, .wcr")) return;
       const r = w.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: false, id: e.pointerId };
       w.setPointerCapture(e.pointerId);
     });
@@ -2307,7 +2358,7 @@ const LOC = (() => {
     $("wSize").onclick = () => setSize(SIZES[(SIZES.indexOf(L.w.size) + 1) % 3]);
     $("wMin").onclick = () => { L.w.prev = L.w.size; setSize("min"); $("wDot").focus(); };
     $("wDot").onclick = () => { setSize(L.w.prev && L.w.prev !== "min" ? L.w.prev : "m"); };
-    $("wMain").onclick = open; $("wWx").onclick = open;
+    $("wMain").onclick = open; $("wWx").onclick = () => openSetting("lTemp");   // the main weather opens the °C / °F units
     w.querySelectorAll("[data-hide]").forEach(b => b.onclick = () => hidePiece(b.dataset.hide));
     addEventListener("resize", place);
   }
@@ -2502,6 +2553,7 @@ const LOC = (() => {
     $("lClockWx").checked = L.clockWx !== false;
     $("lClockWx").onchange = () => { L.clockWx = $("lClockWx").checked; save(); clocksKey = ""; if (L.clockWx) loadClockWx(true).then(paint); else paint(); };
     loadClockWx().then(paint);
+
     $("lClockToggle").onclick = () => { const open = $("lClockBox").hidden; $("lClockBox").hidden = !open; $("lClockToggle").setAttribute("aria-expanded", String(open)); if (open) $("lClockQ").focus(); };
     if (L.hideField) delete L.hideField.clocks;
     // when the page changes language or writing direction: new words, and the widget moves to the reading-start corner if not placed by the user
