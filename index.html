@@ -16,8 +16,8 @@
   --paper:#ffffff; --ink:#15171c; --muted:#5d6472; --line:#e3e5ea; --soft:#f5f6f8;
   --accent:#2a3fe0; --accent-ink:#ffffff; --accent-soft:#eef0fd;
   --ok:#0f7d55; --err:#c0322b; --note:#fff8e1; --note-line:#f0d98a;
-  --font:"Twemoji Country Flags",'Figtree','Segoe UI','Geeza Pro','Noto Sans Arabic','Noto Naskh Arabic',Tahoma,'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Noto Sans SC',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  --emoji:"Twemoji Country Flags",'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
+  --font:"Twemoji Country Flags","Twemoji Mozilla",'Figtree','Segoe UI','Geeza Pro','Noto Sans Arabic','Noto Naskh Arabic',Tahoma,'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Noto Sans SC',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --emoji:"Twemoji Country Flags","Twemoji Mozilla",'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
@@ -36,8 +36,8 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
-html[lang="zh"] body{font-family:"Twemoji Country Flags",'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Noto Sans SC','Figtree',system-ui,sans-serif}
-html[lang="ar"] body{font-family:"Twemoji Country Flags",'Segoe UI','Geeza Pro','Noto Sans Arabic','Noto Naskh Arabic',Tahoma,'Figtree',system-ui,sans-serif;line-height:1.65}
+html[lang="zh"] body{font-family:"Twemoji Country Flags","Twemoji Mozilla",'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Noto Sans SC','Figtree',system-ui,sans-serif}
+html[lang="ar"] body{font-family:"Twemoji Country Flags","Twemoji Mozilla",'Segoe UI','Geeza Pro','Noto Sans Arabic','Noto Naskh Arabic',Tahoma,'Figtree',system-ui,sans-serif;line-height:1.65}
 .flag{font-family:var(--emoji);font-size:1.15em;line-height:1;font-style:normal}
 button,input,textarea,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
@@ -323,6 +323,8 @@ html[lang="ar"] .cab-hello,html[lang="zh"] .cab-hello{letter-spacing:0}
   } catch (e) {}
 })();
 </script>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
 <script src="version.js"></script>
 <style>
 /* BETA badge and notice */
