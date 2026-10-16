@@ -2,10 +2,12 @@
    Small updates: 1.0.1, 1.0.2…  Bigger ones: 1.1, 1.2…  */
 window.APA_VERSION = {
   stage: "BETA",
-  v: "1.0.4",
+  v: "1.0.5",
   date: "2026-10-16",
   // What's new in this version (shown in "More info"), newest first
   notes: [
+    "Country flags show on Windows computers too (small flags font hosted on apaworld.org)",
+    "Fix: the clock could stop on computers with unusual language settings",
     "Visitors see the clock in the top bar, next to the name",
     "The name now reads: Apaworld, APA – AI Personal Assistant",
     "English is shown with the US flag",
