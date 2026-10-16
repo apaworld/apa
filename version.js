@@ -2,10 +2,12 @@
    Small updates: 1.0.1, 1.0.2…  Bigger ones: 1.1, 1.2…  */
 window.APA_VERSION = {
   stage: "BETA",
-  v: "1.0.1",
-  date: "2026-10-15",
+  v: "1.0.2",
+  date: "2026-10-16",
   // What's new in this version (shown in "More info"), newest first
   notes: [
+    "Privacy: no more location lookup by internet address; nothing about visitors is sent to outside services",
+    "Visitors get a simple clock from their own device, movable anywhere, with a button to switch sides",
     "New name: Apaworld (formerly Apacom)",
     "World clocks: other cities and countries with their time, weather, working hours and weekend",
     "Drag and drop to order the cities, A–Z and By time",

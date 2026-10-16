@@ -238,6 +238,11 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
 .wdg .sep{width:1px;align-self:stretch;background:var(--line)}
 .wdg .pc{position:relative;display:flex;align-items:center}
 .wdg .hx{position:absolute;top:-10px;inset-inline-end:-12px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--muted);font-size:.7rem;line-height:1;padding:0;cursor:pointer;display:none;place-items:center}
+.wdg.simple .hx,.wdg.simple .rz,.wdg.simple #wSize{display:none!important}
+.wdg.simple{cursor:grab}
+body[data-widget-mode="simple"]{padding-bottom:84px}   /* room under the page, so the clock never hides its last line */
+.wdg.simple:active{cursor:grabbing}
+.wdg [data-piece="clock"] > .hx{top:-14px}
 .wdg .pc:hover > .hx,.wdg .pc:focus-within > .hx,.wdg.edit .hx{display:grid}
 .wdg .wcl{flex-basis:100%;width:100%;min-width:0;order:8;display:flex;flex-direction:column;border-top:1px solid var(--line);margin-top:4px;padding-top:2px}
 .wdg .wcl[hidden]{display:none}
@@ -370,7 +375,7 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
   <div class="wcl" data-piece="clocks" id="wClocks" aria-label="Other cities"></div>
   <span class="sep" data-piece="weather"></span>
   <span class="pc" data-piece="weather"><button class="wx" id="wWx" aria-label="Open time and place settings"><span id="wWxIc" aria-hidden="true"></span><span><span id="wWxT"></span><small id="wWxD"></small></span></button><button class="hx" data-hide="weather" aria-label="Hide the weather" title="Hide the weather">✕</button></span>
-  <span class="tools"><button id="wSize" aria-label="Change the size" title="Change the size">⤢</button><button id="wMin" aria-label="Minimize" title="Minimize">–</button></span>
+  <span class="tools"><button id="wSide" aria-label="Move to the other side of the screen" title="Move to the other side">⇆</button><button id="wSize" aria-label="Change the size" title="Change the size">⤢</button><button id="wMin" aria-label="Minimize" title="Minimize">–</button></span>
   <button class="rz" id="wRz" aria-label="Resize: drag, or press to change the size" title="Drag to resize"></button>
   <button class="dot" id="wDot" aria-label="Show the time and weather widget">🕐</button>
 </div>
@@ -551,6 +556,7 @@ const LOC = (() => {
   const WXI = { 0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",71:"🌨️",73:"🌨️",75:"❄️",80:"🌦️",81:"🌧️",82:"⛈️",95:"⛈️",96:"⛈️",99:"⛈️" };
   let wx = null, wxAt = 0;
   async function loadWx(force) {
+    if (isSimple()) return;
     const p = L.place || (gps && (!L.country || gps.cc === L.country) ? gps : null) || (ipOk() && (!L.country || ip.cc === L.country) && ip.lat != null ? ip : null);
     if (!p || p.lat == null) { wx = null; return; }
     if (!force && wx && wx.key === p.lat + "," + p.lon && Date.now() - wxAt < 15 * 60000) return;
@@ -851,8 +857,10 @@ const LOC = (() => {
     } catch { box.innerHTML = `<p class="${C_NOTE}">The city search is not available right now. Try again in a moment.</p>`; }
   }
 
+  const isSimple = () => document.body.dataset.widgetMode === "simple";
   function paint() {
     const w = W(); if (!w) return;
+    if (isSimple()) { paintSimple(w); return; }
     w.hidden = !L.w.show;
     w.className = "wdg " + (L.w.size === "min" ? "min" : L.w.size);
     // what is shown: widget pieces closed with ✕, and sections folded in Settings (folding hides their information on screen)
@@ -906,9 +914,22 @@ const LOC = (() => {
     const bw = w.offsetWidth, bh = w.offsetHeight, vw = innerWidth, vh = innerHeight;
     // default place: top corner on the dashboard, bottom corner on pages with forms (set by the page with data-widget-place="bottom")
     const bottom = document.body.dataset.widgetPlace === "bottom" || vw < 700;
-    let x = L.w.x == null ? (rtl ? 12 : vw - bw - 12) : L.w.x * vw, y = L.w.y == null ? (bottom ? vh - bh - 16 : 70) : L.w.y * vh;
+    // the simple visitor clock starts on the reading-start side (left in English, right in Arabic), away from the sign-up form
+    const startSide = isSimple() ? !rtl : rtl;
+    let x = L.w.x == null ? (startSide ? 12 : vw - bw - 12) : L.w.x * vw, y = L.w.y == null ? (bottom ? vh - bh - 16 : 70) : L.w.y * vh;
     x = Math.min(Math.max(8, x), vw - bw - 8); y = Math.min(Math.max(8, y), vh - bh - 8);
     w.style.left = x + "px"; w.style.top = y + "px";
+  }
+  // Visitors (not signed in): a simple clock from the device itself; no place lookup, no weather, no settings
+  function paintSimple(w) {
+    w.hidden = !L.w.show;
+    w.className = "wdg m simple" + (L.w.size === "min" ? " min" : "");
+    const now = new Date(), zone = deviceTz;
+    $("wTime").textContent = time(now, zone);   // the usual 12 h / 24 h of the country, and the chosen digits
+    $("wPlace").textContent = weekday(now, zone) + " " + date(now, { zone }) + " · " + zoneName(zone);
+    w.querySelectorAll("[data-piece]").forEach(e => e.hidden = !["clock", "place"].includes(e.dataset.piece));
+    $("wMain").title = "Sign in to choose your city, other cities' clocks and the weather";
+    digitizeEl(w); place();
   }
   function setPos(x, y) { L.w.x = x / innerWidth; L.w.y = y / innerHeight; save(); place(); }
   const SIZES = ["s", "m", "l"];
@@ -918,7 +939,7 @@ const LOC = (() => {
     // drag from the grip or from any empty part of the widget
     let drag = null;
     w.addEventListener("pointerdown", (e) => {
-      if (e.target.closest(".hx, .tools, .rz, .dot, #wMain, #wWx, .wchip, .wcm, .wcr, .wtip")) return;
+      if (e.target.closest(isSimple() ? ".tools, .dot" : ".hx, .tools, .rz, .dot, #wMain, #wWx, .wchip, .wcm, .wcr, .wtip")) return;   // simple clock: drag from anywhere
       const r = w.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: false, id: e.pointerId };
       w.setPointerCapture(e.pointerId);
     });
@@ -940,9 +961,10 @@ const LOC = (() => {
     });
     $("wRz").addEventListener("pointerup", () => { if (rz && !rz.done) setSize(SIZES[(SIZES.indexOf(L.w.size) + 1) % 3]); rz = null; });
     $("wSize").onclick = () => setSize(SIZES[(SIZES.indexOf(L.w.size) + 1) % 3]);
+    $("wSide").onclick = () => { const r = w.getBoundingClientRect(); setPos(innerWidth - r.right, r.top); };   // mirror to the other side
     $("wMin").onclick = () => { L.w.prev = L.w.size; setSize("min"); $("wDot").focus(); };
     $("wDot").onclick = () => { setSize(L.w.prev && L.w.prev !== "min" ? L.w.prev : "m"); };
-    $("wMain").onclick = open; $("wWx").onclick = () => openSetting("lTemp");   // the main weather opens the °C / °F units
+    $("wMain").onclick = () => { if (!isSimple()) open(); }; $("wWx").onclick = () => openSetting("lTemp");   // the main weather opens the °C / °F units
     w.querySelectorAll("[data-hide]").forEach(b => b.onclick = () => hidePiece(b.dataset.hide));
     addEventListener("resize", place);
   }
@@ -1197,14 +1219,14 @@ const LOC = (() => {
     paint();
     setInterval(paint, 15000);
     setInterval(() => loadWx().then(paint), 15 * 60000);
-    // the connection's country (may be wrong with a VPN): used only as a first guess and for the warning
-    fetch("https://ipapi.co/json/").then(r => r.json()).then(j => {
-      if (j && j.country_code) ip = { cc: j.country_code, country: j.country_name, city: j.city, tz: j.timezone, lat: j.latitude, lon: j.longitude };
-    }).catch(() => {}).finally(() => { loadWx(true).then(paint); askCalendar(); });
+    // No IP lookup: APA never sends a visitor's address to an outside service. The place comes from the user's own choice,
+    // their location (only if they allow it) or the device's time zone.
+    loadWx(true).then(paint); askCalendar();
   }
   // the page found a precise position (e.g. "Use my location"): use it for the widget too, unless the user chose a city
   function setDetected(p) { gps = p && p.lat != null ? { name: p.name, cc: p.cc || "", lat: p.lat, lon: p.lon } : null; loadWx(true).then(paint); }
-  return { init, open, setDetected, date, time, weekday, temp, dist, tz, digitize, digitizeEl, price, onChange: (f) => listeners.push(f), get place() { return L.place; } };
+  function modeChanged() { clocksKey = ""; loadWx(true).then(paint); paint(); }
+  return { init, open, setDetected, modeChanged, date, time, weekday, temp, dist, tz, digitize, digitizeEl, price, onChange: (f) => listeners.push(f), get place() { return L.place; } };
 })();
 document.addEventListener("DOMContentLoaded", LOC.init);
 </script>
