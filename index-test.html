@@ -48,7 +48,12 @@ button,input,textarea,select{font:inherit;color:inherit}
 .top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;max-width:1080px;margin:0 auto}
 .mark{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
 .tagline{font-weight:500;font-size:.8rem;color:var(--muted);letter-spacing:0;white-space:nowrap}
-@media (max-width:640px){.tagline{display:none}}   /* phones: the header keeps only the name, to fit */
+@media (min-width:481px) and (max-width:760px){   /* small tablets: the same two-line name block as on phones */
+  .mark{flex-wrap:wrap;flex:1;min-width:0;gap:0 6px}
+  .tagline{display:block;flex-basis:100%;padding-inline-start:28px;font-size:.75rem;line-height:1.2;white-space:normal}
+  .mark-sub{display:flex;flex-basis:100%;align-items:center;gap:8px;padding-inline-start:28px;margin-top:3px}
+  .mark-sub .beta{margin:0}
+}
 .hclock{font-weight:500;font-size:.85rem;color:var(--muted);letter-spacing:0;white-space:nowrap;display:inline-flex;align-items:baseline;gap:4px;margin-inline-start:6px}
 .hclock[hidden]{display:none}
 .hclock b{color:var(--ink);font-size:.95rem;font-variant-numeric:tabular-nums}
@@ -60,7 +65,8 @@ button,input,textarea,select{font:inherit;color:inherit}
   #langName{display:none}            /* the language button shows its flag; the full names are in its menu */
   .mark{flex-wrap:wrap;flex:1;min-width:0;gap:0 6px;font-size:1.05rem}
   .mark>i{flex-shrink:0}
-  .mark-sub{display:flex;flex-basis:100%;align-items:center;gap:8px;padding-inline-start:28px;margin-top:2px}   /* badge + clock together, under the name */
+  .tagline{display:block;flex-basis:100%;padding-inline-start:28px;font-size:.72rem;line-height:1.2;margin-top:-2px;white-space:normal}   /* "APA – AI Personal Assistant" under the name */
+  .mark-sub{display:flex;flex-basis:100%;align-items:center;gap:8px;padding-inline-start:28px;margin-top:3px}   /* badge + clock together, on the next line */
   .mark-sub .beta{margin:0;padding:1px 7px;font-size:.66rem}
   .mark-sub .hclock{margin:0;font-size:.78rem}
   .hclock>span[aria-hidden]{display:none}
