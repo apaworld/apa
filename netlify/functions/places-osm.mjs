@@ -65,7 +65,7 @@ export default async (req) => {
     const contact = env("OSM_CONTACT_EMAIL") || "contact@example.com";
     const res = await fetchWithTimeout(OVERPASS, {
       method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": `Apacom-APA/0.1 (${contact})` },
+      headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": `Apaworld-APA/0.1 (${contact})` },
       body: new URLSearchParams({ data: query })
     }, 30000);
     const { data, text } = await readBody(res);
