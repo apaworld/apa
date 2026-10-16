@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">   <!-- test page: not listed by search engines -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Apaworld — Personal Agent</title>
+<title>Apaworld — APA, AI Personal Assistant</title>
 <style>
 /* Figtree font, hosted on apaworld.org itself (no request to Google). Open Font License, see fonts/OFL-figtree.txt */
 @font-face{font-family:"Figtree";font-style:normal;font-weight:300 900;font-display:swap;src:url("fonts/figtree-latin.woff2") format("woff2");
@@ -47,6 +47,22 @@ button,input,textarea,select{font:inherit;color:inherit}
 /* top bar */
 .top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;max-width:1080px;margin:0 auto}
 .mark{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.tagline{font-weight:500;font-size:.8rem;color:var(--muted);letter-spacing:0;white-space:nowrap}
+@media (max-width:640px){.tagline{display:none}}   /* phones: the header keeps only the name, to fit */
+.hclock{font-weight:500;font-size:.85rem;color:var(--muted);letter-spacing:0;white-space:nowrap;display:inline-flex;align-items:baseline;gap:4px;margin-inline-start:6px}
+.hclock[hidden]{display:none}
+.hclock b{color:var(--ink);font-size:.95rem;font-variant-numeric:tabular-nums}
+.hclock .hdate::before{content:" · "}
+@media (max-width:900px){.hclock .hdate{display:none}}
+@media (max-width:480px){   /* small phones: everything in the top bar fits on one line */
+  #langName{display:none}            /* the language button shows its flag; the full names are in its menu */
+  .mark{gap:2px 6px;font-size:1.05rem;flex-wrap:wrap;flex:1;min-width:0}   /* the badge and the clock go under the name */
+  .mark>i{flex-shrink:0}
+  .mark .beta,.mark .hclock{font-size:.72rem}
+  .beta{margin-inline-start:2px;padding:2px 6px}
+  .hclock>span[aria-hidden]{display:none}
+  .top-r{gap:6px}
+}   /* smaller screens: only the time*/
 .mark i{width:22px;height:22px;border-radius:50%;border:3px solid var(--accent);display:inline-block;position:relative}
 .mark i::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--accent)}
 .lang{position:relative}
@@ -312,7 +328,7 @@ body > .beta-bar{width:calc(100% - 32px);max-width:1040px}   /* same width as th
 </head>
 <body data-widget-place="bottom" data-widget-mode="simple">
 <header class="top">
-  <div class="mark"><i aria-hidden="true"></i><span>Apaworld</span><button type="button" class="beta" id="betaBadge"></button></div>
+  <div class="mark"><i aria-hidden="true"></i><span>Apaworld</span><span class="tagline">APA – AI Personal Assistant</span><button type="button" class="beta" id="betaBadge"></button><span class="hclock" id="hdrClock" hidden title="Sign in to choose your city, other cities' clocks and the weather"><span aria-hidden="true">🕐</span> <b id="hdrTime"></b><span class="hdate" id="hdrDate"></span></span></div>
   <div class="top-r">
   <div class="top-user" id="topUser" hidden>
     <button type="button" class="avatar-btn" id="topAvatarBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu"><span class="avatar sm" id="topAvatar"></span><span id="topName"></span><span class="um-chev" aria-hidden="true">▾</span></button>
@@ -604,7 +620,7 @@ body > .beta-bar{width:calc(100% - 32px);max-width:1040px}   /* same width as th
 "use strict";
 /* ============ i18n ============ */
 const LANGS = [
-  {code:"en", flag:"GB", native:"English", sub:"English"},
+  {code:"en", flag:"US", native:"English", sub:"English"},
   {code:"fr", flag:"FR", native:"Français", sub:"French"},
   {code:"zh", flag:"CN", native:"中文（普通话）", sub:"Mandarin"},
   {code:"ar", flag:"SA", native:"العربية", sub:"Arabic (MSA)", rtl:true}
@@ -1873,7 +1889,7 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 .wdg .hx{position:absolute;top:-10px;inset-inline-end:-12px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--muted);font-size:.7rem;line-height:1;padding:0;cursor:pointer;display:none;place-items:center}
 .wdg.simple .hx,.wdg.simple .rz,.wdg.simple #wSize{display:none!important}
 .wdg.simple{cursor:grab}
-body[data-widget-mode="simple"]{padding-bottom:84px}   /* room under the page, so the clock never hides its last line */
+
 .wdg.simple:active{cursor:grabbing}
 .wdg [data-piece="clock"] > .hx{top:-14px}
 .wdg .pc:hover > .hx,.wdg .pc:focus-within > .hx,.wdg.edit .hx{display:grid}
@@ -2555,6 +2571,14 @@ const LOC = (() => {
   }
   // Visitors (not signed in): a simple clock from the device itself; no place lookup, no weather, no settings
   function paintSimple(w) {
+    const hc = $("hdrClock");
+    if (hc) {   // this page has a clock in its top bar: visitors see it there, and no floating widget
+      const now = new Date(), zone = deviceTz;
+      hc.hidden = false; w.hidden = true;
+      $("hdrTime").textContent = time(now, zone);
+      $("hdrDate").textContent = weekday(now, zone) + " " + date(now, { zone }) + " · " + zoneName(zone);
+      digitizeEl(hc); return;
+    }
     w.hidden = false;   // visitors have no Settings to bring it back, so the simple clock is always shown (it can still be minimized)
     w.className = "wdg m simple" + (L.w.size === "min" ? " min" : "");
     const now = new Date(), zone = deviceTz;
@@ -2858,7 +2882,7 @@ const LOC = (() => {
   }
   // the page found a precise position (e.g. "Use my location"): use it for the widget too, unless the user chose a city
   function setDetected(p) { gps = p && p.lat != null ? { name: p.name, cc: p.cc || "", lat: p.lat, lon: p.lon } : null; loadWx(true).then(paint); }
-  function modeChanged() { clocksKey = ""; loadWx(true).then(paint); paint(); }
+  function modeChanged() { clocksKey = ""; if ($("hdrClock") && !isSimple()) $("hdrClock").hidden = true; loadWx(true).then(paint); paint(); }
   return { init, open, setDetected, modeChanged, date, time, weekday, temp, dist, tz, digitize, digitizeEl, price, onChange: (f) => listeners.push(f), get place() { return L.place; } };
 })();
 document.addEventListener("DOMContentLoaded", LOC.init);

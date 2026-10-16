@@ -2,10 +2,13 @@
    Small updates: 1.0.1, 1.0.2…  Bigger ones: 1.1, 1.2…  */
 window.APA_VERSION = {
   stage: "BETA",
-  v: "1.0.3",
+  v: "1.0.4",
   date: "2026-10-16",
   // What's new in this version (shown in "More info"), newest first
   notes: [
+    "Visitors see the clock in the top bar, next to the name",
+    "The name now reads: Apaworld, APA – AI Personal Assistant",
+    "English is shown with the US flag",
     "Privacy: fonts and tools are now served from apaworld.org itself, nothing is loaded from Google or other outside servers",
     "Lighter pages: phones and computers use their own Chinese, Arabic and emoji fonts",
     "Privacy: no more location lookup by internet address; nothing about visitors is sent to outside services",

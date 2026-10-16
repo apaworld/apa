@@ -170,6 +170,9 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
 #betaDlg ul{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px}
 #betaDlg .bv{font-size:.82rem;color:var(--muted,#5d6472)}
 #betaDlg .bc{align-self:flex-end;border:0;border-radius:10px;background:var(--accent,#2a3fe0);color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
+
+.tagline{font-weight:500;font-size:.8rem;color:var(--muted);letter-spacing:0;white-space:nowrap}
+@media (max-width:640px){.tagline{display:none}}   /* phones: the header keeps only the name, to fit */
 </style>
 </head>
 <body>
@@ -177,7 +180,7 @@ footer{color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);paddi
 <div class="beta-bar" id="betaBar" role="status" hidden><span class="bt" id="betaText"></span><button type="button" class="bm" id="betaMore"></button><button type="button" class="bx" id="betaX" aria-label="Close">✕</button></div>
 <dialog id="betaDlg" aria-labelledby="betaT"><div class="bd"><h2 id="betaT"></h2><p class="bv" id="betaV"></p><p id="betaP1"></p><p id="betaP2"></p><p id="betaP3"></p><h2 id="betaNewT" style="font-size:1rem;margin-top:6px"></h2><ul id="betaNotes"></ul><button type="button" class="bc" id="betaClose"></button></div></dialog>
   <div class="top">
-    <a class="mark" href="./"><i></i>Apaworld</a><button type="button" class="beta" id="betaBadge"></button>
+    <a class="mark" href="./"><i></i>Apaworld <span class="tagline">APA – AI Personal Assistant</span></a><button type="button" class="beta" id="betaBadge"></button>
     <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="timeBtn" aria-haspopup="dialog">🕐 Time and place</button><button class="btn ghost" id="custBtn" aria-haspopup="dialog">⚙ Customize</button></span>
   </div>
   <h1>Live dashboard</h1>
