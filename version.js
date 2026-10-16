@@ -2,10 +2,11 @@
    Small updates: 1.0.1, 1.0.2…  Bigger ones: 1.1, 1.2…  */
 window.APA_VERSION = {
   stage: "BETA",
-  v: "1.0.6",
+  v: "1.0.7",
   date: "2026-10-16",
   // What's new in this version (shown in "More info"), newest first
   notes: [
+    "Phones: a more compact interface (header, beta notice, text sizes, small clock that never covers the footer)",
     "Country flags in Firefox on Windows",
     "A small Apaworld icon in the browser tab",
     "Country flags show on Windows computers too (small flags font hosted on apaworld.org)",
