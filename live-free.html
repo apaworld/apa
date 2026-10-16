@@ -922,7 +922,7 @@ const LOC = (() => {
   }
   // Visitors (not signed in): a simple clock from the device itself; no place lookup, no weather, no settings
   function paintSimple(w) {
-    w.hidden = !L.w.show;
+    w.hidden = false;   // visitors have no Settings to bring it back, so the simple clock is always shown (it can still be minimized)
     w.className = "wdg m simple" + (L.w.size === "min" ? " min" : "");
     const now = new Date(), zone = deviceTz;
     $("wTime").textContent = time(now, zone);   // the usual 12 h / 24 h of the country, and the chosen digits
