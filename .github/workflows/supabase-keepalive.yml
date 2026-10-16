@@ -11,5 +11,9 @@ jobs:
     steps:
       - name: Ping Supabase
         run: |
-          curl -sf "${{ secrets.SUPABASE_URL }}/rest/v1/keepalive?select=id&limit=1" \
-            -H "apikey: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}"
+          code=$(curl -s -o response.txt -w "%{http_code}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/keepalive?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}")
+          echo "HTTP status: $code"
+          cat response.txt
+          [ "$code" = "200" ]
