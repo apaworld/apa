@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Apacom — Personal Agent</title>
+<title>Apaworld — Personal Agent</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
@@ -307,7 +307,7 @@ body > .beta-bar{width:calc(100% - 32px);max-width:1040px}   /* same width as th
 </head>
 <body data-widget-place="bottom">
 <header class="top">
-  <div class="mark"><i aria-hidden="true"></i><span>Apacom</span><button type="button" class="beta" id="betaBadge"></button></div>
+  <div class="mark"><i aria-hidden="true"></i><span>Apaworld</span><button type="button" class="beta" id="betaBadge"></button></div>
   <div class="top-r">
   <div class="top-user" id="topUser" hidden>
     <button type="button" class="avatar-btn" id="topAvatarBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu"><span class="avatar sm" id="topAvatar"></span><span id="topName"></span><span class="um-chev" aria-hidden="true">▾</span></button>
@@ -715,7 +715,7 @@ skills:{en:["Course finder","Finds free and certified courses worldwide that emp
 
 /* ============ cabinet strings ============ */
 const CUI = {
-en:{signInTitle:"Sign in",signInBtn:"Sign in",noAccount:"New to Apacom?",createLink:"Create an account",haveAccount:"Already have an account?",signInLink:"Sign in",errLogin:"Email or password is incorrect.",logout:"Log out",cancel:"Cancel",save:"Save",saved:"Saved.",
+en:{signInTitle:"Sign in",signInBtn:"Sign in",noAccount:"New to Apaworld?",createLink:"Create an account",haveAccount:"Already have an account?",signInLink:"Sign in",errLogin:"Email or password is incorrect.",logout:"Log out",cancel:"Cancel",save:"Save",saved:"Saved.",
 tabAgent:"My agent",tabProfile:"Situation and goals",tabAccount:"Account",tabPrivacy:"Privacy and data",tabPlace:"Time and place",placeTitle:"Time and place",placeSub:"Your city, time zone and how dates, times and numbers are shown. Changes apply everywhere in APA.",placeOpen:"Open time and place settings",placeDash:"Open the live dashboard",hello:"Hello, {name}",memberSince:"Member since {date}",
 d_social:"Social life",d_economic:"Money and work",d_health:"Health",d_learning:"Education",soon:"Coming soon",soonText:"APA will cover this area in a future version. Your profile is already ready for it.",
 domainAgents:"Helper agents on this",noGoalsDomain:"You haven't picked any goals in this area yet.",addGoals:"Add goals",answersTitle:"Answers from APA",askLabel:"Ask APA",askPh:"Ask a question about this area, or leave it empty for a general update.",askBtn:"Ask APA",asking:"APA is thinking…",noAnswers:"No answers yet. Ask APA to get your first one.",askUnavailable:"Answers will appear here once APA's server is connected.",askErr:"APA couldn't answer right now. Try again in a minute.",youAsked:"You asked: {q}",whatToDo:"What to do",removeAnswer:"Remove",
@@ -725,7 +725,7 @@ nameTitle:"Name",emailTitle:"Email",currentEmail:"Current email: {email}",newEma
 pwTitle:"Password",newPw:"New password",pwChanged:"Password changed.",checkinTitle:"Check-ins",checkinSub:"How often APA reports back to you.",ci_daily:"Every day",ci_weekly:"Every week",ci_news:"Only when there's news",
 consentTitle:"Your consent",consentText:"You accepted the Terms and Conditions (version {v}) on {date}.",exportTitle:"Download my data",exportSub:"Get a copy of everything APA stores about you, as a JSON file.",exportBtn:"Download my data",exportErr:"The download didn't start. Try again.",
 deleteTitle:"Delete account",deleteSub:"This permanently deletes your profile, answers and photo. Your email becomes free to register again.",deleteBtn:"Delete my account",deleteConfirm:"Enter your password to confirm",deleteFinal:"Delete permanently",deleted:"Your account was deleted."},
-fr:{signInTitle:"Se connecter",signInBtn:"Se connecter",noAccount:"Nouveau sur Apacom ?",createLink:"Créer un compte",haveAccount:"Vous avez déjà un compte ?",signInLink:"Se connecter",errLogin:"E-mail ou mot de passe incorrect.",logout:"Se déconnecter",cancel:"Annuler",save:"Enregistrer",saved:"Enregistré.",
+fr:{signInTitle:"Se connecter",signInBtn:"Se connecter",noAccount:"Nouveau sur Apaworld ?",createLink:"Créer un compte",haveAccount:"Vous avez déjà un compte ?",signInLink:"Se connecter",errLogin:"E-mail ou mot de passe incorrect.",logout:"Se déconnecter",cancel:"Annuler",save:"Enregistrer",saved:"Enregistré.",
 tabAgent:"Mon agent",tabProfile:"Situation et objectifs",tabAccount:"Compte",tabPrivacy:"Confidentialité et données",tabPlace:"Heure et lieu",placeTitle:"Heure et lieu",placeSub:"Votre ville, votre fuseau horaire et l’affichage des dates, heures et nombres. Les changements s’appliquent partout dans APA.",placeOpen:"Ouvrir les réglages heure et lieu",placeDash:"Ouvrir le tableau de bord en direct",hello:"Bonjour, {name}",memberSince:"Membre depuis le {date}",
 d_social:"Vie sociale",d_economic:"Argent et travail",d_health:"Santé",d_learning:"Éducation",soon:"Bientôt",soonText:"APA couvrira ce domaine dans une prochaine version. Votre profil est déjà prêt.",
 domainAgents:"Agents à l’œuvre",noGoalsDomain:"Vous n’avez encore choisi aucun objectif dans ce domaine.",addGoals:"Ajouter des objectifs",answersTitle:"Réponses d’APA",askLabel:"Demander à APA",askPh:"Posez une question sur ce domaine, ou laissez vide pour un point général.",askBtn:"Demander à APA",asking:"APA réfléchit…",noAnswers:"Aucune réponse pour l’instant. Demandez à APA pour obtenir la première.",askUnavailable:"Les réponses apparaîtront ici dès que le serveur d’APA sera connecté.",askErr:"APA n’a pas pu répondre. Réessayez dans une minute.",youAsked:"Votre question : {q}",whatToDo:"À faire",removeAnswer:"Supprimer",
@@ -735,7 +735,7 @@ nameTitle:"Nom",emailTitle:"E-mail",currentEmail:"E-mail actuel : {email}",newEm
 pwTitle:"Mot de passe",newPw:"Nouveau mot de passe",pwChanged:"Mot de passe modifié.",checkinTitle:"Points de suivi",checkinSub:"À quelle fréquence APA vous fait un retour.",ci_daily:"Chaque jour",ci_weekly:"Chaque semaine",ci_news:"Seulement s’il y a du nouveau",
 consentTitle:"Votre consentement",consentText:"Vous avez accepté les conditions (version {v}) le {date}.",exportTitle:"Télécharger mes données",exportSub:"Obtenez une copie de tout ce qu’APA conserve sur vous, au format JSON.",exportBtn:"Télécharger mes données",exportErr:"Le téléchargement n’a pas démarré. Réessayez.",
 deleteTitle:"Supprimer le compte",deleteSub:"Cette action supprime définitivement votre profil, vos réponses et votre photo. Votre e-mail pourra de nouveau être utilisé.",deleteBtn:"Supprimer mon compte",deleteConfirm:"Saisissez votre mot de passe pour confirmer",deleteFinal:"Supprimer définitivement",deleted:"Votre compte a été supprimé."},
-zh:{signInTitle:"登录",signInBtn:"登录",noAccount:"第一次使用 Apacom？",createLink:"创建账户",haveAccount:"已有账户？",signInLink:"登录",errLogin:"邮箱或密码不正确。",logout:"退出登录",cancel:"取消",save:"保存",saved:"已保存。",
+zh:{signInTitle:"登录",signInBtn:"登录",noAccount:"第一次使用 Apaworld？",createLink:"创建账户",haveAccount:"已有账户？",signInLink:"登录",errLogin:"邮箱或密码不正确。",logout:"退出登录",cancel:"取消",save:"保存",saved:"已保存。",
 tabAgent:"我的智能体",tabProfile:"现状与目标",tabAccount:"账户",tabPrivacy:"隐私与数据",tabPlace:"时间与地点",placeTitle:"时间与地点",placeSub:"您的城市、时区，以及日期、时间和数字的显示方式。更改将应用于 APA 的所有页面。",placeOpen:"打开时间与地点设置",placeDash:"打开实时面板",hello:"您好，{name}",memberSince:"注册于 {date}",
 d_social:"社交生活",d_economic:"财务与工作",d_health:"健康",d_learning:"教育",soon:"即将推出",soonText:"APA 将在后续版本中覆盖这一领域，您的资料已为此做好准备。",
 domainAgents:"负责此领域的助手智能体",noGoalsDomain:"您还没有在此领域选择目标。",addGoals:"添加目标",answersTitle:"APA 的回答",askLabel:"问 APA",askPh:"就此领域提问，或留空以获取总体建议。",askBtn:"问 APA",asking:"APA 正在思考…",noAnswers:"还没有回答。向 APA 提问，获取第一条建议。",askUnavailable:"连接 APA 服务器后，回答会显示在这里。",askErr:"APA 暂时无法回答，请稍后再试。",youAsked:"您的问题：{q}",whatToDo:"行动步骤",removeAnswer:"删除",
@@ -745,7 +745,7 @@ nameTitle:"姓名",emailTitle:"电子邮箱",currentEmail:"当前邮箱：{email
 pwTitle:"密码",newPw:"新密码",pwChanged:"密码已更改。",checkinTitle:"定期反馈",checkinSub:"APA 向您汇报的频率。",ci_daily:"每天",ci_weekly:"每周",ci_news:"仅在有新消息时",
 consentTitle:"您的同意记录",consentText:"您已于 {date} 同意条款和条件（版本 {v}）。",exportTitle:"下载我的数据",exportSub:"以 JSON 文件形式获取 APA 保存的关于您的全部数据。",exportBtn:"下载我的数据",exportErr:"下载未开始，请重试。",
 deleteTitle:"删除账户",deleteSub:"这将永久删除您的资料、回答和照片，您的邮箱可以重新注册。",deleteBtn:"删除我的账户",deleteConfirm:"请输入密码以确认",deleteFinal:"永久删除",deleted:"您的账户已删除。"},
-ar:{signInTitle:"تسجيل الدخول",signInBtn:"تسجيل الدخول",noAccount:"جديد على Apacom؟",createLink:"إنشاء حساب",haveAccount:"لديك حساب بالفعل؟",signInLink:"تسجيل الدخول",errLogin:"البريد الإلكتروني أو كلمة المرور غير صحيحة.",logout:"تسجيل الخروج",cancel:"إلغاء",save:"حفظ",saved:"تم الحفظ.",
+ar:{signInTitle:"تسجيل الدخول",signInBtn:"تسجيل الدخول",noAccount:"جديد على Apaworld؟",createLink:"إنشاء حساب",haveAccount:"لديك حساب بالفعل؟",signInLink:"تسجيل الدخول",errLogin:"البريد الإلكتروني أو كلمة المرور غير صحيحة.",logout:"تسجيل الخروج",cancel:"إلغاء",save:"حفظ",saved:"تم الحفظ.",
 tabAgent:"وكيلي",tabProfile:"الوضع والأهداف",tabAccount:"الحساب",tabPrivacy:"الخصوصية والبيانات",tabPlace:"الوقت والمكان",placeTitle:"الوقت والمكان",placeSub:"مدينتك ومنطقتك الزمنية وطريقة عرض التواريخ والأوقات والأرقام. تُطبَّق التغييرات في كل أنحاء APA.",placeOpen:"فتح إعدادات الوقت والمكان",placeDash:"فتح لوحة المعلومات المباشرة",hello:"مرحبًا، {name}",memberSince:"عضو منذ {date}",
 d_social:"الحياة الاجتماعية",d_economic:"المال والعمل",d_health:"الصحة",d_learning:"التعليم",soon:"قريبًا",soonText:"سيغطي APA هذا المجال في إصدار قادم، وملفك جاهز له بالفعل.",
 domainAgents:"الوكلاء المساعدون في هذا المجال",noGoalsDomain:"لم تختر أي هدف في هذا المجال بعد.",addGoals:"إضافة أهداف",answersTitle:"إجابات APA",askLabel:"اسأل APA",askPh:"اطرح سؤالًا عن هذا المجال، أو اتركه فارغًا للحصول على تحديث عام.",askBtn:"اسأل APA",asking:"APA يفكّر…",noAnswers:"لا توجد إجابات بعد. اسأل APA لتحصل على أول إجابة.",askUnavailable:"ستظهر الإجابات هنا بعد ربط خادم APA.",askErr:"تعذّر على APA الإجابة الآن. حاول مجددًا بعد دقيقة.",youAsked:"سؤالك: {q}",whatToDo:"ما يجب فعله",removeAnswer:"حذف",
@@ -1465,8 +1465,8 @@ function renderPrivacyTab(){
 $("exportBtn").onclick = async ()=>{
   setErr("exportErr");
   const p=Object.assign({}, st.profile); delete p.pw;
-  const json = JSON.stringify({exportedAt:new Date().toISOString(), service:"Apacom", profile:p}, null, 2);
-  const filename = "apacom-my-data.json";
+  const json = JSON.stringify({exportedAt:new Date().toISOString(), service:"Apaworld", profile:p}, null, 2);
+  const filename = "apaworld-my-data.json";
   try{
     if(downloadsNs){ await downloadsNs.save({filename, data:json}); return; }
     const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([json],{type:"application/json"})); a.download=filename;
@@ -1634,44 +1634,44 @@ for(const l in LUI) Object.assign(T[l], LUI[l]);
 
 const LEGAL = {
 terms:{
- en:{title:"Terms of Use",intro:"These terms explain how you may use Apacom, a personal AI agent that learns about your social and economic situation and looks for ways to help you. By creating an account, you accept them.",s:[
-  ["The service","Apacom builds a profile from what you tell it, searches for resources around the world and starts small helper agents for specific tasks. It is a demonstration prototype, and some features are simulated."],
+ en:{title:"Terms of Use",intro:"These terms explain how you may use Apaworld, a personal AI agent that learns about your social and economic situation and looks for ways to help you. By creating an account, you accept them.",s:[
+  ["The service","Apaworld builds a profile from what you tell it, searches for resources around the world and starts small helper agents for specific tasks. It is a demonstration prototype, and some features are simulated."],
   ["Your account","You must give accurate information and keep your password secret. One email address can hold only one account. You are responsible for activity on your account."],
   ["Acceptable use","Do not use the service to break the law, harm others, send spam, or try to access other people's data or the system's code."],
   ["AI suggestions are not professional advice","Suggestions are generated automatically and can be wrong or out of date. They are not financial, legal, medical or immigration advice. Check important decisions with a qualified professional."],
   ["Helper agents act only with your approval","Helper agents can search and prepare actions, but they never apply, pay, sign or contact anyone on your behalf without your explicit confirmation."],
-  ["Intellectual property","The software and the brand belong to Apacom. What you write stays yours; you allow us to use it only to provide the service to you."],
-  ["Liability","The service is provided as is. To the extent the law allows, Apacom is not liable for indirect losses resulting from decisions you make based on suggestions."],
+  ["Intellectual property","The software and the brand belong to Apaworld. What you write stays yours; you allow us to use it only to provide the service to you."],
+  ["Liability","The service is provided as is. To the extent the law allows, Apaworld is not liable for indirect losses resulting from decisions you make based on suggestions."],
   ["Changes and termination","We may update these terms and will tell you about significant changes by email. You can close your account at any time. We may suspend accounts that break these terms."],
   ["Governing law","These terms are governed by the law of [country to be completed]. Mandatory consumer protections of your country of residence still apply."]]},
- fr:{title:"Conditions générales d’utilisation",intro:"Ces conditions expliquent comment utiliser Apacom, un agent IA personnel qui apprend votre situation sociale et économique et cherche des moyens de vous aider. En créant un compte, vous les acceptez.",s:[
-  ["Le service","Apacom construit un profil à partir de ce que vous lui dites, recherche des ressources dans le monde entier et lance de petits agents pour des tâches précises. C’est un prototype de démonstration ; certaines fonctions sont simulées."],
+ fr:{title:"Conditions générales d’utilisation",intro:"Ces conditions expliquent comment utiliser Apaworld, un agent IA personnel qui apprend votre situation sociale et économique et cherche des moyens de vous aider. En créant un compte, vous les acceptez.",s:[
+  ["Le service","Apaworld construit un profil à partir de ce que vous lui dites, recherche des ressources dans le monde entier et lance de petits agents pour des tâches précises. C’est un prototype de démonstration ; certaines fonctions sont simulées."],
   ["Votre compte","Vous devez fournir des informations exactes et garder votre mot de passe secret. Une adresse e-mail correspond à un seul compte. Vous êtes responsable de l’activité de votre compte."],
   ["Usage acceptable","N’utilisez pas le service pour enfreindre la loi, nuire à autrui, envoyer du spam ou tenter d’accéder aux données d’autres personnes ou au code du système."],
   ["Les suggestions de l’IA ne sont pas des conseils professionnels","Les suggestions sont générées automatiquement et peuvent être erronées ou dépassées. Elles ne constituent pas un conseil financier, juridique, médical ou en immigration. Vérifiez les décisions importantes auprès d’un professionnel qualifié."],
   ["Les agents n’agissent qu’avec votre accord","Les agents peuvent rechercher et préparer des actions, mais ils ne postulent, ne paient, ne signent et ne contactent jamais personne en votre nom sans votre confirmation explicite."],
-  ["Propriété intellectuelle","Le logiciel et la marque appartiennent à Apacom. Ce que vous écrivez reste à vous ; vous nous autorisez à l’utiliser uniquement pour vous fournir le service."],
-  ["Responsabilité","Le service est fourni en l’état. Dans les limites permises par la loi, Apacom n’est pas responsable des pertes indirectes liées aux décisions que vous prenez sur la base des suggestions."],
+  ["Propriété intellectuelle","Le logiciel et la marque appartiennent à Apaworld. Ce que vous écrivez reste à vous ; vous nous autorisez à l’utiliser uniquement pour vous fournir le service."],
+  ["Responsabilité","Le service est fourni en l’état. Dans les limites permises par la loi, Apaworld n’est pas responsable des pertes indirectes liées aux décisions que vous prenez sur la base des suggestions."],
   ["Modifications et résiliation","Nous pouvons mettre à jour ces conditions et vous informerons par e-mail des changements importants. Vous pouvez fermer votre compte à tout moment. Nous pouvons suspendre les comptes qui ne respectent pas ces conditions."],
   ["Droit applicable","Ces conditions sont régies par le droit de [pays à compléter]. Les protections impératives des consommateurs de votre pays de résidence continuent de s’appliquer."]]},
- zh:{title:"使用条款",intro:"本条款说明您如何使用 Apacom。Apacom 是一款个人 AI 智能体，会了解您的社会和经济状况，并寻找帮助您的方法。创建账户即表示您接受本条款。",s:[
-  ["服务内容","Apacom 根据您提供的信息建立个人资料，在全球范围内搜索资源，并为具体任务启动小型助手智能体。本服务为演示原型，部分功能为模拟。"],
+ zh:{title:"使用条款",intro:"本条款说明您如何使用 Apaworld。Apaworld 是一款个人 AI 智能体，会了解您的社会和经济状况，并寻找帮助您的方法。创建账户即表示您接受本条款。",s:[
+  ["服务内容","Apaworld 根据您提供的信息建立个人资料，在全球范围内搜索资源，并为具体任务启动小型助手智能体。本服务为演示原型，部分功能为模拟。"],
   ["您的账户","您必须提供真实信息并妥善保管密码。每个电子邮箱只能对应一个账户。您需对账户中的活动负责。"],
   ["合理使用","不得利用本服务违反法律、伤害他人、发送垃圾信息，或试图获取他人数据或系统代码。"],
   ["AI 建议不构成专业意见","建议由系统自动生成，可能有误或已过时，不构成财务、法律、医疗或移民方面的专业意见。重要决定请咨询合格的专业人士。"],
   ["助手智能体仅在您同意后行动","助手智能体可以搜索并准备操作，但未经您明确确认，绝不会代表您提交申请、付款、签署或联系任何人。"],
-  ["知识产权","软件和品牌归 Apacom 所有。您撰写的内容仍归您所有，您仅授权我们为向您提供服务而使用。"],
-  ["责任","本服务按“现状”提供。在法律允许的范围内，对于您依据建议作出决定所导致的间接损失，Apacom 不承担责任。"],
+  ["知识产权","软件和品牌归 Apaworld 所有。您撰写的内容仍归您所有，您仅授权我们为向您提供服务而使用。"],
+  ["责任","本服务按“现状”提供。在法律允许的范围内，对于您依据建议作出决定所导致的间接损失，Apaworld 不承担责任。"],
   ["变更与终止","我们可能更新本条款，重大变更将通过电子邮件通知您。您可随时注销账户；对违反本条款的账户，我们可暂停其使用。"],
   ["适用法律","本条款受[待填写国家]法律管辖。您居住国的强制性消费者保护规定仍然适用。"]]},
- ar:{title:"شروط الاستخدام",intro:"توضّح هذه الشروط كيفية استخدامك لـ Apacom، وهو وكيل ذكاء اصطناعي شخصي يتعرّف على وضعك الاجتماعي والاقتصادي ويبحث عن سبل لمساعدتك. بإنشائك حسابًا فإنك توافق عليها.",s:[
-  ["الخدمة","يبني Apacom ملفًا شخصيًا مما تخبره به، ويبحث عن موارد حول العالم، ويُطلق وكلاء مساعدين صغارًا لمهام محددة. إنه نموذج تجريبي، وبعض ميزاته محاكاة."],
+ ar:{title:"شروط الاستخدام",intro:"توضّح هذه الشروط كيفية استخدامك لـ Apaworld، وهو وكيل ذكاء اصطناعي شخصي يتعرّف على وضعك الاجتماعي والاقتصادي ويبحث عن سبل لمساعدتك. بإنشائك حسابًا فإنك توافق عليها.",s:[
+  ["الخدمة","يبني Apaworld ملفًا شخصيًا مما تخبره به، ويبحث عن موارد حول العالم، ويُطلق وكلاء مساعدين صغارًا لمهام محددة. إنه نموذج تجريبي، وبعض ميزاته محاكاة."],
   ["حسابك","يجب أن تقدّم معلومات صحيحة وأن تحافظ على سرية كلمة مرورك. لكل بريد إلكتروني حساب واحد فقط. وأنت مسؤول عن النشاط الذي يجري في حسابك."],
   ["الاستخدام المقبول","لا تستخدم الخدمة لمخالفة القانون أو إيذاء الآخرين أو إرسال رسائل مزعجة أو محاولة الوصول إلى بيانات الآخرين أو إلى شيفرة النظام."],
   ["اقتراحات الذكاء الاصطناعي ليست استشارة مهنية","تُنشأ الاقتراحات آليًا وقد تكون خاطئة أو قديمة، وهي ليست استشارة مالية أو قانونية أو طبية أو استشارة في الهجرة. راجع القرارات المهمة مع مختص مؤهَّل."],
   ["الوكلاء المساعدون لا يتصرفون إلا بموافقتك","يمكن للوكلاء البحث وتحضير الإجراءات، لكنهم لا يقدّمون طلبات ولا يدفعون ولا يوقّعون ولا يتواصلون مع أي جهة نيابةً عنك دون تأكيد صريح منك."],
-  ["الملكية الفكرية","البرنامج والعلامة التجارية ملك لـ Apacom. وما تكتبه يبقى ملكًا لك، وتسمح لنا باستخدامه فقط لتقديم الخدمة لك."],
-  ["المسؤولية","تُقدَّم الخدمة كما هي. وفي الحدود التي يسمح بها القانون، لا يتحمّل Apacom مسؤولية الخسائر غير المباشرة الناتجة عن قرارات تتخذها بناءً على الاقتراحات."],
+  ["الملكية الفكرية","البرنامج والعلامة التجارية ملك لـ Apaworld. وما تكتبه يبقى ملكًا لك، وتسمح لنا باستخدامه فقط لتقديم الخدمة لك."],
+  ["المسؤولية","تُقدَّم الخدمة كما هي. وفي الحدود التي يسمح بها القانون، لا يتحمّل Apaworld مسؤولية الخسائر غير المباشرة الناتجة عن قرارات تتخذها بناءً على الاقتراحات."],
   ["التعديلات وإنهاء الحساب","قد نحدّث هذه الشروط، وسنُعلمك بالتغييرات الجوهرية عبر البريد الإلكتروني. يمكنك إغلاق حسابك في أي وقت، وقد نعلّق الحسابات التي تخالف هذه الشروط."],
   ["القانون الواجب التطبيق","تخضع هذه الشروط لقانون [يُستكمل اسم البلد]. وتظل الحمايات الإلزامية للمستهلك في بلد إقامتك سارية."]]}
 },
@@ -1790,7 +1790,7 @@ function renderDoc(){
   const intro=document.createElement("p"); intro.className="doc-intro"; intro.textContent=d.intro;
   art.append(h,up,dr,intro);
   d.s.forEach(([title,body],i)=>{ const h2=document.createElement("h2"); h2.textContent=(i+1)+". "+title; const p=document.createElement("p"); p.textContent=body; art.append(h2,p); });
-  document.title = d.title + " | Apacom";
+  document.title = d.title + " | Apaworld";
   $("docBack").textContent = t("backReg");
   try{ const want="#"+currentDoc+"-"+lang; if(location.hash!==want) history.replaceState(null,"",want); }catch(e){}
 }
@@ -1801,7 +1801,7 @@ function route(){
     if(r.lang && r.lang!==lang){ setLang(r.lang); }
     $("app").hidden=true; $("cab").hidden=true; $("topUser").hidden=true; $("docView").hidden=false; renderDoc(); window.scrollTo(0,0);
   } else if(currentDoc){
-    currentDoc=null; $("docView").hidden=true; document.title="Apacom | Personal Agent"; showView(st.view);
+    currentDoc=null; $("docView").hidden=true; document.title="Apaworld | Personal Agent"; showView(st.view);
   }
 }
 window.addEventListener("hashchange", route);
