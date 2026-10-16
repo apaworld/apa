@@ -1,4 +1,4 @@
-// Run the Apacom app, the test page and the six live sources on your own machine
+// Run the Apaworld app, the test page and the six live sources on your own machine
 // or in a GitHub Codespace, without Netlify:   node dev-server.js
 // Needs Node 18 or newer. API keys come from environment variables (Codespaces secrets)
 // or from a .env file next to this one (never commit that file).
@@ -38,11 +38,11 @@ http.createServer(async (req, res) => {
       res.writeHead(response.status, Object.fromEntries(response.headers));
       return res.end(Buffer.from(await response.arrayBuffer()));
     }
-    // pages from public/
+    // pages from the repository root (index.html, live-free.html, version.js)
     let p = decodeURIComponent(url.pathname);
     if (p.endsWith("/")) p += "index.html";
-    const file = path.join(root, "public", path.normalize(p).replace(/^(\.\.[/\\])+/, ""));
-    if (!file.startsWith(path.join(root, "public")) || !fs.existsSync(file)) { res.writeHead(404); return res.end("Not found"); }
+    const file = path.join(root, path.normalize(p).replace(/^(\.\.[/\\])+/, ""));
+    if (!file.startsWith(root) || !fs.existsSync(file) || file.includes(path.sep + ".")) { res.writeHead(404); return res.end("Not found"); }
     res.writeHead(200, { "content-type": TYPES[path.extname(file)] || "application/octet-stream" });
     fs.createReadStream(file).pipe(res);
   } catch (e) {
@@ -52,7 +52,7 @@ http.createServer(async (req, res) => {
   }
 }).listen(PORT, () => {
   const keys = ["ADZUNA_APP_ID", "ADZUNA_APP_KEY", "FT_CLIENT_ID", "FT_CLIENT_SECRET", "ANTHROPIC_API_KEY"];
-  console.log(`\nApacom is running on port ${PORT}`);
+  console.log(`\nApaworld is running on port ${PORT}`);
   console.log(`  App:        http://localhost:${PORT}/`);
   console.log(`  Test page:  http://localhost:${PORT}/live.html`);
   console.log(`  Keys found: ${keys.filter(k => process.env[k]).join(", ") || "none yet"}\n`);

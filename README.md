@@ -1,10 +1,13 @@
-# Apacom: live data sources, Lyon first
+# Apaworld: live data sources, Lyon first
 
-This package adds real data sources to the Apacom demo. Each source runs as a small
+This package adds real data sources to the Apaworld demo. Each source runs as a small
 Netlify Function, so API keys stay on the server and never reach the browser.
 
-- `public/index.html`: the Apacom app (registration, cabinet, legal pages)
-- `public/live.html`: the **Live sources test** page
+The live website https://apaworld.org is published by GitHub Pages from the repository root:
+`index.html` (the Apaworld app: registration, cabinet, legal pages), `live-free.html` (the live
+dashboard) and `version.js` (the version number shown on every page). The functions below are
+kept for the future backend.
+
 - `netlify/functions/`: one function per source
 - `netlify/lib/common.mjs`: shared code, including the Lyon and France areas
 
