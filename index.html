@@ -4,15 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Apaworld — Personal Agent</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+<style>
+/* Figtree font, hosted on apaworld.org itself (no request to Google). Open Font License, see fonts/OFL-figtree.txt */
+@font-face{font-family:"Figtree";font-style:normal;font-weight:300 900;font-display:swap;src:url("fonts/figtree-latin.woff2") format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Figtree";font-style:normal;font-weight:300 900;font-display:swap;src:url("fonts/figtree-latin-ext.woff2") format("woff2");
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+</style>
 <style>
 :root{
   --paper:#ffffff; --ink:#15171c; --muted:#5d6472; --line:#e3e5ea; --soft:#f5f6f8;
   --accent:#2a3fe0; --accent-ink:#ffffff; --accent-soft:#eef0fd;
   --ok:#0f7d55; --err:#c0322b; --note:#fff8e1; --note-line:#f0d98a;
-  --font:'Figtree','IBM Plex Sans Arabic','Noto Sans SC',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font:'Figtree','Segoe UI','Geeza Pro','Noto Sans Arabic','Noto Naskh Arabic',Tahoma,'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Noto Sans SC',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --emoji:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
@@ -32,8 +36,8 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
-html[lang="zh"] body{font-family:'Noto Sans SC','Figtree',system-ui,sans-serif}
-html[lang="ar"] body{font-family:'IBM Plex Sans Arabic','Figtree',system-ui,sans-serif;line-height:1.65}
+html[lang="zh"] body{font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Noto Sans SC','Figtree',system-ui,sans-serif}
+html[lang="ar"] body{font-family:'Segoe UI','Geeza Pro','Noto Sans Arabic','Noto Naskh Arabic',Tahoma,'Figtree',system-ui,sans-serif;line-height:1.65}
 .flag{font-family:var(--emoji);font-size:1.15em;line-height:1;font-style:normal}
 button,input,textarea,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
@@ -305,7 +309,7 @@ body > .beta-bar{width:calc(100% - 32px);max-width:1040px}   /* same width as th
 #betaDlg .bc{align-self:flex-end;border:0;border-radius:10px;background:var(--accent,#2a3fe0);color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
 </style>
 </head>
-<body data-widget-place="bottom">
+<body data-widget-place="bottom" data-widget-mode="simple">
 <header class="top">
   <div class="mark"><i aria-hidden="true"></i><span>Apaworld</span><button type="button" class="beta" id="betaBadge"></button></div>
   <div class="top-r">
@@ -625,7 +629,7 @@ back:"Back",next:"Continue",finish:"Save my profile",errGoal:"Choose at least on
 doneTitle:"Your agent is ready, {name}.",doneSub:"These are the helper agents it would start for you.",planBtn:"Build my first plan with Claude",planning:"Building your plan…",planErr:"The plan couldn't be built right now. Try again in a minute.",startOver:"Register another person",
 savedDb:"Your profile is saved privately to your account.",savedLocal:"Your profile is saved in this browser only.",savedMemory:"Demo mode: your profile is kept until you close this page.",
 sumName:"Name",sumEmail:"Email",sumCountry:"Country",sumSituation:"Situation",sumGoals:"Goals",firstSteps:"First steps",resources:"Where to look",
-footer:"Demo prototype. Real email delivery, IP lookup and 24/7 follow-up need a server."},
+footer:"Beta version. Real email delivery and 24/7 follow-up will come with our server."},
 
 fr:{heroHours:"8 760 heures par an.",heroTitle:"Votre agent travaille chacune d’entre elles.",heroSub:"Dites-lui qui vous êtes et où vous voulez aller. Il cherche des solutions dans le monde entier et lance de petits agents pour chaque tâche.",steps:["Compte","Vérification","Situation","Objectifs"],
 firstName:"Prénom",lastName:"Nom",email:"E-mail",password:"Mot de passe",show:"Afficher",hide:"Masquer",pwHint:"Au moins 8 caractères, dont une lettre et un chiffre.",pw1:"Faible",pw2:"Moyen",pw3:"Fort",
@@ -647,7 +651,7 @@ back:"Retour",next:"Continuer",finish:"Enregistrer mon profil",errGoal:"Choisiss
 doneTitle:"Votre agent est prêt, {name}.",doneSub:"Voici les agents qu’il lancerait pour vous.",planBtn:"Créer mon premier plan avec Claude",planning:"Création de votre plan…",planErr:"Impossible de créer le plan pour le moment. Réessayez dans une minute.",startOver:"Inscrire une autre personne",
 savedDb:"Votre profil est enregistré de façon privée sur votre compte.",savedLocal:"Votre profil est enregistré dans ce navigateur uniquement.",savedMemory:"Mode démo : votre profil est conservé jusqu’à la fermeture de la page.",
 sumName:"Nom",sumEmail:"E-mail",sumCountry:"Pays",sumSituation:"Situation",sumGoals:"Objectifs",firstSteps:"Premières étapes",resources:"Où chercher",
-footer:"Prototype de démonstration. L’envoi réel d’e-mails, la localisation par IP et le suivi 24 h/24 nécessitent un serveur."},
+footer:"Version bêta. L’envoi réel d’e-mails et le suivi 24 h/24 arriveront avec notre serveur."},
 
 zh:{heroHours:"一年 8760 小时。",heroTitle:"您的智能体每一小时都在为您工作。",heroSub:"告诉它您是谁、想去哪里。它会在全球范围内寻找解决方案，并为每项任务启动小型助手智能体。",steps:["账户","验证","现状","目标"],
 firstName:"名",lastName:"姓",email:"电子邮箱",password:"密码",show:"显示",hide:"隐藏",pwHint:"至少 8 个字符，需包含字母和数字。",pw1:"弱",pw2:"中",pw3:"强",
@@ -669,7 +673,7 @@ back:"返回",next:"继续",finish:"保存我的资料",errGoal:"请至少选择
 doneTitle:"{name}，您的智能体已准备就绪。",doneSub:"以下是它将为您启动的助手智能体。",planBtn:"用 Claude 制定我的第一份计划",planning:"正在制定计划…",planErr:"暂时无法生成计划，请稍后再试。",startOver:"为另一个人注册",
 savedDb:"您的资料已私密保存到您的账户。",savedLocal:"您的资料仅保存在此浏览器中。",savedMemory:"演示模式：关闭页面前会保留您的资料。",
 sumName:"姓名",sumEmail:"邮箱",sumCountry:"国家/地区",sumSituation:"现状",sumGoals:"目标",firstSteps:"第一步",resources:"去哪里找",
-footer:"演示原型。真实邮件发送、IP 定位和全天候跟进需要服务器支持。"},
+footer:"测试版。真实邮件发送和全天候跟进将随我们的服务器上线。"},
 
 ar:{heroHours:"٨٧٦٠ ساعة في السنة.",heroTitle:"ووكيلك يعمل من أجلك في كل ساعة منها.",heroSub:"أخبره مَن أنت وإلى أين تريد أن تصل. يبحث عن حلول حول العالم ويُطلق وكلاء مساعدين صغارًا لكل مهمة.",steps:["الحساب","التحقق","الوضع الحالي","الأهداف"],
 firstName:"الاسم",lastName:"اسم العائلة",email:"البريد الإلكتروني",password:"كلمة المرور",show:"إظهار",hide:"إخفاء",pwHint:"٨ أحرف على الأقل، تتضمن حرفًا ورقمًا.",pw1:"ضعيفة",pw2:"متوسطة",pw3:"قوية",
@@ -691,7 +695,7 @@ back:"رجوع",next:"متابعة",finish:"حفظ ملفي",errGoal:"اختر �
 doneTitle:"وكيلك جاهز يا {name}.",doneSub:"هؤلاء هم الوكلاء المساعدون الذين سيبدأ بهم من أجلك.",planBtn:"أنشئ خطتي الأولى مع Claude",planning:"جارٍ إنشاء خطتك…",planErr:"تعذّر إنشاء الخطة الآن. حاول مجددًا بعد دقيقة.",startOver:"تسجيل شخص آخر",
 savedDb:"حُفظ ملفك بشكل خاص في حسابك.",savedLocal:"حُفظ ملفك في هذا المتصفح فقط.",savedMemory:"وضع تجريبي: يُحتفظ بملفك حتى تغلق الصفحة.",
 sumName:"الاسم",sumEmail:"البريد",sumCountry:"البلد",sumSituation:"الوضع",sumGoals:"الأهداف",firstSteps:"الخطوات الأولى",resources:"أين تبحث",
-footer:"نموذج تجريبي. يتطلب الإرسال الفعلي للبريد وتحديد الموقع عبر IP والمتابعة على مدار الساعة خادمًا."}
+footer:"نسخة تجريبية. سيتوفر الإرسال الفعلي للبريد والمتابعة على مدار الساعة مع خادمنا."}
 };
 
 /* helper agents spawned per goal: [name, mission] */
@@ -814,14 +818,8 @@ function buildIndex(){
 const TZ = "Europe/London:GB,Europe/Paris:FR,Europe/Berlin:DE,Europe/Madrid:ES,Europe/Rome:IT,Europe/Lisbon:PT,Europe/Amsterdam:NL,Europe/Brussels:BE,Europe/Zurich:CH,Europe/Vienna:AT,Europe/Dublin:IE,Europe/Stockholm:SE,Europe/Oslo:NO,Europe/Copenhagen:DK,Europe/Helsinki:FI,Europe/Warsaw:PL,Europe/Prague:CZ,Europe/Budapest:HU,Europe/Bucharest:RO,Europe/Sofia:BG,Europe/Athens:GR,Europe/Istanbul:TR,Europe/Kiev:UA,Europe/Kyiv:UA,Europe/Moscow:RU,Europe/Minsk:BY,Europe/Belgrade:RS,Europe/Zagreb:HR,Europe/Luxembourg:LU,Europe/Monaco:MC,Africa/Cairo:EG,Africa/Casablanca:MA,Africa/Algiers:DZ,Africa/Tunis:TN,Africa/Tripoli:LY,Africa/Lagos:NG,Africa/Accra:GH,Africa/Abidjan:CI,Africa/Dakar:SN,Africa/Nairobi:KE,Africa/Addis_Ababa:ET,Africa/Johannesburg:ZA,Africa/Kinshasa:CD,Africa/Douala:CM,Africa/Khartoum:SD,Africa/Dar_es_Salaam:TZ,Africa/Kampala:UG,Africa/Luanda:AO,Africa/Maputo:MZ,Africa/Bamako:ML,Asia/Dubai:AE,Asia/Riyadh:SA,Asia/Qatar:QA,Asia/Kuwait:KW,Asia/Bahrain:BH,Asia/Muscat:OM,Asia/Baghdad:IQ,Asia/Amman:JO,Asia/Beirut:LB,Asia/Damascus:SY,Asia/Jerusalem:IL,Asia/Gaza:PS,Asia/Hebron:PS,Asia/Tehran:IR,Asia/Aden:YE,Asia/Karachi:PK,Asia/Kolkata:IN,Asia/Calcutta:IN,Asia/Dhaka:BD,Asia/Kathmandu:NP,Asia/Colombo:LK,Asia/Shanghai:CN,Asia/Urumqi:CN,Asia/Hong_Kong:HK,Asia/Macau:MO,Asia/Taipei:TW,Asia/Tokyo:JP,Asia/Seoul:KR,Asia/Singapore:SG,Asia/Kuala_Lumpur:MY,Asia/Jakarta:ID,Asia/Manila:PH,Asia/Bangkok:TH,Asia/Ho_Chi_Minh:VN,Asia/Saigon:VN,Asia/Almaty:KZ,Asia/Tashkent:UZ,Asia/Baku:AZ,Asia/Tbilisi:GE,Asia/Yerevan:AM,Asia/Kabul:AF,Australia/Sydney:AU,Australia/Melbourne:AU,Australia/Perth:AU,Australia/Brisbane:AU,Pacific/Auckland:NZ,America/New_York:US,America/Chicago:US,America/Denver:US,America/Los_Angeles:US,America/Phoenix:US,America/Anchorage:US,Pacific/Honolulu:US,America/Detroit:US,America/Toronto:CA,America/Vancouver:CA,America/Montreal:CA,America/Edmonton:CA,America/Halifax:CA,America/Mexico_City:MX,America/Bogota:CO,America/Lima:PE,America/Santiago:CL,America/Argentina/Buenos_Aires:AR,America/Buenos_Aires:AR,America/Sao_Paulo:BR,America/Caracas:VE,America/Havana:CU,America/Montevideo:UY,America/Asuncion:PY,America/La_Paz:BO,America/Guayaquil:EC,America/Panama:PA,America/Costa_Rica:CR,America/Guatemala:GT,America/Santo_Domingo:DO,America/Port-au-Prince:HT,America/Puerto_Rico:PR,America/Jamaica:JM"
   .split(",").reduce((m,p)=>{const [k,v]=p.split(":");m[k]=v;return m;},{});
 async function detectCountry(){
-  // 1) IP lookup. Works when the page is self-hosted (e.g. Netlify).
-  //    Inside the claude.ai viewer outside network calls are blocked, so this fails fast and we fall back.
-  try{
-    const ctl = new AbortController(); const tm = setTimeout(()=>ctl.abort(), 2000);
-    const r = await fetch("https://ipapi.co/country/", {signal:ctl.signal}); clearTimeout(tm);
-    if(r.ok){ const c = (await r.text()).trim().toUpperCase(); if(CODES.includes(c)) return {code:c, source:"ip"}; }
-  }catch(e){}
-  // 2) device time zone
+  // No IP lookup: APA never sends a visitor's address to an outside service.
+  // 1) device time zone
   try{ const tz = Intl.DateTimeFormat().resolvedOptions().timeZone; if(TZ[tz]) return {code:TZ[tz], source:"device"}; }catch(e){}
   // 3) browser language region, e.g. fr-CA
   for(const l of (navigator.languages||[navigator.language||""])){
@@ -1045,6 +1043,8 @@ function showView(v){
   $("hero").hidden = inCab || st.editing;
   $("verifiedMsg").hidden = !!st.editing; $("cancelEdit").hidden = !st.editing;
   $("topUser").hidden = !st.profile;
+  const mode = st.profile ? "full" : "simple";   // the full time and weather widget is for signed-in users
+  if (document.body.dataset.widgetMode !== mode) { document.body.dataset.widgetMode = mode; if (typeof LOC !== "undefined") LOC.modeChanged(); }
   const ta = $("topAuth"), onLogin = v==="login" || v==="reset";
   ta.hidden = !!st.profile || inCab || onLogin;
   $("app").classList.toggle("split", !$("hero").hidden);
@@ -1870,6 +1870,11 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
 .wdg .sep{width:1px;align-self:stretch;background:var(--line)}
 .wdg .pc{position:relative;display:flex;align-items:center}
 .wdg .hx{position:absolute;top:-10px;inset-inline-end:-12px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--muted);font-size:.7rem;line-height:1;padding:0;cursor:pointer;display:none;place-items:center}
+.wdg.simple .hx,.wdg.simple .rz,.wdg.simple #wSize{display:none!important}
+.wdg.simple{cursor:grab}
+body[data-widget-mode="simple"]{padding-bottom:84px}   /* room under the page, so the clock never hides its last line */
+.wdg.simple:active{cursor:grabbing}
+.wdg [data-piece="clock"] > .hx{top:-14px}
 .wdg .pc:hover > .hx,.wdg .pc:focus-within > .hx,.wdg.edit .hx{display:grid}
 .wdg .wcl{flex-basis:100%;width:100%;min-width:0;order:8;display:flex;flex-direction:column;border-top:1px solid var(--line);margin-top:4px;padding-top:2px}
 .wdg .wcl[hidden]{display:none}
@@ -2002,7 +2007,7 @@ body[data-widget-place="bottom"] #calAsk{bottom:auto;top:76px}
   <div class="wcl" data-piece="clocks" id="wClocks" aria-label="Other cities"></div>
   <span class="sep" data-piece="weather"></span>
   <span class="pc" data-piece="weather"><button class="wx" id="wWx" aria-label="Open time and place settings"><span id="wWxIc" aria-hidden="true"></span><span><span id="wWxT"></span><small id="wWxD"></small></span></button><button class="hx" data-hide="weather" aria-label="Hide the weather" title="Hide the weather">✕</button></span>
-  <span class="tools"><button id="wSize" aria-label="Change the size" title="Change the size">⤢</button><button id="wMin" aria-label="Minimize" title="Minimize">–</button></span>
+  <span class="tools"><button id="wSide" aria-label="Move to the other side of the screen" title="Move to the other side">⇆</button><button id="wSize" aria-label="Change the size" title="Change the size">⤢</button><button id="wMin" aria-label="Minimize" title="Minimize">–</button></span>
   <button class="rz" id="wRz" aria-label="Resize: drag, or press to change the size" title="Drag to resize"></button>
   <button class="dot" id="wDot" aria-label="Show the time and weather widget">🕐</button>
 </div>
@@ -2183,6 +2188,7 @@ const LOC = (() => {
   const WXI = { 0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",71:"🌨️",73:"🌨️",75:"❄️",80:"🌦️",81:"🌧️",82:"⛈️",95:"⛈️",96:"⛈️",99:"⛈️" };
   let wx = null, wxAt = 0;
   async function loadWx(force) {
+    if (isSimple()) return;
     const p = L.place || (gps && (!L.country || gps.cc === L.country) ? gps : null) || (ipOk() && (!L.country || ip.cc === L.country) && ip.lat != null ? ip : null);
     if (!p || p.lat == null) { wx = null; return; }
     if (!force && wx && wx.key === p.lat + "," + p.lon && Date.now() - wxAt < 15 * 60000) return;
@@ -2483,8 +2489,10 @@ const LOC = (() => {
     } catch { box.innerHTML = `<p class="${C_NOTE}">The city search is not available right now. Try again in a moment.</p>`; }
   }
 
+  const isSimple = () => document.body.dataset.widgetMode === "simple";
   function paint() {
     const w = W(); if (!w) return;
+    if (isSimple()) { paintSimple(w); return; }
     w.hidden = !L.w.show;
     w.className = "wdg " + (L.w.size === "min" ? "min" : L.w.size);
     // what is shown: widget pieces closed with ✕, and sections folded in Settings (folding hides their information on screen)
@@ -2538,9 +2546,22 @@ const LOC = (() => {
     const bw = w.offsetWidth, bh = w.offsetHeight, vw = innerWidth, vh = innerHeight;
     // default place: top corner on the dashboard, bottom corner on pages with forms (set by the page with data-widget-place="bottom")
     const bottom = document.body.dataset.widgetPlace === "bottom" || vw < 700;
-    let x = L.w.x == null ? (rtl ? 12 : vw - bw - 12) : L.w.x * vw, y = L.w.y == null ? (bottom ? vh - bh - 16 : 70) : L.w.y * vh;
+    // the simple visitor clock starts on the reading-start side (left in English, right in Arabic), away from the sign-up form
+    const startSide = isSimple() ? !rtl : rtl;
+    let x = L.w.x == null ? (startSide ? 12 : vw - bw - 12) : L.w.x * vw, y = L.w.y == null ? (bottom ? vh - bh - 16 : 70) : L.w.y * vh;
     x = Math.min(Math.max(8, x), vw - bw - 8); y = Math.min(Math.max(8, y), vh - bh - 8);
     w.style.left = x + "px"; w.style.top = y + "px";
+  }
+  // Visitors (not signed in): a simple clock from the device itself; no place lookup, no weather, no settings
+  function paintSimple(w) {
+    w.hidden = false;   // visitors have no Settings to bring it back, so the simple clock is always shown (it can still be minimized)
+    w.className = "wdg m simple" + (L.w.size === "min" ? " min" : "");
+    const now = new Date(), zone = deviceTz;
+    $("wTime").textContent = time(now, zone);   // the usual 12 h / 24 h of the country, and the chosen digits
+    $("wPlace").textContent = weekday(now, zone) + " " + date(now, { zone }) + " · " + zoneName(zone);
+    w.querySelectorAll("[data-piece]").forEach(e => e.hidden = !["clock", "place"].includes(e.dataset.piece));
+    $("wMain").title = "Sign in to choose your city, other cities' clocks and the weather";
+    digitizeEl(w); place();
   }
   function setPos(x, y) { L.w.x = x / innerWidth; L.w.y = y / innerHeight; save(); place(); }
   const SIZES = ["s", "m", "l"];
@@ -2550,7 +2571,7 @@ const LOC = (() => {
     // drag from the grip or from any empty part of the widget
     let drag = null;
     w.addEventListener("pointerdown", (e) => {
-      if (e.target.closest(".hx, .tools, .rz, .dot, #wMain, #wWx, .wchip, .wcm, .wcr, .wtip")) return;
+      if (e.target.closest(isSimple() ? ".tools, .dot" : ".hx, .tools, .rz, .dot, #wMain, #wWx, .wchip, .wcm, .wcr, .wtip")) return;   // simple clock: drag from anywhere
       const r = w.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: false, id: e.pointerId };
       w.setPointerCapture(e.pointerId);
     });
@@ -2572,9 +2593,10 @@ const LOC = (() => {
     });
     $("wRz").addEventListener("pointerup", () => { if (rz && !rz.done) setSize(SIZES[(SIZES.indexOf(L.w.size) + 1) % 3]); rz = null; });
     $("wSize").onclick = () => setSize(SIZES[(SIZES.indexOf(L.w.size) + 1) % 3]);
+    $("wSide").onclick = () => { const r = w.getBoundingClientRect(); setPos(innerWidth - r.right, r.top); };   // mirror to the other side
     $("wMin").onclick = () => { L.w.prev = L.w.size; setSize("min"); $("wDot").focus(); };
     $("wDot").onclick = () => { setSize(L.w.prev && L.w.prev !== "min" ? L.w.prev : "m"); };
-    $("wMain").onclick = open; $("wWx").onclick = () => openSetting("lTemp");   // the main weather opens the °C / °F units
+    $("wMain").onclick = () => { if (!isSimple()) open(); }; $("wWx").onclick = () => openSetting("lTemp");   // the main weather opens the °C / °F units
     w.querySelectorAll("[data-hide]").forEach(b => b.onclick = () => hidePiece(b.dataset.hide));
     addEventListener("resize", place);
   }
@@ -2829,14 +2851,14 @@ const LOC = (() => {
     paint();
     setInterval(paint, 15000);
     setInterval(() => loadWx().then(paint), 15 * 60000);
-    // the connection's country (may be wrong with a VPN): used only as a first guess and for the warning
-    fetch("https://ipapi.co/json/").then(r => r.json()).then(j => {
-      if (j && j.country_code) ip = { cc: j.country_code, country: j.country_name, city: j.city, tz: j.timezone, lat: j.latitude, lon: j.longitude };
-    }).catch(() => {}).finally(() => { loadWx(true).then(paint); askCalendar(); });
+    // No IP lookup: APA never sends a visitor's address to an outside service. The place comes from the user's own choice,
+    // their location (only if they allow it) or the device's time zone.
+    loadWx(true).then(paint); askCalendar();
   }
   // the page found a precise position (e.g. "Use my location"): use it for the widget too, unless the user chose a city
   function setDetected(p) { gps = p && p.lat != null ? { name: p.name, cc: p.cc || "", lat: p.lat, lon: p.lon } : null; loadWx(true).then(paint); }
-  return { init, open, setDetected, date, time, weekday, temp, dist, tz, digitize, digitizeEl, price, onChange: (f) => listeners.push(f), get place() { return L.place; } };
+  function modeChanged() { clocksKey = ""; loadWx(true).then(paint); paint(); }
+  return { init, open, setDetected, modeChanged, date, time, weekday, temp, dist, tz, digitize, digitizeEl, price, onChange: (f) => listeners.push(f), get place() { return L.place; } };
 })();
 document.addEventListener("DOMContentLoaded", LOC.init);
 </script>
