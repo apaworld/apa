@@ -220,3 +220,11 @@ create trigger login_history_no_truncate
   for each statement execute function public.prevent_log_changes();
 create index admin_login_history_admin_date
   on public.admin_login_history (admin_id, created_at desc);
+
+-- 09 tickets channels (WhatsApp, email, SMS) ---------------------
+alter table public.tickets alter column user_id drop not null;
+alter table public.tickets
+  add column channel text not null default 'web'
+    check (channel in ('web', 'email', 'whatsapp', 'sms')),
+  add column contact text;
+grant select, insert on public.tickets to service_role;
