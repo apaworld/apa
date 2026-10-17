@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>APA World – Account (BETA test)</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #fff; color: #202124; margin: 0; display: flex; justify-content: center; padding: 40px 16px; }
+  .card { width: 100%; max-width: 420px; }
+  h1 { font-size: 28px; margin: 0 0 6px; }
+  .beta { display: inline-block; font-size: 13px; font-weight: 600; color: #174EA6; background: #E8F0FE; padding: 4px 10px; border-radius: 999px; margin-bottom: 24px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 8px; }
+  .tabs button { flex: 1; height: 44px; border: 1px solid #DADCE0; background: #fff; border-radius: 22px; font-size: 15px; cursor: pointer; }
+  .tabs button.active { background: #E8F0FE; color: #174EA6; border-color: #E8F0FE; font-weight: 600; }
+  label { display: block; font-size: 14px; color: #5F6368; margin: 14px 0 6px; }
+  input { width: 100%; box-sizing: border-box; height: 48px; padding: 0 14px; border: 1px solid #DADCE0; border-radius: 12px; font-size: 16px; }
+  .primary { width: 100%; height: 52px; margin-top: 20px; border: none; border-radius: 26px; background: #1A73E8; color: #fff; font-size: 17px; font-weight: 600; cursor: pointer; }
+  .link { background: none; border: none; color: #1A73E8; cursor: pointer; font-size: 14px; padding: 0; margin-top: 14px; }
+  ul.rules { list-style: none; padding: 0; margin: 10px 0 0; font-size: 14px; color: #5F6368; }
+  ul.rules li.ok { color: #137333; }
+  #msg { margin-top: 18px; font-size: 15px; min-height: 22px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>APA World</h1>
+  <span class="beta">BETA ver. 1.0 – test page</span>
+
+  <div id="loggedOut">
+    <div class="tabs">
+      <button id="tabLogin" class="active" type="button">Log in</button>
+      <button id="tabSignup" type="button">Sign up</button>
+    </div>
+    <form id="authForm">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <ul class="rules hidden" id="rules"></ul>
+      <button class="primary" id="submitBtn" type="submit">Log in</button>
+    </form>
+    <button class="link" id="forgotBtn" type="button">Forgot password?</button>
+  </div>
+
+  <div id="newPasswordBox" class="hidden">
+    <form id="resetForm">
+      <label for="newPass">New password</label>
+      <input id="newPass" type="password" autocomplete="new-password" required>
+      <ul class="rules" id="rules2"></ul>
+      <button class="primary" type="submit">Save new password</button>
+    </form>
+  </div>
+
+  <div id="loggedIn" class="hidden">
+    <p>You are logged in as <strong id="who"></strong>.</p>
+    <button class="primary" id="logoutBtn" type="button">Log out</button>
+  </div>
+
+  <p id="msg" role="status"></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+  const SUPABASE_URL = "https://pfaurqvqjgcmnybdeghs.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_TC1wgq3-naTQCuktPEgTUw_9thyiOzb";
+  const PAGE_URL = "https://apaworld.org/auth-test.html";
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = (id) => document.getElementById(id);
+  let mode = "login";
+
+  const rules = [
+    ["At least 10 characters", (p) => p.length >= 10],
+    ["A lowercase letter", (p) => /[a-z]/.test(p)],
+    ["An uppercase letter", (p) => /[A-Z]/.test(p)],
+    ["A digit", (p) => /\d/.test(p)],
+    ["A symbol (e.g. ! ? # @)", (p) => /[^A-Za-z0-9]/.test(p)],
+  ];
+  const strong = (p) => rules.every(([, ok]) => ok(p));
+  function drawRules(listId, p) {
+    $(listId).innerHTML = rules
+      .map(([text, ok]) => `<li class="${ok(p) ? "ok" : ""}">${ok(p) ? "✓" : "○"} ${text}</li>`)
+      .join("");
+  }
+  function say(text, good) { $("msg").textContent = text; $("msg").style.color = good ? "#137333" : "#B3261E"; }
+
+  function setMode(m) {
+    mode = m;
+    $("tabLogin").classList.toggle("active", m === "login");
+    $("tabSignup").classList.toggle("active", m === "signup");
+    $("submitBtn").textContent = m === "login" ? "Log in" : "Create account";
+    $("rules").classList.toggle("hidden", m === "login");
+    $("password").autocomplete = m === "login" ? "current-password" : "new-password";
+    drawRules("rules", $("password").value);
+    say("");
+  }
+  $("tabLogin").onclick = () => setMode("login");
+  $("tabSignup").onclick = () => setMode("signup");
+  $("password").oninput = (e) => drawRules("rules", e.target.value);
+  $("newPass").oninput = (e) => drawRules("rules2", e.target.value);
+  drawRules("rules2", "");
+
+  $("authForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const email = $("email").value.trim();
+    const password = $("password").value;
+    if (mode === "signup") {
+      if (!strong(password)) return say("Please complete all password rules.");
+      const { error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: PAGE_URL } });
+      if (error) return say(error.message);
+      say("Almost done! Check your email to confirm your account.", true);
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) return say(error.message);
+    }
+  };
+
+  $("forgotBtn").onclick = async () => {
+    const email = $("email").value.trim();
+    if (!email) return say("Type your email first, then click 'Forgot password?'.");
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: PAGE_URL });
+    if (error) return say(error.message);
+    say("If this email has an account, a reset link is on its way.", true);
+  };
+
+  $("resetForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const password = $("newPass").value;
+    if (!strong(password)) return say("Please complete all password rules.");
+    const { error } = await sb.auth.updateUser({ password });
+    if (error) return say(error.message);
+    $("newPasswordBox").classList.add("hidden");
+    say("Password changed. You are logged in.", true);
+    render();
+  };
+
+  $("logoutBtn").onclick = async () => { await sb.auth.signOut(); say("Logged out.", true); };
+
+  async function render() {
+    const { data } = await sb.auth.getSession();
+    const user = data.session?.user;
+    $("loggedOut").classList.toggle("hidden", !!user);
+    $("loggedIn").classList.toggle("hidden", !user);
+    $("who").textContent = user?.email ?? "";
+  }
+
+  sb.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY") {
+      $("loggedOut").classList.add("hidden");
+      $("loggedIn").classList.add("hidden");
+      $("newPasswordBox").classList.remove("hidden");
+      say("Choose your new password.", true);
+      return;
+    }
+    render();
+  });
+  render();
+</script>
+</body>
+</html>
