@@ -110,7 +110,7 @@
       if (!strong(password)) return say("Please complete all password rules.");
       const { error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: PAGE_URL } });
       if (error) return say(error.message);
-      say("Almost done! Check your email to confirm your account.", true);
+       say("Check your inbox to confirm your account. If you already have an APA account with this email, simply log in or use 'Forgot password?'.", true);
     } else {
       const { error } = await sb.auth.signInWithPassword({ email, password });
       if (error) return say(error.message);
