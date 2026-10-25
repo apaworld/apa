@@ -17,3 +17,17 @@ jobs:
           echo "HTTP status: $code"
           cat response.txt
           [ "$code" = "200" ]
+
+      - name: Notify OK
+        if: success()
+        run: |
+          curl -s -H "Title: Supabase keep-alive OK" -H "Tags: white_check_mark" \
+            -d "Apaworld database ping: HTTP 200" \
+            "https://ntfy.sh/${{ secrets.NTFY_TOPIC }}"
+
+      - name: Notify FAILED
+        if: failure()
+        run: |
+          curl -s -H "Title: Supabase keep-alive FAILED" -H "Priority: high" -H "Tags: x" \
+            -d "Apaworld database ping failed - check GitHub Actions" \
+            "https://ntfy.sh/${{ secrets.NTFY_TOPIC }}"
