@@ -9,7 +9,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: Check nationsorg.com
+      - name:
         run: |
           code=$(curl -s -o /dev/null -w "%{http_code}" https://nationsorg.com)
           echo "nationsorg.com: $code"
