@@ -1,0 +1,29 @@
+name: Site uptime
+
+on:
+  schedule:
+    - cron: "37 7 * * *"   # every day at 07:37 UTC
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check nationsorg.com
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" https://nationsorg.com)
+          echo "nationsorg.com: $code"
+          [ "$code" = "200" ]
+
+      - name: Check apaworld.org
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" https://apaworld.org)
+          echo "apaworld.org: $code"
+          [ "$code" = "200" ]
+
+      - name: Notify FAILED
+        if: failure()
+        run: |
+          curl -s -H "Title: Site check FAILED" -H "Priority: high" -H "Tags: x" \
+            -d "A Nationsorg or APA website did not answer with HTTP 200. Check GitHub Actions." \
+            "https://ntfy.sh/${{ secrets.NTFY_TOPIC }}"
