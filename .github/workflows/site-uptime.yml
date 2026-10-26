@@ -9,12 +9,6 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name:
-        run: |
-          code=$(curl -s -o /dev/null -w "%{http_code}" https://nationsorg.com)
-          echo "nationsorg.com: $code"
-          [ "$code" = "200" ]
-
       - name: Check apaworld.org
         run: |
           code=$(curl -s -o /dev/null -w "%{http_code}" https://apaworld.org)
@@ -25,5 +19,5 @@ jobs:
         if: failure()
         run: |
           curl -s -H "Title: Site check FAILED" -H "Priority: high" -H "Tags: x" \
-            -d "A Nationsorg or APA website did not answer with HTTP 200. Check GitHub Actions." \
+            -d "A website did not answer with HTTP 200. Check GitHub Actions." \
             "https://ntfy.sh/${{ secrets.NTFY_TOPIC }}"
