@@ -1,0 +1,55 @@
+name: Deploy site (allowlist)
+
+# Publishes ONLY the files listed below to apaworld.org.
+# Any other file in the repo (test pages, code, schema...) never goes online.
+# To publish a new file, add it to the list on purpose.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy only the allowed files
+        run: |
+          mkdir _site
+          cp --parents \
+            index.html \
+            live-free.html \
+            version.js \
+            favicon.ico \
+            favicon.svg \
+            CNAME \
+            js/Sortable.min.js \
+            fonts/TwemojiCountryFlags.woff2 \
+            fonts/figtree-latin.woff2 \
+            fonts/figtree-latin-ext.woff2 \
+            fonts/LICENSE-flags.md \
+            fonts/OFL-figtree.txt \
+            _site/
+          echo "Files going online:"
+          find _site -type f
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
