@@ -5,6 +5,8 @@ on:
     - cron: "37 7 * * *"   # every day at 07:37 UTC
   workflow_dispatch:
 
+permissions:
+  contents: read
 jobs:
   check:
     runs-on: ubuntu-latest
